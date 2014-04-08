@@ -4623,7 +4623,7 @@ FUNCTION mcmc_output
 		ofs<<","<<"f";
 		ofs<<endl;
 
-	  ofstream of1("sbt_mcmc.csv");
+	  ofstream of1("iscam_sbt_mcmc.csv");
     for(int group=1;group<=ngroup;group++){
       for(int yr=syr;yr<=nyr+1;yr++){
         if(yr == syr){
@@ -4635,7 +4635,7 @@ FUNCTION mcmc_output
     }
     of1<<endl;
 
-		ofstream of2("rt_mcmc.csv");
+		ofstream of2("iscam_rt_mcmc.csv");
     for(int group=1;group<=ngroup;group++){
       for(int yr=syr+sage;yr<=nyr;yr++){
         if(yr == syr+sage){
@@ -4692,7 +4692,7 @@ FUNCTION mcmc_output
 	ofs<<endl;
 
 	// output spawning stock biomass
-	ofstream of1("sbt_mcmc.csv",ios::app);
+	ofstream of1("iscam_sbt_mcmc.csv",ios::app);
   for(int group=1;group<=ngroup;group++){
     for(int yr=syr;yr<=nyr+1;yr++){
       if(yr == syr){
@@ -4705,7 +4705,7 @@ FUNCTION mcmc_output
   of1<<endl;
 
 	// output age-1 recruits
-	ofstream of2("rt_mcmc.csv",ios::app);
+	ofstream of2("iscam_rt_mcmc.csv",ios::app);
   for(int group=1;group<=ngroup;group++){
     for(int yr=syr+sage;yr<=nyr;yr++){
       if(yr == syr+sage){
@@ -5336,25 +5336,6 @@ FINAL_SECTION
 		//	system(bscmd);
 		//}
 
-		if( mcmcPhase )
-		{
-			bscmd = "cp iscam.psv " + BaseFileName + ".psv";
-			system(bscmd);
-			
-			cout<<"Copied binary posterior sample values"<<endl;
-		}
-		
-		if( mcmcEvalPhase )
-		{		
-			bscmd = "cp iscam_mcmc.csv " + BaseFileName + "_mcmc.csv";
-			system(bscmd);
-		
-			bscmd = "cp sbt_mcmc.csv " + BaseFileName + "_mcmcsbt.csv";
-			system(bscmd);
-		
-			bscmd = "cp rt_mcmc.csv " + BaseFileName + "_mcmcrt.csv";
-			system(bscmd);
-			
 			ofstream mcofs(ReportFileName,ios::app);
 			mcofs<<"ENpar\n"<<dicNoPar<<endl;
 			mcofs<<"DIC\n"<<dicValue<<endl;

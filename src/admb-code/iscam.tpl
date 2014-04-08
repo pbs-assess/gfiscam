@@ -5367,27 +5367,6 @@ FINAL_SECTION
 		bscmd = "copy iscam.cor " + BaseFileName + ".cor";
 		system(bscmd);
 		
-		if( mcmcPhase )
-		{
-			bscmd = "copy iscam.psv " + BaseFileName + ".psv";
-			system(bscmd);
-			
-			cout<<"Copied binary posterior sample values"<<endl;
-		}
-		
-		if( mcmcEvalPhase )
-		{		
-			bscmd = "copy iscam_mcmc.csv " + BaseFileName + "_mcmc.csv";
-			system(bscmd);
-		
-			bscmd = "copy sbt_mcmc.csv " + BaseFileName + "_mcmcsbt.csv";
-			system(bscmd);
-		
-			bscmd = "copy rt_mcmc.csv " + BaseFileName + "_mcmcrt.csv";
-			system(bscmd);
-		
-			cout<<"Copied MCMC Files"<<endl;
-		}
 	}
 
 	if( last_phase() && retro_yrs )

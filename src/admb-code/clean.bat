@@ -29,3 +29,8 @@ del *.res /Q /F
 del *.d   /Q /F
 del *.eql /Q /F
 del *.csv /Q /F
+del *.psv /Q /F
+del *.mc* /Q /F
+del *.hst /Q /F
+del *.ecm /Q /F
+del sims  /Q /F

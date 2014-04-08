@@ -5294,6 +5294,9 @@ FINAL_SECTION
 	minute=long(elapsed_time)%3600/60;
 	second=(long(elapsed_time)%3600)%60;
 	cout<<endl<<endl<<"*******************************************"<<endl;
+  if(mceval_phase()){
+    cout<<"mceval phase"<<endl;
+  }
 	cout<<"--Start time: "<<ctime(&start)<<endl;
 	cout<<"--Finish time: "<<ctime(&finish)<<endl;
 	cout<<"--Runtime: ";

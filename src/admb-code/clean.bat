@@ -28,3 +28,4 @@ del *.b1* /Q /F
 del *.res /Q /F
 del *.d   /Q /F
 del *.eql /Q /F
+del *.csv /Q /F

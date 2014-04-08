@@ -409,7 +409,6 @@ DATA_SECTION
 		{
 			if(fsh_flag(k)) nFleetIndex(j++) = k;
 		}
-		// cout<<"nFleetIndex index\t"<<nFleetIndex<<endl;
 	END_CALCS
 	
 	
@@ -450,17 +449,17 @@ DATA_SECTION
 	matrix ma(1,n_ags,sage,nage);		//maturity-at-age
 	LOC_CALCS
 		cout<<setw(8)<<setprecision(4)<<endl;
-	  	cout<<"| ----------------------- |"<<endl;
+	  cout<<"| ----------------------- |"<<endl;
 		cout<<"| GROWTH PARAMETERS       |"<<endl;
 		cout<<"| ----------------------- |"<<endl;
 		cout<<"| d_linf  \t"<<d_linf<<endl;
-	  	cout<<"| d_vonbk \t"<<d_vonbk<<endl;
-	  	cout<<"| d_to    \t"<<d_to<<endl;
-	  	cout<<"| d_a     \t"<<d_a<<endl;
-	  	cout<<"| d_b     \t"<<d_b<<endl;
-	  	cout<<"| d_ah    \t"<<d_ah<<endl;
-	  	cout<<"| d_gh    \t"<<d_gh<<endl;
-	  	cout<<"| ----------------------- |\n"<<endl;
+	  cout<<"| d_vonbk \t"<<d_vonbk<<endl;
+	  cout<<"| d_to    \t"<<d_to<<endl;
+	  cout<<"| d_a     \t"<<d_a<<endl;
+	  cout<<"| d_b     \t"<<d_b<<endl;
+	  cout<<"| d_ah    \t"<<d_ah<<endl;
+	  cout<<"| d_gh    \t"<<d_gh<<endl;
+	  cout<<"| ----------------------- |\n"<<endl;
 
 	  	// length & weight-at-age based on input growth pars
 	  	ma.initialize();
@@ -530,14 +529,8 @@ DATA_SECTION
 				ig = pntr_ags(f,g,h);
 				d3_Ct(ig)(i)(k) = dCatchData(ii)(7);
 			} 
-			//if(verbose)  cout<<"Ok after reading catch data"<<ii<<" "<<ig <<" "<<n_ags<<endl;
 		}
-
-		
 	END_CALCS
-	
-
-
 
 	// |---------------------------------------------------------------------------------|
 	// | RELATIVE ABUNDANCE INDICIES (ragged array)
@@ -559,7 +552,6 @@ DATA_SECTION
 	init_3darray d3_survey_data(1,nItNobs,1,n_it_nobs,1,8);
 	matrix                it_wt(1,nItNobs,1,n_it_nobs);
 
-// 	!! cout<<"Number of surveys "<<nItNobs<<endl;
 	LOC_CALCS
 		cout<<"| ----------------------- |"<<endl;
 		cout<<"| TAIL(d3_survey_data)       |"<<endl;
@@ -791,14 +783,9 @@ DATA_SECTION
 				 }
 			//d3_wt_avg(ig)(iyr)(idx) = inp_wt_avg(i)(idx);
 			d3_wt_mat(ig)(iyr)      = elem_prod(ma(ig),d3_wt_avg(ig)(iyr));
-			//cout<<"Yep \t"<<inp_wt_avg(i)(idx)<<endl;
-			//cout<<"Yep \t"<<tmp(idx)<<endl;
-			//cout<<"Yep \t"<<d3_wt_avg(ig)(iyr)(idx)<<endl;
 			}
 			else if( !h ) 
 			{
-					//cout<<h<<endl;
-				
 				for(int h=1;h<=nsex;h++)
 				{
 					ig                   = pntr_ags(f,g,h);
@@ -834,8 +821,6 @@ DATA_SECTION
 		for(ig=1;ig<=n_ags;ig++)
 		{
 			dmatrix mtmp = trans( d3_wt_avg(ig) );
-			//COUT(mtmp);
-
 			for(j=sage;j<=nage;j++)
 			{
 				//COUT(sum(first_difference(mtmp(j)(syr,nyr))));
@@ -1149,13 +1134,10 @@ DATA_SECTION
 	// | 15-> switch for generating selex based on IFD and cohort biomass
 	init_vector d_iscamCntrl(1,15);
 	int verbose;
-	
-
 	init_int eofc;
 	LOC_CALCS
 		verbose = d_iscamCntrl(1);
 		if(verbose) COUT(d_iscamCntrl);
-		
 		if(eofc==999){
 			cout<<"\n| -- END OF CONTROL SECTION -- |\n";
 		  	cout<<"|          eofc = "<<eofc<<"          |"<<endl;
@@ -1207,25 +1189,19 @@ DATA_SECTION
 	// | MANAGEMENT STRATEGY EVALUATION INPUTS
 	// |---------------------------------------------------------------------------------|
 	// |
-	
 
 	LOC_CALCS
 		ifstream ifile("Halibut2012.mse");
 		if(ifile)
 		{
-			cout<<"Vader is happy"<<endl;
-			readMseInputs();
-			
-			
-			exit(1);
+			//readMseInputs();
+			//exit(1);
 		}
 	END_CALCS
 
 
 	// END OF DATA_SECTION
 	!! if(verbose) cout<<"||-- END OF DATA_SECTION --||"<<endl;
-
-	
 
 INITIALIZATION_SECTION
   theta theta_ival;
@@ -1246,7 +1222,7 @@ PARAMETER_SECTION
 	// | theta[7] -> vartheta
 	// |
 	init_bounded_vector_vector theta(1,npar,1,ipar_vector,theta_lb,theta_ub,theta_phz);
-	
+
 	// |---------------------------------------------------------------------------------|
 	// | SELECTIVITY PARAMETERS
 	// |---------------------------------------------------------------------------------|
@@ -4567,7 +4543,6 @@ FUNCTION generate_new_files
 		rd<<NewFileName + ".dat"<<endl;
 		rd<<NewFileName + ".ctl"<<endl;
 		rd<<NewFileName + ".pfc"<<endl;
-	system("say Luke I am your father");
 	exit(1);
 
 
@@ -4600,72 +4575,151 @@ FUNCTION generate_new_files
   }
 
 FUNCTION mcmc_output
-//   {
-// 	if(nf==1){
-// 		ofstream ofs("iscam.mcmc");
-// 		ofs<<"       log.ro";
-// 		ofs<<"        log.h";
-// 		ofs<<"        log.m";
-// 		ofs<<"     log.rbar";
-// 		ofs<<"    log.rinit";
-// 		ofs<<"          rho";
-// 		ofs<<"     vartheta";
-// 		ofs<<"           bo";
-// 		ofs<<"         bmsy";
-// 		for(int k=1;k<=nfleet;k++) ofs<<"         msy"<<k;
-// 		for(int k=1;k<=nfleet;k++) ofs<<"        fmsy"<<k;
-// 		ofs<<"          SSB";
-// 		ofs<<"        Age-4";
-// 		ofs<<"         Poor";
-// 		ofs<<"      Average";
-// 		ofs<<"         Good";
-// 		for(int i=1;i<=nItNobs;i++) ofs<<"         lnq"<<i;
-// 		ofs<<"            f";
-// 		ofs<<endl;
-		
-// 		ofstream of1("sbt.mcmc");
-// 		ofstream of2("rt.mcmc");
-		
-// 	}
-	
-// 	// leading parameters & reference points
-// 	calcReferencePoints();
-// 	// decision table output
-// 	//dvector future_bt = value(elem_prod(elem_prod(N(nyr+1),exp(-M_tot(nyr))),d3_wt_avg(nyr+1)));
-// 	dvector future_bt = value(elem_prod(N(nyr+1)*exp(-m_bar),d3_wt_avg(nyr+1)));
-// 	double future_bt4 = sum(future_bt(4,nage));
-// 	dvector rt3 = age3_recruitment(value(column(N,3)),d3_wt_avg(nyr+1,3),value(M_tot(nyr,3)));	
-	
-	
-// 	//if( bmsy > 0 && min(fmsy) >= 0 )
-// 	{
-// 		ofstream ofs("iscam.mcmc",ios::app);
-// 		ofs<<setw(12)<<theta;
-// 		ofs<<setw(13)<< bo;
-// 		ofs<<setw(13)<< bmsy;
-// 		ofs<<setw(12)<< msy;
-// 		ofs<<setw(12)<< fmsy;
-// 		ofs<<setw(13)<< sbt(nyr);
-// 		ofs<<setw(13)<< future_bt4;
-// 		ofs<<setw(12)<< future_bt4+rt3;
-// 		ofs<<setw(12)<< log(q);
-// 		ofs<<setw(13)<< objfun;
-// 		ofs<<endl;
-		
-// 		/* June 12, 2012.  SJDM Call decision table. */
-// 		decision_table();  
-// 	}
-// 	// output spawning stock biomass
-// 	ofstream of1("sbt.mcmc",ios::app);
-// 	of1<<setw(10)<<sbt(syr,nyr)<<endl;
-	
-// 	// output age-1 recruits
-// 	ofstream of2("rt.mcmc",ios::app);
-// 	of2<<setw(10)<<rt<<endl;
-	
-	
-//   }
+	if(nf==1){
+    // Open the files and write the headers
+		ofstream ofs("iscam_mcmc.csv");
+    // The structure for these objects can be found at roughly lines 924 and 1409.
+    // they are set up as vector_vectors to increase dimensionality
+    // for the split sex case and also for areas and groups
+    // The format for the mcmc output headers will be one of:
+    // parametername_gr[0-9]+  - for unique group only
+    // parametername_gs[0-9]+  - for unique group and sex
+    // paramatername_ag[0-9]+  - for unique area and gear
+    for(int group=1;group<=ngroup;group++){
+      ofs<<"ro_gr"<<group;
+    }
+    for(int group=1;group<=ngroup;group++){
+  	  ofs<<","<<"h_gr"<<group;
+    }
+    for(int gs=1;gs<=n_gs;gs++){
+      ofs<<","<<"m_gs"<<gs;
+    }
+    for(int ag=1;ag<=n_ag;ag++){
+		  ofs<<","<<"rbar_ag"<<ag;
+    }
+    for(int ag=1;ag<=n_ag;ag++){
+		  ofs<<","<<"rinit_ag"<<ag;
+    }
+    for(int group=1;group<=ngroup;group++){
+      ofs<<","<<"rho_gr"<<group;
+    }
+    for(int group=1;group<=ngroup;group++){
+		  ofs<<","<<"vartheta_gr"<<group;
+    }
+		ofs<<","<<"bo";
+		ofs<<","<<"bmsy";
+		for(int fleet=1;fleet<=nfleet;fleet++){
+      ofs<<","<<"msy"<<fleet;
+    }
+		for(int fleet=1;fleet<=nfleet;fleet++){
+      ofs<<","<<"fmsy"<<fleet;
+    }
+		for(int i=1;i<=nItNobs;i++){
+      ofs<<","<<"q"<<i;
+    }
+    for(int group=1;group<=ngroup;group++){
+      ofs<<","<<"SSB"<<group;
+    }
+		ofs<<","<<"f";
+		ofs<<endl;
 
+	  ofstream of1("sbt_mcmc.csv");
+    for(int group=1;group<=ngroup;group++){
+      for(int yr=syr;yr<=nyr+1;yr++){
+        if(yr == syr){
+          of1<<"sbt"<<group<<"_"<<yr;
+        }else{
+          of1<<",sbt"<<group<<"_"<<yr;
+        }
+      }
+    }
+    of1<<endl;
+
+		ofstream of2("rt_mcmc.csv");
+    for(int group=1;group<=ngroup;group++){
+      for(int yr=syr+sage;yr<=nyr;yr++){
+        if(yr == syr+sage){
+          of2<<"rt"<<group<<"_"<<yr;
+        }else{
+          of2<<",rt"<<group<<"_"<<yr;
+        }
+      }
+    }
+    of2<<endl;
+  }
+
+	// Leading parameters & reference points
+	calcReferencePoints();
+
+  // Append the values to the files
+  ofstream ofs("iscam_mcmc.csv",ios::app);
+  for(int group=1;group<=ngroup;group++){
+  	ofs<<exp(theta(1)(group));
+  }
+  for(int group=1;group<=ngroup;group++){
+	  ofs<<","<<theta(2)(group);
+  }
+  for(int gs=1;gs<=n_gs;gs++){
+    ofs<<","<<exp(theta(3)(gs));
+  }
+  for(int ag=1;ag<=n_ag;ag++){
+    ofs<<","<<exp(theta(4)(ag));
+  }
+  for(int ag=1;ag<=n_ag;ag++){
+    ofs<<","<<exp(theta(5)(ag));
+  }
+  for(int group=1;group<=ngroup;group++){
+	  ofs<<","<<theta(6)(group);
+  }
+  for(int group=1;group<=ngroup;group++){
+    ofs<<","<<theta(7)(group);
+  }
+	ofs<<","<<bo;
+  ofs<<","<<bmsy;
+  for(int fleet=1;fleet<=nfleet;fleet++){
+    ofs<<","<<msy(fleet);
+  }
+  for(int fleet=1;fleet<=nfleet;fleet++){
+    ofs<<","<<fmsy(fleet);
+  }
+  for(int it=1;it<=nItNobs;it++){
+	  ofs<<","<<q(it);
+  }
+  for(int group=1;group<=ngroup;group++){
+    ofs<<","<<sbt(group)(nyr);
+  }
+	ofs<<","<<objfun;
+	ofs<<endl;
+
+	// output spawning stock biomass
+	ofstream of1("sbt_mcmc.csv",ios::app);
+  for(int group=1;group<=ngroup;group++){
+    for(int yr=syr;yr<=nyr+1;yr++){
+      if(yr == syr){
+        of1<<sbt(group)(yr);
+      }else{
+        of1<<","<<sbt(group)(yr);
+      }
+    }
+  }
+  of1<<endl;
+
+	// output age-1 recruits
+	ofstream of2("rt_mcmc.csv",ios::app);
+  for(int group=1;group<=ngroup;group++){
+    for(int yr=syr+sage;yr<=nyr;yr++){
+      if(yr == syr+sage){
+        of2<<rt(group)(yr);
+      }else{
+        of2<<","<<rt(group)(yr);
+      }
+    }
+  }
+  of2<<endl;
+
+  ofs.flush();
+  of1.flush();
+  of2.flush();
 // FUNCTION dvector age3_recruitment(const dvector& rt, const double& wt,const double& M)
 //   {
 // 	/*
@@ -4901,11 +4955,6 @@ FUNCTION mcmc_output
 // 	// cout<<"Finished projection model"<<endl;
 //   }
 
-///
-/// \brief Run the managment strategy Evaluation routine
-///
-
-
 FUNCTION void runMSE()
 //    cout<<"Top of runMSE"<<endl;//
 
@@ -5050,9 +5099,6 @@ GLOBALS_SECTION
 		j = 1;
 		for( i = a.indexmin(); i <= a.indexmax(); i++ )
 		{
-			// cout<<"Luke I am your father"<<endl;
-			// cout<<i<<endl;
-			// exit(1);
 			 if(b(i) != NA) n++;
 		}
 		ivector tmp(1,n);
@@ -5066,11 +5112,6 @@ GLOBALS_SECTION
 		
 		return(tmp);
 	}
-
-	void readMseInputs()
-	  {
-	  	cout<<"yep this worked"<<endl;
-	  }
 
 	time_t start,finish;
 	long hour,minute,second;
@@ -5247,7 +5288,6 @@ GLOBALS_SECTION
 	
 	
 FINAL_SECTION
-	cout<<"Here I am "<<endl;
 	time(&finish);
 	elapsed_time=difftime(finish,start);
 	hour=long(elapsed_time)/3600;
@@ -5306,13 +5346,13 @@ FINAL_SECTION
 		
 		if( mcmcEvalPhase )
 		{		
-			bscmd = "cp iscam.mcmc " + BaseFileName + ".mcmc";
+			bscmd = "cp iscam_mcmc.csv " + BaseFileName + "_mcmc.csv";
 			system(bscmd);
 		
-			bscmd = "cp sbt.mcmc " + BaseFileName + ".mcst";
+			bscmd = "cp sbt_mcmc.csv " + BaseFileName + "_mcmcsbt.csv";
 			system(bscmd);
 		
-			bscmd = "cp rt.mcmc " + BaseFileName + ".mcrt";
+			bscmd = "cp rt_mcmc.csv " + BaseFileName + "_mcmcrt.csv";
 			system(bscmd);
 			
 			ofstream mcofs(ReportFileName,ios::app);
@@ -5356,13 +5396,13 @@ FINAL_SECTION
 		
 		if( mcmcEvalPhase )
 		{		
-			bscmd = "copy iscam.mcmc " + BaseFileName + ".mcmc";
+			bscmd = "copy iscam_mcmc.csv " + BaseFileName + "_mcmc.csv";
 			system(bscmd);
 		
-			bscmd = "copy sbt.mcmc " + BaseFileName + ".mcst";
+			bscmd = "copy sbt_mcmc.csv " + BaseFileName + "_mcmcsbt.csv";
 			system(bscmd);
 		
-			bscmd = "copy rt.mcmc " + BaseFileName + ".mcrt";
+			bscmd = "copy rt_mcmc.csv " + BaseFileName + "_mcmcrt.csv";
 			system(bscmd);
 		
 			cout<<"Copied MCMC Files"<<endl;

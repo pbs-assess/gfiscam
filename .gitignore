@@ -44,6 +44,8 @@ dist/
 *.hst
 *.mc2
 *.mcm
+*.csv
+sims
 
 # Latex Stuff
 *.aux

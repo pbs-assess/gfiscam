@@ -4535,49 +4535,45 @@ REPORT_SECTION
 // 	}
 // 	// cout<<"Ok to here"<<endl;
 //   }
-	
+
 FUNCTION generate_new_files
-   {
-
-   	ofstream rd("RUN.dat");
-		rd<<NewFileName + ".dat"<<endl;
-		rd<<NewFileName + ".ctl"<<endl;
-		rd<<NewFileName + ".pfc"<<endl;
-	exit(1);
+  ofstream rd("RUN.dat");
+  rd<<NewFileName + ".dat"<<endl;
+  rd<<NewFileName + ".ctl"<<endl;
+  rd<<NewFileName + ".pfc"<<endl;
+  exit(1);
 
 
-	#if defined __APPLE__ || defined __linux
+  #if defined __APPLE__ || defined __linux
 
-	adstring bscmddat = "cp ../lib/iscam.dat" + NewFileName +".dat";
-		system(bscmddat);
+    adstring bscmddat = "cp ../lib/iscam.dat" + NewFileName +".dat";
+    system(bscmddat);
 
-	adstring bscmdctl = "cp ../lib/ iscam.ctl" + NewFileName +".ctl";
-		system(bscmdctl);
+    adstring bscmdctl = "cp ../lib/ iscam.ctl" + NewFileName +".ctl";
+    system(bscmdctl);
 
-	adstring bscmdpfc = "cp ../lib/ iscam.PFC" + NewFileName +".pfc";
-		system(bscmdpfc);	
+    adstring bscmdpfc = "cp ../lib/ iscam.PFC" + NewFileName +".pfc";
+    system(bscmdpfc);	
 
-	#endif
+  #endif
 
-	#if defined _WIN32 || defined _WIN64
+  #if defined _WIN32 || defined _WIN64
 
-	adstring bscmddat = "copy ../lib/iscam.dat" + NewFileName +".dat";
-		system(bscmddat);
+    adstring bscmddat = "copy ../lib/iscam.dat" + NewFileName +".dat";
+    system(bscmddat);
 
-	adstring bscmdctl = "copy ../lib/ iscam.ctl" + NewFileName +".ctl";
-		system(bscmdctl);
+    adstring bscmdctl = "copy ../lib/ iscam.ctl" + NewFileName +".ctl";
+    system(bscmdctl);
 
-	adstring bscmdpfc = "copy ../lib/ iscam.PFC" + NewFileName +".pfc";
-		system(bscmdpfc);	
+    adstring bscmdpfc = "copy ../lib/ iscam.PFC" + NewFileName +".pfc";
+    system(bscmdpfc);	
 
-	#endif
-
-  }
+  #endif
 
 FUNCTION mcmc_output
-	if(nf==1){
+  if(nf==1){
     // Open the files and write the headers
-		ofstream ofs("iscam_mcmc.csv");
+    ofstream ofs("iscam_mcmc.csv");
     // The structure for these objects can be found at roughly lines 924 and 1409.
     // they are set up as vector_vectors to increase dimensionality
     // for the split sex case and also for areas and groups
@@ -4589,41 +4585,41 @@ FUNCTION mcmc_output
       ofs<<"ro_gr"<<group;
     }
     for(int group=1;group<=ngroup;group++){
-  	  ofs<<","<<"h_gr"<<group;
+      ofs<<","<<"h_gr"<<group;
     }
     for(int gs=1;gs<=n_gs;gs++){
       ofs<<","<<"m_gs"<<gs;
     }
     for(int ag=1;ag<=n_ag;ag++){
-		  ofs<<","<<"rbar_ag"<<ag;
+      ofs<<","<<"rbar_ag"<<ag;
     }
     for(int ag=1;ag<=n_ag;ag++){
-		  ofs<<","<<"rinit_ag"<<ag;
+      ofs<<","<<"rinit_ag"<<ag;
     }
     for(int group=1;group<=ngroup;group++){
       ofs<<","<<"rho_gr"<<group;
     }
     for(int group=1;group<=ngroup;group++){
-		  ofs<<","<<"vartheta_gr"<<group;
+      ofs<<","<<"vartheta_gr"<<group;
     }
-		ofs<<","<<"bo";
-		ofs<<","<<"bmsy";
-		for(int fleet=1;fleet<=nfleet;fleet++){
+    ofs<<","<<"bo";
+    ofs<<","<<"bmsy";
+    for(int fleet=1;fleet<=nfleet;fleet++){
       ofs<<","<<"msy"<<fleet;
     }
-		for(int fleet=1;fleet<=nfleet;fleet++){
+    for(int fleet=1;fleet<=nfleet;fleet++){
       ofs<<","<<"fmsy"<<fleet;
     }
-		for(int i=1;i<=nItNobs;i++){
+    for(int i=1;i<=nItNobs;i++){
       ofs<<","<<"q"<<i;
     }
     for(int group=1;group<=ngroup;group++){
       ofs<<","<<"SSB"<<group;
     }
-		ofs<<","<<"f";
-		ofs<<endl;
+    ofs<<","<<"f";
+    ofs<<endl;
 
-	  ofstream of1("iscam_sbt_mcmc.csv");
+    ofstream of1("iscam_sbt_mcmc.csv");
     for(int group=1;group<=ngroup;group++){
       for(int yr=syr;yr<=nyr+1;yr++){
         if(yr == syr){
@@ -4635,7 +4631,7 @@ FUNCTION mcmc_output
     }
     of1<<endl;
 
-		ofstream of2("iscam_rt_mcmc.csv");
+    ofstream of2("iscam_rt_mcmc.csv");
     for(int group=1;group<=ngroup;group++){
       for(int yr=syr+sage;yr<=nyr;yr++){
         if(yr == syr+sage){
@@ -4647,7 +4643,7 @@ FUNCTION mcmc_output
     }
     of2<<endl;
 
-		ofstream of3("iscam_ft_mcmc.csv");
+    ofstream of3("iscam_ft_mcmc.csv");
     for(int ag=1;ag<=n_ags;ag++){
       for(int gear=1;gear<=ngear;gear++){
         for(int yr=syr;yr<=nyr;yr++){
@@ -4662,16 +4658,16 @@ FUNCTION mcmc_output
     of3<<endl;
   }
 
-	// Leading parameters & reference points
-	calcReferencePoints();
+  // Leading parameters & reference points
+  calcReferencePoints();
 
   // Append the values to the files
   ofstream ofs("iscam_mcmc.csv",ios::app);
   for(int group=1;group<=ngroup;group++){
-  	ofs<<exp(theta(1)(group));
+    ofs<<exp(theta(1)(group));
   }
   for(int group=1;group<=ngroup;group++){
-	  ofs<<","<<theta(2)(group);
+    ofs<<","<<theta(2)(group);
   }
   for(int gs=1;gs<=n_gs;gs++){
     ofs<<","<<exp(theta(3)(gs));
@@ -4683,12 +4679,12 @@ FUNCTION mcmc_output
     ofs<<","<<exp(theta(5)(ag));
   }
   for(int group=1;group<=ngroup;group++){
-	  ofs<<","<<theta(6)(group);
+    ofs<<","<<theta(6)(group);
   }
   for(int group=1;group<=ngroup;group++){
     ofs<<","<<theta(7)(group);
   }
-	ofs<<","<<bo;
+  ofs<<","<<bo;
   ofs<<","<<bmsy;
   for(int fleet=1;fleet<=nfleet;fleet++){
     ofs<<","<<msy(fleet);
@@ -4697,16 +4693,16 @@ FUNCTION mcmc_output
     ofs<<","<<fmsy(fleet);
   }
   for(int it=1;it<=nItNobs;it++){
-	  ofs<<","<<q(it);
+    ofs<<","<<q(it);
   }
   for(int group=1;group<=ngroup;group++){
     ofs<<","<<sbt(group)(nyr);
   }
-	ofs<<","<<objfun;
-	ofs<<endl;
+  ofs<<","<<objfun;
+  ofs<<endl;
 
-	// output spawning stock biomass
-	ofstream of1("iscam_sbt_mcmc.csv",ios::app);
+  // output spawning stock biomass
+  ofstream of1("iscam_sbt_mcmc.csv",ios::app);
   for(int group=1;group<=ngroup;group++){
     for(int yr=syr;yr<=nyr+1;yr++){
       if(yr == syr){
@@ -4718,8 +4714,8 @@ FUNCTION mcmc_output
   }
   of1<<endl;
 
-	// output age-1 recruits
-	ofstream of2("iscam_rt_mcmc.csv",ios::app);
+  // output age-1 recruits
+  ofstream of2("iscam_rt_mcmc.csv",ios::app);
   for(int group=1;group<=ngroup;group++){
     for(int yr=syr+sage;yr<=nyr;yr++){
       if(yr == syr+sage){
@@ -4731,8 +4727,8 @@ FUNCTION mcmc_output
   }
   of2<<endl;
 
-	// output fishing mortality
-	ofstream of3("iscam_ft_mcmc.csv",ios::app);
+  // output fishing mortality
+  ofstream of3("iscam_ft_mcmc.csv",ios::app);
   for(int ag=1;ag<=n_ags;ag++){
     for(int gear=1;gear<=ngear;gear++){
       for(int yr=syr;yr<=nyr;yr++){
@@ -4757,17 +4753,17 @@ FUNCTION mcmc_output
 // 	This routine returns the poor average and good age-3 recruits
 // 	that is used in constructing the decision table for the pacific
 // 	herring fisheries.
-	
+
 // 	-1) sort the rt vector from small to large
 // 	-2) find the 33rd and 66th percentiles
 // 	-3) take the averge of the 0-33, 34-66, 67-100
 // 	-4) multiply by the average weight
 // 	-5) return the age-3 recruitment biomass
 // 	*/
-	
+
 // 	dvector s_rt = sort(rt);
 // 	dvector rbar(1,3);
-	
+
 // 	double idx = floor((nyr-syr+1.)/3.);
 // 	int ix1 = syr+int(idx);
 // 	int ix2 = syr+int(2.*idx);

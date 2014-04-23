@@ -4181,8 +4181,7 @@ FUNCTION dvector ifdSelex(const dvector& va, const dvector& ba, const double& mp
   }
 
 REPORT_SECTION
-  
-  	cout<<"You got here"<<endl;
+
 	if(verbose)cout<<"Start of Report Section..."<<endl;
 	report<<DataFile<<endl;
 	report<<ControlFile<<endl;
@@ -4647,6 +4646,20 @@ FUNCTION mcmc_output
       }
     }
     of2<<endl;
+
+		ofstream of3("iscam_ft_mcmc.csv");
+    for(int ag=1;ag<=n_ags;ag++){
+      for(int gear=1;gear<=ngear;gear++){
+        for(int yr=syr;yr<=nyr;yr++){
+          if(yr == syr){
+            of3<<"ft"<<ag<<"_gear"<<gear<<"_"<<yr;
+          }else{
+            of3<<",ft"<<ag<<"_gear"<<gear<<"_"<<yr;
+          }
+        }
+      }
+    }
+    of3<<endl;
   }
 
 	// Leading parameters & reference points
@@ -4718,9 +4731,26 @@ FUNCTION mcmc_output
   }
   of2<<endl;
 
+	// output fishing mortality
+	ofstream of3("iscam_ft_mcmc.csv",ios::app);
+  for(int ag=1;ag<=n_ags;ag++){
+    for(int gear=1;gear<=ngear;gear++){
+      for(int yr=syr;yr<=nyr;yr++){
+        if(yr == syr){
+          of3<<ft(ag)(gear)(yr);
+        }else{
+          of3<<","<<ft(ag)(gear)(yr);
+        }
+      }
+    }
+  }
+  of3<<endl;
+
   ofs.flush();
   of1.flush();
   of2.flush();
+  of3.flush();
+
 // FUNCTION dvector age3_recruitment(const dvector& rt, const double& wt,const double& M)
 //   {
 // 	/*

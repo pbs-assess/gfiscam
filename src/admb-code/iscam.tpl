@@ -5116,13 +5116,13 @@ GLOBALS_SECTION
 	#include "lib/baranov.h"
   #include "lib/LogisticNormal.h"
 	#include "Selex.h"
-	#if defined _WIN32 || defined _WIN64
+	//#if defined _WIN32 || defined _WIN64
 	#include "lib/msy.cpp"
 	#include "lib/baranov.cpp"
 	#include "lib/LogisticNormal.cpp"
 	#include "lib/LogisticStudentT.cpp"
 	#include "OpMod.h"
-  #endif
+  //#endif
 	ivector getIndex(const dvector& a, const dvector& b)
 	{
 		int i,j,n;
@@ -5373,7 +5373,6 @@ FINAL_SECTION
 			mcofs.close();
 			cout<<"Copied MCMC Files"<<endl;
 		}
-	}
 
 	if( last_phase() && retro_yrs )
 	{

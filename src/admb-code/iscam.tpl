@@ -4644,14 +4644,16 @@ FUNCTION mcmc_output
     of2<<endl;
 
     ofstream of3("iscam_ft_mcmc.csv");
+    int iter = 1;
     for(int ag=1;ag<=n_ags;ag++){
       for(int gear=1;gear<=ngear;gear++){
         for(int yr=syr;yr<=nyr;yr++){
-          if(yr == syr){
+          if(iter == 1){
             of3<<"ft"<<ag<<"_gear"<<gear<<"_"<<yr;
           }else{
             of3<<",ft"<<ag<<"_gear"<<gear<<"_"<<yr;
           }
+          iter++;
         }
       }
     }
@@ -4729,14 +4731,16 @@ FUNCTION mcmc_output
 
   // output fishing mortality
   ofstream of3("iscam_ft_mcmc.csv",ios::app);
+  int iter = 1;
   for(int ag=1;ag<=n_ags;ag++){
     for(int gear=1;gear<=ngear;gear++){
       for(int yr=syr;yr<=nyr;yr++){
-        if(yr == syr){
+        if(iter == 1){
           of3<<ft(ag)(gear)(yr);
         }else{
           of3<<","<<ft(ag)(gear)(yr);
         }
+        iter++;
       }
     }
   }

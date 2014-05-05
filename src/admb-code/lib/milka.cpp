@@ -248,7 +248,7 @@ void OperatingModel::initParameters()
 
     m_n_A_nobs.allocate(1,nAgears);
     m_n_A_nobs.initialize();
-    for( k = 1; k <= nAgears; k++ )
+    for( int k = 1; k <= nAgears; k++ )
     {
         if(n_A_nobs(k) > 0)
         {
@@ -270,7 +270,7 @@ void OperatingModel::initParameters()
 
     m_nWtNobs.allocate(1,nWtTab);
     m_nWtNobs.initialize();
-    for( k = 1; k <= nWtTab; k++ )
+    for( int k = 1; k <= nWtTab; k++ )
     {
         if( nWtNobs(k) > 0 )
         {
@@ -762,7 +762,7 @@ void OperatingModel::implementFisheries(const int &iyr)
                 {
                     int kk = nFleetIndex(k);
                     int hh = m_nCSex(k);   // flag for sex
-                    for( h = 1; h <= hh+1; h++ )
+                    for( int h = 1; h <= hh+1; h++ )
                     {
                         m_irow ++;
                         m_dCatchData(m_irow,1) = iyr;
@@ -945,7 +945,7 @@ void OperatingModel::calcCompositionData(const int& iyr)
                     }
                     
                     int hh = m_nASex(k);   // flag for sex
-                    for( h = 1; h <= hh+1; h++ )
+                    for( int h = 1; h <= hh+1; h++ )
                     {
                         cout<<hh<<endl;
                         m_A_irow(k) ++;
@@ -1196,7 +1196,7 @@ void OperatingModel::writeDataFile(const int& iyr)
         dfs<<"#Empirical weight-at-age data"    <<endl;
         dfs<< nWtTab                    <<endl;
         ivector tmp_nWtNobs(1,nWtTab);
-        for( k = 1; k <= nWtTab; k++ )
+        for( int k = 1; k <= nWtTab; k++ )
         {
             if(nWtNobs(k) > 0)
                 tmp_nWtNobs(k)= nWtNobs(k) + (iyr-nyr) + (iyr-nyr) * m_nWSex(k);
@@ -1261,7 +1261,7 @@ void OperatingModel::runStockAssessment()
 
         #if defined _WIN32 || defined _WIN64
 
-        system("iscam.exe -ind mseRUN.dat")
+        system("iscam.exe -ind mseRUN.dat");
 
         #endif
 }

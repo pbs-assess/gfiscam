@@ -405,7 +405,7 @@ DATA_SECTION
 	ivector fsh_flag(1,ngear);
 	LOC_CALCS
 		dAllocation = dAllocation/sum(dAllocation);
-		for(k=1;k<=ngear;k++)
+		for(int k=1;k<=ngear;k++)
 		{
 			if(dAllocation(k)>0)
 				fsh_flag(k)=1;
@@ -418,7 +418,7 @@ DATA_SECTION
 	ivector nFleetIndex(1,nfleet);
 	LOC_CALCS
 		j = 1;
-		for(k=1; k<=ngear;k++)
+		for(int k=1; k<=ngear;k++)
 		{
 			if(fsh_flag(k)) nFleetIndex(j++) = k;
 		}
@@ -526,7 +526,7 @@ DATA_SECTION
 		cout<<"| ----------------------- |\n"<<endl;
 		}
 		d3_Ct.initialize();
-		
+		int k;
 		for(int ii=1;ii<=nCtNobs;ii++)
 		{
 			i = dCatchData(ii)(1);
@@ -580,14 +580,14 @@ DATA_SECTION
 		cout<<d3_survey_data(nItNobs).sub(n_it_nobs(nItNobs)-3,n_it_nobs(nItNobs))<<endl;
 		cout<<"| ----------------------- |\n"<<endl;
 		}
-		for(k=1;k<=nItNobs;k++)
+		for(int k=1;k<=nItNobs;k++)
 		{
 			it_wt(k) = column(d3_survey_data(k),7) + 1.e-30;
 			it_grp(k)= column(d3_survey_data(k),5);
 			nSurveyIndex(k) = d3_survey_data(k)(1,3);
 		}
 		double tmp_mu = mean(it_wt);
-		for(k=1;k<=nItNobs;k++)
+		for(int k=1;k<=nItNobs;k++)
 		{
 			it_wt(k) = it_wt(k)/tmp_mu;
 		}
@@ -4121,7 +4121,7 @@ FUNCTION void simulationModel(const long& seed)
 	// | - A is the matrix of observed catch-age data.
 	// | - A_hat is the predicted matrix from which to draw samples.
 	// |
-	int kk,aa,AA;
+	int k, kk, aa, AA;
 	double age_tau = value(sig(1));
 	
 	calcComposition();
@@ -5259,7 +5259,7 @@ GLOBALS_SECTION
 	*/
 	#undef REPORT
 	#define REPORT(object) report << #object "\n" << object << endl;
-    
+
 	#undef COUT
 	#define COUT(object) cout << #object "\n" << object <<endl;
 
@@ -5275,15 +5275,21 @@ GLOBALS_SECTION
 	#include "lib/msy.h"
 	#include "lib/msy.hpp"
 	#include "lib/baranov.h"
-    #include "lib/LogisticNormal.h"
-    #include "lib/milka.h"
-    #include "lib/multinomial.h"
+  #include "lib/LogisticNormal.h"
+  #include "lib/milka.h"
+  #include "lib/multinomial.h"
 	#include "Selex.h"
-	// #include "lib/msy.cpp"
-	// #include "lib/baranov.cpp"
-	// #include "lib/LogisticNormal.cpp"
-	// #include "lib/LogisticStudentT.cpp"
-	// #include "OpMod.h"
+
+	#if defined _WIN32 || defined _WIN64
+	#include "lib/LogisticNormal.cpp"
+	#include "lib/LogisticStudentT.cpp"
+	#include "lib/msy.cpp"
+	#include "lib/baranov.cpp"
+	#include "lib/milka.cpp"
+	#include "lib/multinomial.cpp"
+	#include "lib/multivariate_t.cpp"
+	#include "lib/fvar_m58.cpp"
+  #endif
 
 	ivector getIndex(const dvector& a, const dvector& b)
 	{
@@ -5306,10 +5312,10 @@ GLOBALS_SECTION
 		return(tmp);
 	}
 
-	//void readMseInputs()
-	//  {
-	//  	cout<<"yep this worked"<<endl;
-	//  }
+	void readMseInputs()
+	{
+	  	cout<<"yep this worked"<<endl;
+	}
 
 	time_t start,finish;
 	long hour,minute,second;

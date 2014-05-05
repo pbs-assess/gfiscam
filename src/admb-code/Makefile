@@ -14,6 +14,10 @@ SRCS = $(EXEC).cpp               \
 		lib/LogisticStudentT.cpp \
   		lib/msy.cpp 			 \
 		lib/baranov.cpp          \
+		lib/milka.cpp            \
+		lib/multinomial.cpp      \
+		lib/multivariate_t.cpp   \
+		lib/fvar_m58.cpp         \
 			selex.cpp 
 		# OpMod.cpp    		
 OBJS = $(SRCS:.cpp=.o)
@@ -21,7 +25,7 @@ TPLS = $(EXEC).tpl
 DEPS = $(SRCS:.cpp=.depends)
 
 # Export the path to your ADMB dist directory
-export ADMB_HOME=/Users/catarinawor/admb-trunk/build/dist
+export ADMB_HOME=/Users/stevenmartell1/admb-trunk/build/dist
 
 # establish the C++ compiler (on Mac OSX use clang++)
 CC=clang

@@ -16,7 +16,7 @@
 7
 ## ival         	lb    ub      phz		prior  p1      		p2   		#parameter   ##
 	1.6   			-1.0 	4       4 		0     -1.0    		4.0  		#log_ro    	 ##
-	0.88  			 0.2    1.0     4 		3     9.909 		2.959 			#steepness   ##
+	0.88  			 0.2    1.0     4 		3     9.909 		2.959 		#steepness   ##
 	-1.6 			-5.0   	0.0    -3 		1     -1.609  	 	0.1 		#log_m g&b   ##
 	1.9   			-5.0    15      1 		0     -5.0    		15   		#log_avgrec  ##
 	1.0   			-5.0    15      1 		0     -1.0    		4.0   		#log_recinit ##
@@ -35,15 +35,15 @@
 ##     -5 : logistic_normal, AR2
 ## ------------------------------------------------------------------------- ##
 ## Number of columns == na_gears.
-1  		 2 	   3               ## Gear Index
+1  		 2 	   3              ## Gear Index
 2  		 2     2              ## Likelihood type?
-0.000 	 0.000 	0.000               ## Minimum proportion for aggregation & tail compression
-0.0000   0.0000  0.0000              ## Small constant to add to comps & renormalize
--1  -1  -1                      ## phase for log_age_tau2 estimation.
--2  -2  -2                     ## phase for phi1 estimation: bounded (-1,1) AR1
--2  -2  -2                     ## phase for phi2 estimation: bounded (0,1)  AR2 
--2  -2  -2                   ## phase for degrees of freedom for student T.
--12345                   	 ## int check (-12345)
+0.000 	 0.000 	0.000         ## Minimum proportion for aggregation & tail compression
+0.0000   0.0000  0.0000       ## Small constant to add to comps & renormalize
+-1  -1  -1                    ## phase for log_age_tau2 estimation.
+-2  -2  -2                    ## phase for phi1 estimation: bounded (-1,1) AR1
+-2  -2  -2                    ## phase for phi2 estimation: bounded (0,1)  AR2 
+-2  -2  -2                    ## phase for degrees of freedom for student T.
+-12345                   	  ## int check (-12345)
 ## ------------------------------------------------------------------------- ##
 
 ##
@@ -63,7 +63,7 @@
 ##      sig=0.05 0.10 0.15 0.20 0.30 0.40 0.50                               ##
 ##      wt =200. 50.0 22.2 12.5 5.56 3.12 2.00                               ##
 ## ------------------------------------------------------------------------- ##
-	1 	4 	1	        # 1  -selectivity type ivector(isel_type) for gear
+	2 	4 	1	        # 1  -selectivity type ivector(isel_type) for gear
 	3.5	3.5	2.5	        # 2  -Age/length at 50% selectivity (logistic)
 	0.45 0.45 0.45 	        # 3  -STD at 50% selectivity (logistic)
 	4 5	5				# 4  -No. of age nodes for each gear (0=ignore)
@@ -110,7 +110,7 @@
 0.1         # 11 -std in deviations for natural mortality
 12          # 12 -number of estimated nodes for deviations in natural mortality
 0.0         # 13 -fraction of total mortality that takes place prior to spawning
-1           # 14 -switch for age-composition likelihood (1=dmvlogistic,2=dmultinom)
+0           # 14 -number of prospective years to add to syr.
 1           # 15 -switch for IFD distribution in selectivity simulations
 ##
 ## ------------------------------------------------------------------------- ##

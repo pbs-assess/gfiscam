@@ -5,9 +5,9 @@
 ##		mcmc:  -copy executable and run in mcmc mode and mceval
 ##		retro: -copy executable and run  retrospective analysis
 EXEC=iscam
-prefix=../../../../dist
+prefix=../../../dist
 DAT=RUN.dat
-CTL=Halibut2014
+CTL=PcodLength
 ARG=
 MCFLAG=-mcmc 10000 -mcsave 100 -nosdmcmc
 NR=4

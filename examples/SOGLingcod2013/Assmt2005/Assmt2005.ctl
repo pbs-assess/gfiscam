@@ -64,6 +64,14 @@
 ##      wt =200. 50.0 22.2 12.5 5.56 3.12 2.00                               ##
 ## ------------------------------------------------------------------------- ##
 <<<<<<< Temporary merge branch 1
+6	6	7	6	6   	# 1  -selectivity type ivector(isel_type) for gear
+4.45	2	3600	4.45	2       # 2  -Age at 50% selectivity (logistic)
+0.2	0.2	360	0.2	0.2     # 3  -STD at 50% selectivity (logistic)
+0	0	0	0	0       # 4  -No. of age nodes for each gear (0=ignore)
+0	0	0	0	0       # 5  -No. of year nodes for 2d spline(0=ignore)
+-0	-0	-0	-1	-2      # 6  -Phase of estimation (-1 for fixed)
+=======
+<<<<<<< HEAD
 6	   6	 7	  6 	 6   	# 1  -selectivity type ivector(isel_type) for gear
 4.45 2	 3600	4.45 2       # 2  -Age at 50% selectivity (logistic)
 0.2	 0.2 360	0.2	 0.2     # 3  -STD at 50% selectivity (logistic)
@@ -72,11 +80,12 @@
 -0	-0	 -0	 -1	  -2      # 6  -Phase of estimation (-1 for fixed)
 =======
 6	6	11	6	6   	# 1  -selectivity type ivector(isel_type) for gear
-4.45	2	3600	4.45	2       # 2  -Age at 50% selectivity (logistic)
-0.2	0.2	360	0.2	0.2     # 3  -STD at 50% selectivity (logistic)
+4.45	2	700	4.45	2       # 2  -Age at 50% selectivity (logistic)
+0.2	0.2	70	0.2	0.2     # 3  -STD at 50% selectivity (logistic)
 0	0	0	0	0       # 4  -No. of age nodes for each gear (0=ignore)
 0	0	0	0	0       # 5  -No. of year nodes for 2d spline(0=ignore)
 -0	-0	-0	-1	-2      # 6  -Phase of estimation (-1 for fixed)
+>>>>>>> smartell/IPHC-developer
 >>>>>>> Temporary merge branch 2
 2	2	2	2	2	# 7  -Penalty wt for 2nd differences w=1/(2*sig^2)
 2 	2	2	2	2	# 8  -Penalty wt for dome-shaped w=1/(2*sig^2)
@@ -121,7 +130,7 @@
 0.1         # 11 -std in deviations for natural mortality
 12          # 12 -number of estimated nodes for deviations in natural mortality
 0.50        # 13 -fraction of total mortality that takes place prior to spawning
-1           # 14 -switch for age-composition likelihood (1=dmvlogistic,2=dmultinom)
+0           # 14 -number of prospective years to add to syr.
 0           # 15 -switch for IFD distribution in selectivity simulations
 ##
 ## ------------------------------------------------------------------------- ##

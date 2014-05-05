@@ -17,6 +17,9 @@
 
 namespace rfp {
 
+
+
+
 	/**
 	 * @brief Base class for reference point calculations
 	 * @details The base class for MSY and SPR-based reference point 
@@ -78,6 +81,7 @@ namespace rfp {
 		T m_rho;	    /// Fraction of mortality that occurs before spawning.
 		T m_phie;		/// Spawning biomass per recruit in unfished conditions.
 		T m_phif;		/// Spawning biomass per recruit in fished conditions.
+		T m_spr;        /// Spawning potential ratio.
 		T m_bmsy;		/// Spawning biomass at MSY
 		T m_dYe;		/// Derivative of total yield.
 		T m_d2Ye;		/// Second derivative of total yield.
@@ -87,7 +91,10 @@ namespace rfp {
 		T1 m_fmsy;      /// Fishing mortality rate at MSY
 		T1 m_fstp;		/// Newton step size
 		T1 m_ye;		/// Equilibrium yield for each gear.
+		T1 m_phiq;		/// Per recruit Yield.
 		T1 m_dye;		/// Derivative of catch equation for each gear.
+		T1 m_dre;		/// Partial derivative of recruitment with respect to fe
+		T1 m_dphiq;     /// Partial derivative for per recruit yield.
 		T1 m_msy;		/// Maximum Sustainable yield for each gear.
 		T1 m_allocation;/// Allocation of ye to each gear.
 		T1 m_ak;        /// Input allocation.
@@ -149,6 +156,7 @@ namespace rfp {
 		//virtual const T1 getdYe()  {return m_dYe; }
 		
 		void print();
+		void checkDerivatives(const T1 & fe);
 		
 	};
 
@@ -166,12 +174,12 @@ namespace rfp {
 		cout<<"| MSY        = "<<setw(10)<<m_msy             <<endl;
 		cout<<"| ∑MSY       = "<<setw(10)<<sum(m_msy)        <<endl;
 		cout<<"| Allocation = "<<setw(10)<<m_allocation      <<endl;
+		cout<<"| SPR        = "<<setw(10)<<m_spr             <<endl;
 		cout<<"|------------------------------------------|" <<endl;
 		cout<<"| DIAGNOSTICS                              |" <<endl;
 		cout<<"|------------------------------------------|" <<endl;
 		cout<<"| dye/dfe    = "<<setw(10)<<m_dye             <<endl;
 		cout<<"| ∑dye/dfe   = "<<setw(10)<<m_dYe             <<endl;
-		// cout<<"| SPR  = "<<setw(10)<<m_spr                   <<endl;
 		// cout<<"| BPR  = "<<setw(10)<<m_phie                  <<endl;
 		// cout<<"| bpr  = "<<setw(10)<<m_phif                  <<endl;
 		// cout<<"| dYes = "<<setw(10)<<sum(m_f)                <<endl;
@@ -179,6 +187,68 @@ namespace rfp {
 		cout<<"|------------------------------------------|" <<endl;
 	}
 
+	/**
+	 * @brief Check the derivative calculations.
+	 * @details Numerically check the analytical partial derivative calculations.
+	 * 
+	 * @param fe vector of fishing mortality rates.
+	 * @tparam T double
+	 * @tparam T2 matrix
+	 * @return Prints Table of analytical & numerical derivatives.
+	 */
+	template<class T, class T1, class T2,class T3>
+	void msy<T,T1,T2,T3>::checkDerivatives(const T1& fe)
+	{
+		double hh = 1.0e-9;
+		double r1,r2;
+		dvector y1(1,m_nGear);
+		dvector y2(1,m_nGear);
+		dvector fh(1,m_nGear);
+		dvector q1(1,m_nGear);
+		dvector q2(1,m_nGear);
+
+		calcEquilibrium(fe);
+		y1 = m_ye;
+		r1 = m_re;
+		q1 = m_phiq;
+
+		
+		for(int k = 1; k <= m_nGear; k++ )
+		{
+			
+			fh = fe;
+			fh(k) += hh;
+			calcEquilibrium(fh);
+			y2 = (m_ye - y1)/hh;
+			r2 = (m_re - r1)/hh;
+			q2 = (m_phiq - q1)/hh;
+
+
+			cout<<"|———————————————————————————————————————————————————————|" <<endl;
+			cout<<"| Gear "<<k<<" fe\t"<<fe(k)<<endl;
+			cout<<"| Variable"<<setw(15)<<std::setfill(' ')
+				<<"Numerical" <<setw(15)<<std::setfill(' ')
+				<<"Analytical"<<setw(15)<<std::setfill(' ')
+				<<"Difference"<<endl;
+			cout<<"|———————————————————————————————————————————————————————|" <<endl;
+			cout<<"| dye/dfe "         <<setw(15)
+					<<y2(k)            <<setw(15)
+					<<m_dye(k)         <<setw(15)
+					<<y2(k)-m_dye(k)   <<endl;
+			cout<<"| dre/dfe "         <<setw(15)
+					<<r2               <<setw(15)
+					<<m_dre(k)         <<setw(15)
+					<<r2-m_dre         <<endl;
+			cout<<"| dphiq/dfe"        <<setw(15)
+					<<q2(k)            <<setw(15)
+					<<m_dphiq(k)       <<setw(15)
+					<<q2(k)-m_dphiq(k) <<endl;
+
+			// cout<<setprecision(10)<<fe<<endl<<fh<<endl<<hh<<endl;
+		}
+		cout<<"|———————————————————————————————————————————————————————|" <<endl;
+
+	}
 
 	/**
 	 * @brief Calculate Fmsy given fixed allocation.
@@ -217,8 +287,8 @@ namespace rfp {
 
 			// fbar = fbar - m_dYe/m_d2Ye;
 			fbar -= m_fbar_stp;
-			cout<<iter<<" fbar "<<fbar<<" dYe "<<m_dYe<<" fk "<<fk;
-			cout<<" lambda = "<<lambda<<" ak = "<<m_ye/sum(m_ye)<<endl;
+			// cout<<iter<<" fbar "<<fbar<<" dYe "<<m_dYe<<" fk "<<fk;
+			// cout<<" lambda = "<<lambda<<" ak = "<<m_ye/sum(m_ye)<<endl;
 
 			// Backtrack if necessary;
 			if( (lb-fbar)*(fbar-ub) < 0.0 )
@@ -349,8 +419,8 @@ namespace rfp {
 			}
 
 			// Survivorship
-			lz(h)(m_sage) = 1.0;//m_nGrp;
-			lw(h)(m_sage) = 1.0;//m_nGrp * psa(m_sage);
+			lz(h)(m_sage) = 1.0/m_nGrp;
+			lw(h)(m_sage) = 1.0/m_nGrp * psa(m_sage);
 			for( j = m_sage+1; j <= m_nage; j++ )
 			{
 				lz(h,j) = lz(h,j-1) * sa(h,j-1);
@@ -406,6 +476,7 @@ namespace rfp {
 
 			// Spawning biomass per recruit in fished conditions.
 			phif += lz(h) * m_Fa(h);
+			// phif += lw(h) * m_Fa(h);
 
 		} // m_nGrp
 		m_phif  = phif;
@@ -431,8 +502,8 @@ namespace rfp {
 			{
 				dphif(k)  += dlz_m(h)(k)  * m_Fa(h);
 				d2phif(k) += d2lz_m(h)(k) * m_Fa(h);
-				//dphif(k)   += dlw_m(h)(k)  * m_Fa(h);
-				//d2phif(k)  += d2lw_m(h)(k) * m_Fa(h);
+				// dphif(k)   += dlw_m(h)(k)  * m_Fa(h);
+				// d2phif(k)  += d2lw_m(h)(k) * m_Fa(h);
 
 				// per recruit yield
 				phiq(k)   +=  lz(h) * qa_m(h)(k);
@@ -478,7 +549,10 @@ namespace rfp {
 				} // m_nGear kk loop
 			} // m_nGear k loop
 		} // m_nGrp
+		m_phiq  = phiq;
+		m_dphiq = diagonal(dphiq);
 		
+
 		// 1st & 2nd partial derivatives for recruitment
 		T phif2 = square(m_phif);
 		T kappa = 4.0*m_h/(1.-m_h);
@@ -489,6 +563,7 @@ namespace rfp {
 			d2re(k)     = -2.*m_ro*m_phie*dphif(k)*dphif(k)/(phif2*phif*km1) 
 						+ m_ro*m_phie*d2phif(k)/(phif2*km1);		
 		}	
+		m_dre = dre;
 
 		// Equilibrium calculations
 		T    re;
@@ -501,18 +576,24 @@ namespace rfp {
 
 		// Equilibrium recruits, yield and first derivative of ye
 		re   = m_ro*(kappa-m_phie/phif) / km1;
+		re<0?re=0.01:re=re;
 		ye   = re*elem_prod(fe,phiq);
 		be   = re * phif;
 		dye  = re*phiq 
 			  + elem_prod(elem_prod(fe,phiq),dre) 
 			  + re*elem_prod(fe,diagonal(dphiq));
+			  
+
+		// cout<<"dye "<<dye<<endl;
 
 		// Jacobian matrix (2nd derivative of the catch equations)
 		for(j=1; j<=m_nGear; j++)
 		{
 			for(k=1; k<=m_nGear; k++)
 			{
-				d2ye(k)(j) = fe(j)*phiq(j)*d2re(k) + 2.*fe(j)*dre(k)*dphiq(j)(k) + fe(j)*re*d2phiq(j)(k);
+				d2ye(k)(j) = fe(j)*phiq(j)*d2re(k) 
+				             + 2.*fe(j)*dre(k)*dphiq(j)(k) 
+				             + fe(j)*re*d2phiq(j)(k);
 				if(k == j)
 				{
 					d2ye(j)(k) += 2.*dre(j)*phiq(j)+2.*re*dphiq(k)(j);
@@ -532,6 +613,7 @@ namespace rfp {
 		m_dye  = dye;
 		m_dYe  = sum(dye);
 		m_d2Ye = sum(diagonal(d2ye));
+		m_spr  = m_phif/m_phie;
 
 		// Derivative based on fixed allocations
 		// dye_ak = ak*dre*∑(fk*phik) + ak*re*(∑phik + Fi*dphi[i]/dFi + Fj*dphi[j]/dFi)
@@ -610,7 +692,7 @@ namespace rfp {
 		{
 			 for( j = m_sage; j <= m_nage; j++ )
 			 {
-			 	lx(i,j) = exp(-m_Ma(i,j)*(j-m_sage) - m_rho*m_Ma(i,j));
+			 	lx(i,j) = exp(-m_Ma(i,j)*(j-m_sage));// - m_rho*m_Ma(i,j));
 			 	if(j==m_nage) lx(i,j) /= 1.0 -exp(-m_Ma(i,j));
 			 }
 			 m_phie += 1./(m_nGrp) * lx(i) * m_Fa(i);

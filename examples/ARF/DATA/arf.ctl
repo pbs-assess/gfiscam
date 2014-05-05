@@ -32,7 +32,7 @@
 ## Number of columns == na_gears.
    1       2     ## Gear Index
    4       4     ## Likelihood type
-   0.0   0.0     ## Minimum proportion for aggregation & tail compression
+   0.01   0.01     ## Minimum proportion for aggregation & tail compression
    0.0   0.0     ## Small constant to add to comps & renormalize
    1       1     ## phase for log_age_tau2 estimation.
    2       2     ## phase for phi1 estimation: bounded (-1,1) AR1
@@ -43,7 +43,6 @@
 ##
 ## ------------------------------------------------------------------------- ##
 ## SELECTIVITY PARAMETERS Columns for gear                                   ##
-## NB: To mirror another gear, use (-ve) phase with the mirrored gear number.##
 ## OPTIONS FOR SELECTIVITY (isel_type):                                      ##
 ##      1) logistic selectivity parameters                                   ##
 ##      2) selectivity coefficients                                          ##
@@ -104,7 +103,7 @@
   0.1        # 11 -std in deviations for natural mortality
  12          # 12 -number of estimated nodes for deviations in natural mortality
   0.5        # 13 -fraction of total mortality that takes place prior to spawning
-  1          # 14 -Deprecated - switch for age-composition likelihood (1=dmvlogistic,2=dmultinom)
+  0          # 14 -number of prospective years to add to syr.
   0          # 15 -switch for IFD distribution in selectivity simulations
 ##
 ## ------------------------------------------------------------------------- ##

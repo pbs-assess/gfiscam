@@ -1266,7 +1266,7 @@ DATA_SECTION
 		{
 			for( i = 1; i <= n_A_nobs(k); i++ )
 			{
-				int iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
+				iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
 				if( iyr <= nyr ) n_naa(k)++;
 			}
 		}
@@ -1284,15 +1284,28 @@ DATA_SECTION
 
 	!! syr = syr + (int)d_iscamCntrl(14);
 	LOC_CALCS
-		//sel_blocks(1,ngear,1,n_sel_blocks);
-		for(int k = 1; k <= ngear; k++ )
-		{
-			cout<<"Vader is happy"<<endl;
-			readMseInputs();
-			
-			
-			exit(1);
-		}
+	  for(int k = 1; k <= ngear; k++ ){
+      sel_blocks(k)(1) = syr;
+    }
+    if(pf_cntrl(1)<syr) pf_cntrl(1) = syr;
+    if(pf_cntrl(3)<syr) pf_cntrl(3) = syr;
+    if(pf_cntrl(5)<syr) pf_cntrl(5) = syr;
+
+    for( i = 1; i <= nCtNobs; i++ ){
+      if( dCatchData(i)(1) < syr ) ft_count --;
+    }
+
+    // Prospective counter for n_A_nobs
+    n_saa.initialize();
+    n_saa = 1;
+    for( int k = 1; k <= nAgears; k++ ){
+      for( int i = 1; i <= n_A_nobs(k); i++ ){
+        iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
+        if( iyr < syr ){
+          n_saa(k)++;
+        }
+      }
+    }
 	END_CALCS
 	!! COUT((n_saa));
 	!! COUT((n_naa));
@@ -3000,6 +3013,12 @@ FUNCTION calcObjectiveFunction
 					//logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 					if( active(phi1(k)) && !active(phi2(k)) )  // LN2 Model
 					{
+            cout<<"\n\n\n\nLooking at log_age_tau2\n";
+            cout<<log_age_tau2<<endl;
+            cout<<"k="<<k<<", log_age_tau2(k)="<<log_age_tau2<<endl<<endl;
+            cout<<"exp(log_age_tau2(k))="<<exp(log_age_tau2(k))<<endl<<endl;
+            cout<<"phi2(k)="<<phi2(k)<<endl<<endl;
+            cout<<"cLN_Age(expk,phi2k)="<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
 						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));	
 					}
 					if( active(phi1(k)) && active(phi2(k)) )   // LN3 Model
@@ -4429,29 +4448,30 @@ REPORT_SECTION
 		report<<"Neff"<<endl;
 		dvector nscaler(1,nAgears);
 		nscaler.initialize();
+    int naa;
+    int iyr;
 		for(k = 1; k<=nAgears; k++)
 		{
 			if( int(nCompLikelihood(k)) )
 			{
-				int naa=0;
-				int iyr;
+				naa = 0;
 				//retrospective counter
 				for(i=1;i<=n_A_nobs(k);i++)
 				{
 					iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
 					if(iyr<=nyr) naa++; else continue;
 				}
-				
+
 				dmatrix     O = trans(trans(d3_A_obs(k)).sub(n_A_sage(k),n_A_nage(k))).sub(1,naa);
 				dvar_matrix P = trans(trans(A_hat(k)).sub(n_A_sage(k),n_A_nage(k))).sub(1,naa);
-				
+
 				for(j = 1; j<= naa; j++)
 				{
 					double effectiveN = neff(O(j)/sum(O(j)),P(j));
 					report<<sum(O(j))<<"\t"<<effectiveN<<endl;
 					nscaler(k) += effectiveN;
-				}	
-				
+				}
+
 				nscaler(k) /= naa;
 			}
 		}

@@ -8,7 +8,7 @@
 	()             -no args, anompute the MLE of the variance
 	(sig)          -estimate the variance
 	(sig,phi1)     -AR1 process
-	(sig,phi1,phi2)-AR2 procd cess
+	(sig,phi1,phi2)-AR2 process
 
 	TODO:
 

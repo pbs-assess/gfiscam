@@ -3013,12 +3013,12 @@ FUNCTION calcObjectiveFunction
 					//logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 					if( active(phi1(k)) && !active(phi2(k)) )  // LN2 Model
 					{
-            cout<<"\n\n\n\nLooking at log_age_tau2\n";
-            cout<<log_age_tau2<<endl;
-            cout<<"k="<<k<<", log_age_tau2(k)="<<log_age_tau2<<endl<<endl;
-            cout<<"exp(log_age_tau2(k))="<<exp(log_age_tau2(k))<<endl<<endl;
-            cout<<"phi2(k)="<<phi2(k)<<endl<<endl;
-            cout<<"cLN_Age(expk,phi2k)="<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
+            //cout<<"\n\n\n\nLooking at log_age_tau2\n";
+            //cout<<log_age_tau2<<endl;
+            //cout<<"k="<<k<<", log_age_tau2(k)="<<log_age_tau2<<endl<<endl;
+            //cout<<"exp(log_age_tau2(k))="<<exp(log_age_tau2(k))<<endl<<endl;
+            //cout<<"phi1(k)="<<phi1(k)<<endl<<endl;
+            //cout<<"cLN_Age(expk,phi1k)="<<cLN_Age(exp(log_age_tau2(k)),phi1(k))<<endl<<endl;
 						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));	
 					}
 					if( active(phi1(k)) && active(phi2(k)) )   // LN3 Model

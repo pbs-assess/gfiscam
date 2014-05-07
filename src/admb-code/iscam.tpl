@@ -1341,7 +1341,7 @@ DATA_SECTION
 
 INITIALIZATION_SECTION
   theta theta_ival;
-  phi1 0.0;
+  phi1 0.01;
 	
 PARAMETER_SECTION
 	// |---------------------------------------------------------------------------------|

@@ -4331,3 +4331,8 @@ FINAL_SECTION
 	cout<<"*******************************************"<<endl;
 
 	if(mseFlag) runMSE();
+  // This is a hack to avoid a crash which happens on the
+  // natural exit of iscam, due do memory deallocation issues.
+  // This is bad, because it causes a huge memory leak.
+  ad_exit(1);
+

@@ -1,9 +1,0 @@
-# iSCAM View Tracker File 
-"Select","Label","Description","Control File"
-#The following line is for the Demo example
-<<<<<<< Temporary merge branch 1
-FALSE, Arrowtooth, "Arrowtooth Flounder", C:/GitHub/iSCAM/src/admb-code
-TRUE, PCod, "Pacific Cod", C:/GitHub/iSCAM/src/admb-code
-=======
-TRUE,Demo,         "Flack Lake",../DEMO/DATA/ControlTemplate
->>>>>>> Temporary merge branch 2

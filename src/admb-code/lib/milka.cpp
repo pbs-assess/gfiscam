@@ -1255,13 +1255,13 @@ void OperatingModel::runStockAssessment()
 
         #if defined __APPLE__ || defined __linux
         cout<<m_est_fmsy<<endl;
-        system("./iscam -ind mseRUN.dat -nox > /dev/null 2>&1");
+        int tmp = system("./iscam -ind mseRUN.dat -nox > /dev/null 2>&1");
 
         #endif
 
         #if defined _WIN32 || defined _WIN64
 
-        system("iscam.exe -ind mseRUN.dat");
+        int tmp2 = system("iscam.exe -ind mseRUN.dat");
 
         #endif
 }

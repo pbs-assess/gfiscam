@@ -167,14 +167,13 @@ dvariable logistic_normal::operator() (const dvariable &sigma2,const dvariable &
 	m_nll = 0;
 
 	// Get correlation vector rho
-	get_rho(phi,psi);
+	get_rho(phi, psi);
 
 	// Construct covariance (m_V)
 	compute_correlation_array();
 
 	// Compute weighted sum of squares
 	compute_weighted_sumofsquares();
-	
 
 	// estimated variance
 	m_sigma2  = sigma2;// / (1.0-phi);
@@ -192,7 +191,7 @@ dvariable logistic_normal::negative_log_likelihood()
 	// 7) Compute nll_logistic_normal
 	RETURN_ARRAYS_INCREMENT();
 	dvariable nll;
-	
+
 	nll  = 0.5 * log(2.0 * PI) * m_bm1;
 	nll += sum( log(m_Op) );
 	nll += log(m_sigma) * m_bm1;
@@ -273,11 +272,7 @@ void logistic_normal::get_rho(const dvariable &phi, const dvariable &psi)
 	{
 		m_rho(j) = tmp(j);
 	}
-	// cout<<"phi1 "<<phi1<<endl;
-	// cout<<"phi2 "<<phi2<<endl;
-	// cout<<m_rho<<endl;
 }
-
 
 /**
  * Compute the vector of correlation matrixes for each year based on the

@@ -198,7 +198,6 @@ DATA_SECTION
 	int mseFlag;  ///< Flag for management strategy evaluation mode
 	int rseed;    ///< Random number seed for simulated data.
 	int retro_yrs;///< Number of years to look back from terminal year.
-	int NewFiles;
 	int testMSY;
 	LOC_CALCS
 		SimFlag=0;
@@ -213,16 +212,6 @@ DATA_SECTION
 			rseed   = atoi(ad_comm::argv[on+1]);
 		}
 		
-		// Catarina implementing a new command for generating new data control and pfc file
-		// for a new project.
-		NewFiles = 0;
-		if((on=option_match(ad_comm::argc,ad_comm::argv,"-new",opt))>-1)
-		{
-			NewFiles = 1;
-			NewFileName = ad_comm::argv[on+1];
-		}
-
-
 		// command line option for retrospective analysis. "-retro retro_yrs"
 		retro_yrs=0;
 		if((on=option_match(ad_comm::argc,ad_comm::argv,"-retro",opt))>-1)
@@ -1229,7 +1218,6 @@ DATA_SECTION
 	LOC_CALCS
 		verbose = d_iscamCntrl(1);
 		if(verbose) COUT(d_iscamCntrl);
-		
 		for(int ig=1;ig<=n_ags;ig++)
 		{
 			for(int i = syr; i <= nyr; i++)
@@ -1246,11 +1234,8 @@ DATA_SECTION
 			cout<<"\n ***** ERROR CONTROL FILE ***** \n"<<endl; exit(1);
 		}
 	END_CALCS
-	
+
 	int nf;
-	
-	//START_RF_ADD
-	//
 	// |---------------------------------------------------------------------------------|
 	// | VECTOR DIMENSIONS FOR NEGATIVE LOG LIKELIHOODS   --original declaration of ilvec
 	// |---------------------------------------------------------------------------------|
@@ -1261,11 +1246,10 @@ DATA_SECTION
 	//uncomment 6 lines below to revert to original and delete RF copy below
 	//ivector ilvec(1,7);
 	//!! ilvec    = ngear;
-	//!! ilvec(1) = 1;			
-	//!! ilvec(2) = nItNobs;			
-	//!! ilvec(3) = nAgears;		
+	//!! ilvec(1) = 1;
+	//!! ilvec(2) = nItNobs;
+	//!! ilvec(3) = nAgears;
 	//!! ilvec(4) = ngroup;
-	
 
 	//RF Added extra likelihood component for annual mean weight data
 	// |---------------------------------------------------------------------------------|
@@ -1275,20 +1259,19 @@ DATA_SECTION
 	// | ilvec[2]       -> number of surveys       (nItNobs)
 	// | ilvec[3]       -> number of age-compisition data sets (nAgears)
 	// | ilvec[4]       -> container for recruitment deviations.
-	// | ilvec[5]       -> number of annual mean weight datasets.		 //RF addition
+	// | ilvec[5]       -> number of annual mean weight datasets.
 	ivector ilvec(1,8);
 	!! ilvec    = ngear;
-	!! ilvec(1) = 1;			
-	!! ilvec(2) = nItNobs;			
-	!! ilvec(3) = nAgears;		
+	!! ilvec(1) = 1;
+	!! ilvec(2) = nItNobs;
+	!! ilvec(3) = nAgears;
 	!! ilvec(4) = ngroup;
 	!! ilvec(5) = nMeanWt;
-	//END_RF_ADD
 
 	// |---------------------------------------------------------------------------------|
 	// | RETROSPECTIVE ADJUSTMENT TO nyrs
 	// |---------------------------------------------------------------------------------|
-	// | - Don't read any more input data from here on in. 
+	// | - Don't read any more input data from here on in.
 	// | - Modifying nyr to allow for retrospective analysis.
 	// | - If retro_yrs > 0, then ensure that pf_cntrl arrays are not greater than nyr,
 	// |   otherwise arrays for mbar will go out of bounds.
@@ -1328,11 +1311,11 @@ DATA_SECTION
 	// | - start assessment at syr + # of prospective years.
 	// | - adjust sel_blocks to new syr
 	// | - Reduce ft_count so as not to bias estimates of ft.
-	// | - Establish prospective counter for Composition data   n_saa;
+	// | - Establish prospective counter for Composition data n_saa;
 
 	ivector n_saa(1,nAgears);
 	!! syr = syr + (int)d_iscamCntrl(14);
-		
+
 	LOC_CALCS
 
 	  for(int k = 1; k <= ngear; k++ ){
@@ -1358,7 +1341,7 @@ DATA_SECTION
       }
     }
 	END_CALCS
-	
+
 	!! COUT((n_saa));
 	!! COUT((n_naa));
 
@@ -1366,16 +1349,12 @@ DATA_SECTION
 	// | MANAGEMENT STRATEGY EVALUATION INPUTS
 	// |---------------------------------------------------------------------------------|
 	// |
-	
-
 	//LOC_CALCS
 	//	ifstream ifile("Halibut2012.mse");
 	//	if(ifile)
 	//	{
 	//		cout<<"Vader is happy"<<endl;
 	//		readMseInputs();
-	//		
-	//		
 	//		exit(1);
 	//	}
 	//END_CALCS
@@ -1388,11 +1367,10 @@ DATA_SECTION
 	// | Friend Class Operating Model for MSE |
 	// |--------------------------------------|
 	friend_class OperatingModel;
-	
 
 INITIALIZATION_SECTION
   theta theta_ival;
-  //phi1 0.0;
+  phi1 0.01;
 
 PARAMETER_SECTION
 	// |---------------------------------------------------------------------------------|
@@ -1454,37 +1432,31 @@ PARAMETER_SECTION
 						double dd = 1.e-8;
 						double stp = 1.0/(ghat_agemax(k)-ahat_agemin(k));
 						sel_par(k)(j).fill_seqadd(dd,stp);
-
-						//COUT(sel_par(k)(j));
-						//exit(1);
 					}
 				}
 			}
 		}
 
 	END_CALCS
-	
 
 	// |---------------------------------------------------------------------------------|
 	// | FISHING MORTALITY RATE PARAMETERS
 	// |---------------------------------------------------------------------------------|
 	// | - Estimate all fishing mortality rates in log-space.
-	// | - If in simulation mode then initialize with F=0.1; Actual F is conditioned on 
+	// | - If in simulation mode then initialize with F=0.1; Actual F is conditioned on
 	// |   the observed catch.
 	// |
-	
+
 	init_bounded_vector log_ft_pars(1,ft_count,-30.,3.0,1);
-	
+
 	LOC_CALCS
 		if(!SimFlag) log_ft_pars = log(0.10);
 	END_CALCS
-	
-	
 
 	// |---------------------------------------------------------------------------------|
-	// | INITIAL AND ANNUAL RECRUITMENT 
+	// | INITIAL AND ANNUAL RECRUITMENT
 	// |---------------------------------------------------------------------------------|
-	// | - Estimate single mean initial recruitment and deviations for each initial 
+	// | - Estimate single mean initial recruitment and deviations for each initial
 	// |   cohort from sage+1 to nage. (Rinit + init_log_rec_devs)
 	// | - Estimate mean overal recruitment and annual deviations from syr to nyr.
 	// | - d_iscamCntrl(5) is a flag to initialize the model at unfished recruitment (ro),
@@ -1691,18 +1663,10 @@ PRELIMINARY_CALCS_SECTION
 	if( SimFlag ) 
 	{
 		initParameters();
-		
 		simulationModel(rseed);
 	}
-	
-	if (NewFiles)
-	{
-		generate_new_files();	
-	}
-	
-	if(verbose) cout<<"||-- END OF PRELIMINARY_CALCS_SECTION --||"<<endl;
-	
 
+	if(verbose) cout<<"||-- END OF PRELIMINARY_CALCS_SECTION --||"<<endl;
 
 RUNTIME_SECTION
     maximum_function_evaluations 100,  200,   500, 25000, 25000
@@ -3159,17 +3123,18 @@ FUNCTION calcObjectiveFunction
 					//logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 					if( active(phi1(k)) && !active(phi2(k)) )  // LN2 Model
 					{
-            cout<<"\n\n\n\nLooking at log_age_tau2\n";
-            cout<<log_age_tau2<<endl;
-            cout<<"k="<<k<<", log_age_tau2(k)="<<log_age_tau2<<endl<<endl;
-            cout<<"exp(log_age_tau2(k))="<<exp(log_age_tau2(k))<<endl<<endl;
-            cout<<"phi2(k)="<<phi2(k)<<endl<<endl;
-            cout<<"cLN_Age(expk,phi2k)="<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
-						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));	
+            cout<<endl;
+            cout<<"        log_age_tau2: "<<log_age_tau2<<endl;
+            cout<<"                   k: "<<k<<endl;
+            cout<<"     log_age_tau2(k): "<<log_age_tau2(k)<<endl;
+            cout<<"exp(log_age_tau2(k)): "<<exp(log_age_tau2(k))<<endl;
+            cout<<"             phi2(k): "<<phi2(k)<<endl;
+            cout<<" cLN_Age(expk,phi2k): "<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
+						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));
 					}
 					if( active(phi1(k)) && active(phi2(k)) )   // LN3 Model
 					{
-						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k),phi2(k));	
+						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k),phi2(k));
 					}
 
 					// Residual
@@ -3341,15 +3306,14 @@ FUNCTION calcObjectiveFunction
 	// | LIKELIHOOD FOR ANNUAL MEAN WEIGHT DATA
 	// |---------------------------------------------------------------------------------|
 	// | - sig_it     -> vector of standard deviations based on relative wt for survey.
-	// |  init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7);	
-	for(k=1;k<=nMeanWt;k++)
-	{
-		dvar_vector epsilon_wt = log(annual_mean_weight(k)) - log(obs_annual_mean_weight(k));
-		if(fitMeanWt) nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
-	}
-	//END_RF_ADD
-	
-	
+	// |  init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7)
+  if(fitMeanWt){
+	  for(k=1;k<=nMeanWt;k++){
+		  dvar_vector epsilon_wt = log(annual_mean_weight(k)) - log(obs_annual_mean_weight(k));
+		  nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
+	  }
+  }
+
 	// |---------------------------------------------------------------------------------|
 	// | PRIORS FOR LEADING PARAMETERS p(theta)
 	// |---------------------------------------------------------------------------------|
@@ -4922,40 +4886,6 @@ REPORT_SECTION
 // 	// cout<<"Ok to here"<<endl;
 //   }
 
-FUNCTION generate_new_files
-  ofstream rd("RUN.dat");
-  rd<<NewFileName + ".dat"<<endl;
-  rd<<NewFileName + ".ctl"<<endl;
-  rd<<NewFileName + ".pfc"<<endl;
-  exit(1);
-
-
-  #if defined __APPLE__ || defined __linux
-
-    adstring bscmddat = "cp ../lib/iscam.dat" + NewFileName +".dat";
-    system(bscmddat);
-
-    adstring bscmdctl = "cp ../lib/ iscam.ctl" + NewFileName +".ctl";
-    system(bscmdctl);
-
-    adstring bscmdpfc = "cp ../lib/ iscam.PFC" + NewFileName +".pfc";
-    system(bscmdpfc);	
-
-  #endif
-
-  #if defined _WIN32 || defined _WIN64
-
-    adstring bscmddat = "copy ../lib/iscam.dat" + NewFileName +".dat";
-    system(bscmddat);
-
-    adstring bscmdctl = "copy ../lib/ iscam.ctl" + NewFileName +".ctl";
-    system(bscmdctl);
-
-    adstring bscmdpfc = "copy ../lib/ iscam.PFC" + NewFileName +".pfc";
-    system(bscmdpfc);	
-
-  #endif
-
 FUNCTION mcmc_output
   if(nf==1){
     // Open the files and write the headers
@@ -5681,7 +5611,6 @@ GLOBALS_SECTION
 	
 	
 FINAL_SECTION
-	cout<<"Here I am "<<endl;
 	time(&finish);
 	elapsed_time=difftime(finish,start);
 	hour=long(elapsed_time)/3600;
@@ -5693,101 +5622,7 @@ FINAL_SECTION
 	cout<<"--Runtime: ";
 	cout<<hour<<" hours, "<<minute<<" minutes, "<<second<<" seconds"<<endl;
 	cout<<"--Number of function evaluations: "<<nf<<endl;
-	cout<<"--Results are saved with the base name:\n"<<"\t"<<BaseFileName<<endl;
 	cout<<"*******************************************"<<endl;
-
-	
-	if(mseFlag) runMSE();
-	cout<<"End of class testing"<<endl;
-
-
-	//Make copies of the report file using the ReportFileName
-	//to ensure the results are saved to the same directory 
-	//that the data file is in. This should probably go in the 
-	//FINAL_SECTION
-	
-	//CHANGED only copy over the mcmc files if in mceval_phase()
-	
-	#if defined __APPLE__ || defined __linux
-	if(last_phase() && !retro_yrs)
-	{
-		adstring bscmd = "cp iscam.rep " +ReportFileName;
-		system(bscmd);
-		
-		bscmd = "cp iscam.par " + BaseFileName + ".par";
-		system(bscmd); 
-		
-		bscmd = "cp iscam.std " + BaseFileName + ".std";
-		system(bscmd);
-		
-		bscmd = "cp iscam.cor " + BaseFileName + ".cor";
-		system(bscmd);
-		
-		//if( SimFlag )
-		//{
-		//	bscmd = "cp iscam.sim " + BaseFileName + ".sim";
-		//	system(bscmd);
-		//}
-
-			ofstream mcofs(ReportFileName,ios::app);
-			mcofs<<"ENpar\n"<<dicNoPar<<endl;
-			mcofs<<"DIC\n"<<dicValue<<endl;
-			mcofs.close();
-			cout<<"Copied MCMC Files"<<endl;
-		}
-
-	if( last_phase() && retro_yrs )
-	{
-		//copy report file with .ret# extension for retrospective analysis
-		adstring bscmd = "cp iscam.rep " + BaseFileName + ".ret" + str(retro_yrs);
-		system(bscmd);
-	}
-	#endif
-
-	#if defined _WIN32 || defined _WIN64
-	if(last_phase() && !retro_yrs)
-	{
-		adstring bscmd = "copy iscam.rep " +ReportFileName;
-		system(bscmd);
-		
-		bscmd = "copy iscam.par " + BaseFileName + ".par";
-		system(bscmd); 
-		
-		bscmd = "copy iscam.std " + BaseFileName + ".std";
-		system(bscmd);
-		
-		bscmd = "copy iscam.cor " + BaseFileName + ".cor";
-		system(bscmd);
-		
-	}
-
-	if( last_phase() && retro_yrs )
-	{
-		//copy report file with .ret# extension for retrospective analysis
-		adstring bscmd = "copy iscam.rep " + BaseFileName + ".ret" + str(retro_yrs);
-		system(bscmd);
-	}
-	#endif
-
 
 	if(mseFlag) runMSE();
 	cout<<"End of class testing"<<endl;
- 
-
-	//exit(1);
-		
-	//  Print run time statistics to the screen.
-	time(&finish);
-	elapsed_time=difftime(finish,start);
-	hour=long(elapsed_time)/3600;
-	minute=long(elapsed_time)%3600/60;
-	second=(long(elapsed_time)%3600)%60;
-	cout<<endl<<endl<<"*******************************************"<<endl;
-	cout<<"--Start time: "<<ctime(&start)<<endl;
-	cout<<"--Finish time: "<<ctime(&finish)<<endl;
-	cout<<"--Runtime: ";
-	cout<<hour<<" hours, "<<minute<<" minutes, "<<second<<" seconds"<<endl;
-	cout<<"--Number of function evaluations: "<<nf<<endl;
-	cout<<"--Results are saved with the base name:\n"<<"\t"<<BaseFileName<<endl;
-	cout<<"*******************************************"<<endl;
-	

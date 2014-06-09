@@ -156,14 +156,6 @@ model_data::model_data(int argc,char * argv[]) : ad_comm(argc,argv)
 			rseed   = atoi(ad_comm::argv[on+1]);
 		}
 		
-		// Catarina implementing a new command for generating new data control and pfc file
-		// for a new project.
-		NewFiles = 0;
-		if((on=option_match(ad_comm::argc,ad_comm::argv,"-new",opt))>-1)
-		{
-			NewFiles = 1;
-			NewFileName = ad_comm::argv[on+1];
-		}
 		// command line option for retrospective analysis. "-retro retro_yrs"
 		retro_yrs=0;
 		if((on=option_match(ad_comm::argc,ad_comm::argv,"-retro",opt))>-1)
@@ -820,7 +812,6 @@ model_data::model_data(int argc,char * argv[]) : ad_comm(argc,argv)
   eofc.allocate("eofc");
 		verbose = d_iscamCntrl(1);
 		if(verbose) COUT(d_iscamCntrl);
-		
 		for(int ig=1;ig<=n_ags;ig++)
 		{
 			for(int i = syr; i <= nyr; i++)
@@ -837,9 +828,9 @@ model_data::model_data(int argc,char * argv[]) : ad_comm(argc,argv)
 		}
   ilvec.allocate(1,8);
  ilvec    = ngear;
- ilvec(1) = 1;			
- ilvec(2) = nItNobs;			
- ilvec(3) = nAgears;		
+ ilvec(1) = 1;
+ ilvec(2) = nItNobs;
+ ilvec(3) = nAgears;
  ilvec(4) = ngroup;
  ilvec(5) = nMeanWt;
   n_naa.allocate(1,nAgears);
@@ -894,6 +885,7 @@ model_data::model_data(int argc,char * argv[]) : ad_comm(argc,argv)
 void model_parameters::initializationfunction(void)
 {
   theta.set_initial_value(theta_ival);
+  phi1.set_initial_value(0.01);
 }
 
 model_parameters::model_parameters(int sz,int argc,char * argv[]) : 
@@ -932,8 +924,6 @@ model_parameters::model_parameters(int sz,int argc,char * argv[]) :
 						double dd = 1.e-8;
 						double stp = 1.0/(ghat_agemax(k)-ahat_agemin(k));
 						sel_par(k)(j).fill_seqadd(dd,stp);
-						//COUT(sel_par(k)(j));
-						//exit(1);
 					}
 				}
 			}
@@ -1139,17 +1129,9 @@ void model_parameters::preliminary_calculations(void)
 	if( SimFlag ) 
 	{
 		initParameters();
-		
 		simulationModel(rseed);
 	}
-	
-	if (NewFiles)
-	{
-		generate_new_files();	
-	}
-	
 	if(verbose) cout<<"||-- END OF PRELIMINARY_CALCS_SECTION --||"<<endl;
-	
 }
 
 void model_parameters::set_runtime(void)
@@ -1165,6 +1147,7 @@ void model_parameters::set_runtime(void)
 void model_parameters::userfunction(void)
 {
   objfun =0.0;
+  pad();
 	initParameters();
 	calcSelectivities(isel_type);
  	calcTotalMortality();
@@ -2403,17 +2386,18 @@ void model_parameters::calcObjectiveFunction(void)
 					//logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 					if( active(phi1(k)) && !active(phi2(k)) )  // LN2 Model
 					{
-            cout<<"\n\n\n\nLooking at log_age_tau2\n";
-            cout<<log_age_tau2<<endl;
-            cout<<"k="<<k<<", log_age_tau2(k)="<<log_age_tau2<<endl<<endl;
-            cout<<"exp(log_age_tau2(k))="<<exp(log_age_tau2(k))<<endl<<endl;
-            cout<<"phi2(k)="<<phi2(k)<<endl<<endl;
-            cout<<"cLN_Age(expk,phi2k)="<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
-						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));	
+            cout<<endl;
+            cout<<"        log_age_tau2: "<<log_age_tau2<<endl;
+            cout<<"                   k: "<<k<<endl;
+            cout<<"     log_age_tau2(k): "<<log_age_tau2(k)<<endl;
+            cout<<"exp(log_age_tau2(k)): "<<exp(log_age_tau2(k))<<endl;
+            cout<<"             phi2(k): "<<phi2(k)<<endl;
+            cout<<" cLN_Age(expk,phi2k): "<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
+						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));
 					}
 					if( active(phi1(k)) && active(phi2(k)) )   // LN3 Model
 					{
-						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k),phi2(k));	
+						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k),phi2(k));
 					}
 					// Residual
 					if(last_phase())
@@ -2571,13 +2555,13 @@ void model_parameters::calcObjectiveFunction(void)
 	// | LIKELIHOOD FOR ANNUAL MEAN WEIGHT DATA
 	// |---------------------------------------------------------------------------------|
 	// | - sig_it     -> vector of standard deviations based on relative wt for survey.
-	// |  init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7);	
-	for(k=1;k<=nMeanWt;k++)
-	{
-		dvar_vector epsilon_wt = log(annual_mean_weight(k)) - log(obs_annual_mean_weight(k));
-		if(fitMeanWt) nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
-	}
-	//END_RF_ADD
+	// |  init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7)
+  if(fitMeanWt){
+	  for(k=1;k<=nMeanWt;k++){
+		  dvar_vector epsilon_wt = log(annual_mean_weight(k)) - log(obs_annual_mean_weight(k));
+		  nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
+	  }
+  }
 	// |---------------------------------------------------------------------------------|
 	// | PRIORS FOR LEADING PARAMETERS p(theta)
 	// |---------------------------------------------------------------------------------|
@@ -3636,31 +3620,6 @@ void model_parameters::report(const dvector& gradients)
    // REPORT_SECTION END
 }
 
-void model_parameters::generate_new_files(void)
-{
-  ofstream rd("RUN.dat");
-  rd<<NewFileName + ".dat"<<endl;
-  rd<<NewFileName + ".ctl"<<endl;
-  rd<<NewFileName + ".pfc"<<endl;
-  exit(1);
-  #if defined __APPLE__ || defined __linux
-    adstring bscmddat = "cp ../lib/iscam.dat" + NewFileName +".dat";
-    system(bscmddat);
-    adstring bscmdctl = "cp ../lib/ iscam.ctl" + NewFileName +".ctl";
-    system(bscmdctl);
-    adstring bscmdpfc = "cp ../lib/ iscam.PFC" + NewFileName +".pfc";
-    system(bscmdpfc);	
-  #endif
-  #if defined _WIN32 || defined _WIN64
-    adstring bscmddat = "copy ../lib/iscam.dat" + NewFileName +".dat";
-    system(bscmddat);
-    adstring bscmdctl = "copy ../lib/ iscam.ctl" + NewFileName +".ctl";
-    system(bscmdctl);
-    adstring bscmdpfc = "copy ../lib/ iscam.PFC" + NewFileName +".pfc";
-    system(bscmdpfc);	
-  #endif
-}
-
 void model_parameters::mcmc_output(void)
 {
   if(nf==1){
@@ -3884,7 +3843,6 @@ void model_parameters::runMSE()
 
 void model_parameters::final_calcs()
 {
-	cout<<"Here I am "<<endl;
 	time(&finish);
 	elapsed_time=difftime(finish,start);
 	hour=long(elapsed_time)/3600;
@@ -3896,80 +3854,9 @@ void model_parameters::final_calcs()
 	cout<<"--Runtime: ";
 	cout<<hour<<" hours, "<<minute<<" minutes, "<<second<<" seconds"<<endl;
 	cout<<"--Number of function evaluations: "<<nf<<endl;
-	cout<<"--Results are saved with the base name:\n"<<"\t"<<BaseFileName<<endl;
 	cout<<"*******************************************"<<endl;
 	if(mseFlag) runMSE();
 	cout<<"End of class testing"<<endl;
-	//Make copies of the report file using the ReportFileName
-	//to ensure the results are saved to the same directory 
-	//that the data file is in. This should probably go in the 
-	//FINAL_SECTION
-	//CHANGED only copy over the mcmc files if in mceval_phase()
-	#if defined __APPLE__ || defined __linux
-	if(last_phase() && !retro_yrs)
-	{
-		adstring bscmd = "cp iscam.rep " +ReportFileName;
-		system(bscmd);
-		bscmd = "cp iscam.par " + BaseFileName + ".par";
-		system(bscmd); 
-		bscmd = "cp iscam.std " + BaseFileName + ".std";
-		system(bscmd);
-		bscmd = "cp iscam.cor " + BaseFileName + ".cor";
-		system(bscmd);
-		//if( SimFlag )
-		//{
-		//	bscmd = "cp iscam.sim " + BaseFileName + ".sim";
-		//	system(bscmd);
-		//}
-			ofstream mcofs(ReportFileName,ios::app);
-			mcofs<<"ENpar\n"<<dicNoPar<<endl;
-			mcofs<<"DIC\n"<<dicValue<<endl;
-			mcofs.close();
-			cout<<"Copied MCMC Files"<<endl;
-		}
-	if( last_phase() && retro_yrs )
-	{
-		//copy report file with .ret# extension for retrospective analysis
-		adstring bscmd = "cp iscam.rep " + BaseFileName + ".ret" + str(retro_yrs);
-		system(bscmd);
-	}
-	#endif
-	#if defined _WIN32 || defined _WIN64
-	if(last_phase() && !retro_yrs)
-	{
-		adstring bscmd = "copy iscam.rep " +ReportFileName;
-		system(bscmd);
-		bscmd = "copy iscam.par " + BaseFileName + ".par";
-		system(bscmd); 
-		bscmd = "copy iscam.std " + BaseFileName + ".std";
-		system(bscmd);
-		bscmd = "copy iscam.cor " + BaseFileName + ".cor";
-		system(bscmd);
-	}
-	if( last_phase() && retro_yrs )
-	{
-		//copy report file with .ret# extension for retrospective analysis
-		adstring bscmd = "copy iscam.rep " + BaseFileName + ".ret" + str(retro_yrs);
-		system(bscmd);
-	}
-	#endif
-	if(mseFlag) runMSE();
-	cout<<"End of class testing"<<endl;
-	//exit(1);
-	//  Print run time statistics to the screen.
-	time(&finish);
-	elapsed_time=difftime(finish,start);
-	hour=long(elapsed_time)/3600;
-	minute=long(elapsed_time)%3600/60;
-	second=(long(elapsed_time)%3600)%60;
-	cout<<endl<<endl<<"*******************************************"<<endl;
-	cout<<"--Start time: "<<ctime(&start)<<endl;
-	cout<<"--Finish time: "<<ctime(&finish)<<endl;
-	cout<<"--Runtime: ";
-	cout<<hour<<" hours, "<<minute<<" minutes, "<<second<<" seconds"<<endl;
-	cout<<"--Number of function evaluations: "<<nf<<endl;
-	cout<<"--Results are saved with the base name:\n"<<"\t"<<BaseFileName<<endl;
-	cout<<"*******************************************"<<endl;
 }
 
 model_data::~model_data()

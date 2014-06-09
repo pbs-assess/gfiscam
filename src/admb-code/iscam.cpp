@@ -1147,7 +1147,6 @@ void model_parameters::set_runtime(void)
 void model_parameters::userfunction(void)
 {
   objfun =0.0;
-  pad();
 	initParameters();
 	calcSelectivities(isel_type);
  	calcTotalMortality();

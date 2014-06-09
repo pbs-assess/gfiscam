@@ -69,10 +69,10 @@
  12.5  12.5  12.5    # 9  -Penalty wt for time-varying selectivity
   1     1     1      #10  -n_sel_blocks (number of selex blocks)
 ## ------------------------------------------------------------------------- ##
-## Start year of each time block: 1 column for each gear
-1963 1963 1963
-##
-##
+## Start year of each time block: 1 row for each gear
+1963
+1963
+1963
 ##
 ## ------------------------------------------------------------------------- ##
 ## PRIORS FOR SURVEY Q                                                       ##
@@ -88,6 +88,12 @@
 0 0      # -prior sd
 ## ------------------------------------------------------------------------- ##
 ##
+## CONTROLS FOR FITTING TO MEAN WEIGHT DATA	 //START_RF_ADD
+## ------------------------------------------------------------------------- ##
+0     # 1 = fit to annual mean weights, 0 = do not fit to annual mean weights
+1	    # Number of annual mean weight series
+0.25  # SD for likelihood for fitting to annual mean weight (one for each series)
+## ------------------------------------------------------------------------- ##
 ## ------------------------------------------------------------------------- ##
 ## OTHER MISCELANEOUS CONTROLS                                               ##
 ## ------------------------------------------------------------------------- ##

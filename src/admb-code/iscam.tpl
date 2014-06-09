@@ -4245,7 +4245,8 @@ GLOBALS_SECTION
   #include "lib/multinomial.h"
 	#include "Selex.h"
 
-	#if defined _WIN32 || defined _WIN64
+  // At PBS we don't want to use makefiles so always include these things.
+	//#if defined _WIN32 || defined _WIN64
 	#include "lib/LogisticNormal.cpp"
 	#include "lib/LogisticStudentT.cpp"
 	#include "lib/msy.cpp"
@@ -4254,7 +4255,7 @@ GLOBALS_SECTION
 	#include "lib/multinomial.cpp"
 	#include "lib/multivariate_t.cpp"
 	#include "lib/fvar_m58.cpp"
-  #endif
+  //#endif
 
 	ivector getIndex(const dvector& a, const dvector& b)
 	{

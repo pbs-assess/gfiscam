@@ -20,7 +20,7 @@
   #include "lib/milka.h"
   #include "lib/multinomial.h"
 	#include "Selex.h"
-	#if defined _WIN32 || defined _WIN64
+	//#if defined _WIN32 || defined _WIN64
 	#include "lib/LogisticNormal.cpp"
 	#include "lib/LogisticStudentT.cpp"
 	#include "lib/msy.cpp"
@@ -29,7 +29,7 @@
 	#include "lib/multinomial.cpp"
 	#include "lib/multivariate_t.cpp"
 	#include "lib/fvar_m58.cpp"
-  #endif
+  //#endif
 	ivector getIndex(const dvector& a, const dvector& b)
 	{
 		int i,j,n;
@@ -1076,6 +1076,7 @@ void model_parameters::set_runtime(void)
 void model_parameters::userfunction(void)
 {
   objfun =0.0;
+  pad();
 	initParameters();
 	calcSelectivities(isel_type);
 	calcTotalMortality();

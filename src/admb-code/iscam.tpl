@@ -4631,6 +4631,15 @@ REPORT_SECTION
 	// | SELECTIVITIES (4darray)
 	// |---------------------------------------------------------------------------------|
 	// |
+  report<<"sel_par"<<endl;
+	for(k=1;k<=ngear;k++)
+	{
+	  for (j=1;j<=jsel_npar(k);j++)
+	  {
+	  	report<<k<<"\t"<<j<<"\t"<<exp(sel_par(k)(j))<<endl;
+	  }
+	}
+
 	report<<"log_sel"<<endl;
 	for(k=1;k<=ngear;k++)
 	{
@@ -4932,6 +4941,12 @@ FUNCTION mcmc_output
     for(int group=1;group<=ngroup;group++){
       ofs<<","<<"SSB"<<group;
     }
+    for(k=1;k<=ngear;k++){
+	    for (j=1;j<=jsel_npar(k);j++){
+	  	  ofs<<","<<"sel_g"<<k;
+	    }
+	  }
+
     ofs<<","<<"f";
     ofs<<endl;
 
@@ -5016,6 +5031,12 @@ FUNCTION mcmc_output
   for(int group=1;group<=ngroup;group++){
     ofs<<","<<sbt(group)(nyr);
   }
+  for(k=1;k<=ngear;k++){
+	  for (j=1;j<=jsel_npar(k);j++){
+	    ofs<<","<<exp(sel_par(k)(j)(1));
+	  }
+	}
+
   ofs<<","<<objfun;
   ofs<<endl;
 
@@ -5391,13 +5412,13 @@ GLOBALS_SECTION
 
 	#include <string.h>
 	//#include "lib/ADMB_XMLDoc.h"
-	#include "lib/msy.h"
-	#include "lib/msy.hpp"
-	#include "lib/baranov.h"
-  #include "lib/LogisticNormal.h"
-  #include "lib/milka.h"
-  #include "lib/multinomial.h"
-	#include "Selex.h"
+	// #include "lib/msy.h"
+	// #include "lib/msy.hpp"
+	// #include "lib/baranov.h"
+  // #include "lib/LogisticNormal.h"
+  // #include "lib/milka.h"
+  // #include "lib/multinomial.h"
+	// #include "Selex.h"
 
 	//#if defined _WIN32 || defined _WIN64
 	#include "lib/LogisticNormal.cpp"
@@ -5408,6 +5429,7 @@ GLOBALS_SECTION
 	#include "lib/multinomial.cpp"
 	#include "lib/multivariate_t.cpp"
 	#include "lib/fvar_m58.cpp"
+  #include "lib/msy.hpp"
   //#endif
 
 	ivector getIndex(const dvector& a, const dvector& b)

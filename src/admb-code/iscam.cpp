@@ -14,13 +14,13 @@
 	#include <time.h>
 	#include <string.h>
 	//#include "lib/ADMB_XMLDoc.h"
-	#include "lib/msy.h"
-	#include "lib/msy.hpp"
-	#include "lib/baranov.h"
-  #include "lib/LogisticNormal.h"
-  #include "lib/milka.h"
-  #include "lib/multinomial.h"
-	#include "Selex.h"
+	// #include "lib/msy.h"
+	// #include "lib/msy.hpp"
+	// #include "lib/baranov.h"
+  // #include "lib/LogisticNormal.h"
+  // #include "lib/milka.h"
+  // #include "lib/multinomial.h"
+	// #include "Selex.h"
 	//#if defined _WIN32 || defined _WIN64
 	#include "lib/LogisticNormal.cpp"
 	#include "lib/LogisticStudentT.cpp"
@@ -30,6 +30,7 @@
 	#include "lib/multinomial.cpp"
 	#include "lib/multivariate_t.cpp"
 	#include "lib/fvar_m58.cpp"
+  #include "lib/msy.hpp"
   //#endif
 	ivector getIndex(const dvector& a, const dvector& b)
 	{
@@ -2385,13 +2386,13 @@ void model_parameters::calcObjectiveFunction(void)
 					//logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 					if( active(phi1(k)) && !active(phi2(k)) )  // LN2 Model
 					{
-            cout<<endl;
-            cout<<"        log_age_tau2: "<<log_age_tau2<<endl;
-            cout<<"                   k: "<<k<<endl;
-            cout<<"     log_age_tau2(k): "<<log_age_tau2(k)<<endl;
-            cout<<"exp(log_age_tau2(k)): "<<exp(log_age_tau2(k))<<endl;
-            cout<<"             phi2(k): "<<phi2(k)<<endl;
-            cout<<" cLN_Age(expk,phi2k): "<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
+            //cout<<endl;
+            //cout<<"        log_age_tau2: "<<log_age_tau2<<endl;
+            //cout<<"                   k: "<<k<<endl;
+            //cout<<"     log_age_tau2(k): "<<log_age_tau2(k)<<endl;
+            //cout<<"exp(log_age_tau2(k)): "<<exp(log_age_tau2(k))<<endl;
+            //cout<<"             phi2(k): "<<phi2(k)<<endl;
+            //cout<<" cLN_Age(expk,phi2k): "<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
 						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));
 					}
 					if( active(phi1(k)) && active(phi2(k)) )   // LN3 Model
@@ -3479,6 +3480,14 @@ void model_parameters::report(const dvector& gradients)
 	// | SELECTIVITIES (4darray)
 	// |---------------------------------------------------------------------------------|
 	// |
+  report<<"sel_par"<<endl;
+	for(k=1;k<=ngear;k++)
+	{
+	  for (j=1;j<=jsel_npar(k);j++)
+	  {
+	  	report<<k<<"\t"<<j<<"\t"<<exp(sel_par(k)(j))<<endl;
+	  }
+	}
 	report<<"log_sel"<<endl;
 	for(k=1;k<=ngear;k++)
 	{
@@ -3666,6 +3675,11 @@ void model_parameters::mcmc_output(void)
     for(int group=1;group<=ngroup;group++){
       ofs<<","<<"SSB"<<group;
     }
+    for(k=1;k<=ngear;k++){
+	    for (j=1;j<=jsel_npar(k);j++){
+	  	  ofs<<","<<"sel_g"<<k;
+	    }
+	  }
     ofs<<","<<"f";
     ofs<<endl;
     ofstream of1("iscam_sbt_mcmc.csv");
@@ -3745,6 +3759,11 @@ void model_parameters::mcmc_output(void)
   for(int group=1;group<=ngroup;group++){
     ofs<<","<<sbt(group)(nyr);
   }
+  for(k=1;k<=ngear;k++){
+	  for (j=1;j<=jsel_npar(k);j++){
+	    ofs<<","<<exp(sel_par(k)(j)(1));
+	  }
+	}
   ofs<<","<<objfun;
   ofs<<endl;
   // output spawning stock biomass

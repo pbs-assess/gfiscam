@@ -4485,6 +4485,12 @@ FUNCTION dvector ifdSelex(const dvector& va, const dvector& ba, const double& mp
 REPORT_SECTION
 
 	if(verbose)cout<<"Start of Report Section..."<<endl;
+	report<<"ObjectiveFunction\n"<<f<<endl;
+
+  report<<"MaxGrad\n"<<objective_function_value::gmax<<endl;
+  report<<"ExitCode\n"<<iexit<<endl;
+  report<<"HangCode\n"<<ihang<<endl;
+
 	report<<DataFile<<endl;
 	report<<ControlFile<<endl;
 	report<<ProjectFileControl<<endl;

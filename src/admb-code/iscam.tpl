@@ -4487,9 +4487,12 @@ REPORT_SECTION
 	if(verbose)cout<<"Start of Report Section..."<<endl;
 	report<<"ObjectiveFunction\n"<<f<<endl;
 
+  report<<"FuncEvals\n"<<nf<<endl;
+  report<<"NumParams\n"<<npar<<endl;
   report<<"MaxGrad\n"<<objective_function_value::gmax<<endl;
   report<<"ExitCode\n"<<iexit<<endl;
   report<<"HangCode\n"<<ihang<<endl;
+  report<<"Runtime\n"<<(long(difftime(finish,start))%3600)%60<<endl;
 
 	report<<DataFile<<endl;
 	report<<ControlFile<<endl;

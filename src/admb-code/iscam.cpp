@@ -3351,7 +3351,7 @@ void model_parameters::report(const dvector& gradients)
     return;
   }
 	if(verbose)cout<<"Start of Report Section..."<<endl;
-	report<<"ObjectiveFunction\n"<<f<<endl;
+	report<<"ObjectiveFunction\n"<<objfun<<endl;
   report<<"FuncEvals\n"<<nf<<endl;
   report<<"NumParams\n"<<npar<<endl;
   report<<"MaxGrad\n"<<objective_function_value::gmax<<endl;

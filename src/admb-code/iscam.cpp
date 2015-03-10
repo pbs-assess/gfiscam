@@ -1778,13 +1778,13 @@ void model_parameters::calcComposition(void)
 				na = N(ig)(i);
 				if( ft(ig)(k)(i)==0 )
 				{
-					ca = elem_prod(elem_prod(na,va),0.5*sa);
+          fa = va;
 				}
 				else
 				{
 					fa = ft(ig)(k)(i) * va;
-					ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);					
 				}
+        ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
 				//A_hat(kk)(ii) = ca(n_A_sage(kk),n_A_nage(kk));
 				// | +group if n_A_nage(kk) < nage
 				//if( n_A_nage(kk) < nage )
@@ -1803,13 +1803,13 @@ void model_parameters::calcComposition(void)
 					na = N(ig)(i);
 					if( ft(ig)(k)(i)==0 )
 					{
-						ca = elem_prod(na,0.5*sa);
+            fa = va;
 					}
 					else
 					{
 						fa = ft(ig)(k)(i) * va;
-						ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);					
 					}
+          ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
 					//A_hat(kk)(ii) += ca(n_A_sage(kk),n_A_nage(kk));
 					// | +group if n_A_nage(kk) < nage
 					//if( n_A_nage(kk) < nage )

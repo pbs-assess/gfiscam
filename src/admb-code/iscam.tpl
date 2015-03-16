@@ -1467,8 +1467,6 @@ PARAMETER_SECTION
 	!! if(d_iscamCntrl(5)) init_dev_phz = -1;
 	init_bounded_matrix init_log_rec_devs(1,n_ag,sage+1,nage,-15.,15.,init_dev_phz);
 	init_bounded_matrix log_rec_devs(1,n_ag,syr,nyr,-15.,15.,2);
-	
-
 
 	// |---------------------------------------------------------------------------------|
 	// | DEVIATIONS FOR NATURAL MORTALITY BASED ON CUBIC SPLINE INTERPOLATION
@@ -4997,6 +4995,20 @@ FUNCTION mcmc_output
       }
     }
     of3<<endl;
+
+    ofstream of4("iscam_rdev_mcmc.csv");
+    iter = 1;
+    for(int ag=1;ag<=n_ag;ag++){
+      for(int yr=syr;yr<=nyr;yr++){
+        if(iter == 1){
+          of4<<"rdev"<<ag<<"_"<<yr;
+        }else{
+          of4<<",rdev"<<ag<<"_"<<yr;
+        }
+        iter++;
+      }
+    }
+    of4<<endl;
   }
 
   // Leading parameters & reference points
@@ -5091,10 +5103,28 @@ FUNCTION mcmc_output
   }
   of3<<endl;
 
+  // output recruitment deviations
+	// This is what the declaration of log_dev_recs looks like:
+  // init_bounded_matrix log_rec_devs(1,n_ag,syr,nyr,-15.,15.,2);
+  ofstream of4("iscam_rdev_mcmc.csv",ios::app);
+  iter = 1;
+  for(int ag=1;ag<=n_ag;ag++){
+    for(int yr=syr;yr<=nyr;yr++){
+      if(iter == 1){
+        of4<<log_rec_devs(ag)(yr);
+      }else{
+        of4<<","<<log_rec_devs(ag)(yr);
+      }
+      iter++;
+    }
+  }
+  of4<<endl;
+
   ofs.flush();
   of1.flush();
   of2.flush();
   of3.flush();
+  of4.flush();
 
 // FUNCTION dvector age3_recruitment(const dvector& rt, const double& wt,const double& M)
 //   {

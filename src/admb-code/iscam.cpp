@@ -3676,6 +3676,9 @@ void model_parameters::mcmc_output(void)
     for(int fleet=1;fleet<=nfleet;fleet++){
       ofs<<","<<"fmsy"<<fleet;
     }
+    for(int fleet=1;fleet<=nfleet;fleet++){
+      ofs<<","<<"umsy"<<fleet;
+    }
     for(int i=1;i<=nItNobs;i++){
       ofs<<","<<"q"<<i;
     }
@@ -3772,6 +3775,9 @@ void model_parameters::mcmc_output(void)
   }
   for(int fleet=1;fleet<=nfleet;fleet++){
     ofs<<","<<fmsy(fleet);
+  }
+  for(int fleet=1;fleet<=nfleet;fleet++){
+    ofs<<","<<1.0-exp(-fmsy(fleet));
   }
   for(int it=1;it<=nItNobs;it++){
     ofs<<","<<q(it);

@@ -3,9 +3,9 @@
 ## _____________________________ ##
 ##
 ## n_tac  length of catch vector.
-11
+13
 ## tac vector (mt)
- 0  50 100 150 200 250 300 350 400 450 500
+ 0  0.2 0.4 0.6 0.8 1. 1.2 1.4 1.5 1.6 1.7 1.8 2. 
 ##
 ## _____________________________ ##
 ## Control options               ##
@@ -18,8 +18,8 @@
 1996 ## - 3) Start year for average fecundity/weight-at-age in projections
 2014 ## - 4)  Last year for average fecundity/weight-at-age in projections
 
-1996 ## - 5) Start year for average recruitment period in projections.
-2014 ## - 6)   End year for average recruitment period in projections.
+1996 ## - 5) Start year for average recruitment period in projections
+2014 ## - 6)   End year for average recruitment period in projections
 
 ## eof
 -999

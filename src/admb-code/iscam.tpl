@@ -4669,6 +4669,11 @@ REPORT_SECTION
 	{
 		report<<ft(ig)<<endl;
 	}
+	report<<"ut"<<endl;
+	for(int ig = 1; ig <= n_ags; ig++ )
+	{
+		report<<1.0-exp(-ft(ig))<<endl;
+	}
 	REPORT(M);
 	REPORT(F);
 	REPORT(Z);
@@ -4930,6 +4935,7 @@ REPORT_SECTION
      //}
 
 FUNCTION mcmc_output
+  int iter;
   if(nf==1){
     // Open the files and write the headers
     ofstream ofs("iscam_mcmc.csv");
@@ -4979,11 +4985,10 @@ FUNCTION mcmc_output
       ofs<<","<<"SSB"<<group;
     }
     for(k=1;k<=ngear;k++){
-	    for (j=1;j<=jsel_npar(k);j++){
-	  	  ofs<<","<<"sel_g"<<k;
-	    }
-	  }
-
+      for (j=1;j<=jsel_npar(k);j++){
+        ofs<<","<<"sel_g"<<k;
+      }
+    }
     ofs<<","<<"f";
     ofs<<endl;
 
@@ -5011,8 +5016,8 @@ FUNCTION mcmc_output
     }
     of2<<endl;
 
-   ofstream of3("iscam_ft_mcmc.csv");
-    int iter = 1;
+    ofstream of3("iscam_ft_mcmc.csv");
+    iter = 1;
     for(int ag=1;ag<=n_ags;ag++){
       for(int gear=1;gear<=ngear;gear++){
         for(int yr=syr;yr<=nyr;yr++){
@@ -5041,25 +5046,40 @@ FUNCTION mcmc_output
     }
     of4<<endl;
 
-   //vulnerable biomass to all gears //Added by RF March 19 2015
-   ofstream of5("iscam_vbt_mcmc.csv");
-        iter = 1;
-        for(int ag=1;ag<=n_ags;ag++){
-          for(int gear=1;gear<=ngear;gear++){
-            for(int yr=syr;yr<=nyr+1;yr++){
-              if(iter == 1){
-                of5<<"vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
-              }else{
-                of5<<",vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
-              }
-              iter++;
-            }
+    //vulnerable biomass to all gears //Added by RF March 19 2015
+    ofstream of5("iscam_vbt_mcmc.csv");
+    iter = 1;
+    for(int ag=1;ag<=n_ags;ag++){
+      for(int gear=1;gear<=ngear;gear++){
+        for(int yr=syr;yr<=nyr+1;yr++){
+          if(iter == 1){
+            of5<<"vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
+          }else{
+            of5<<",vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
           }
+          iter++;
         }
+      }
+    }
     of5<<endl;
 
-  }  
-  
+    ofstream of6("iscam_ut_mcmc.csv");
+    iter = 1;
+    for(int ag=1;ag<=n_ags;ag++){
+      for(int gear=1;gear<=ngear;gear++){
+        for(int yr=syr;yr<=nyr;yr++){
+          if(iter == 1){
+            of6<<"ut"<<ag<<"_gear"<<gear<<"_"<<yr;
+          }else{
+            of6<<",ut"<<ag<<"_gear"<<gear<<"_"<<yr;
+          }
+          iter++;
+        }
+      }
+    }
+    of6<<endl;
+  }
+
   // Leading parameters & reference points
   calcReferencePoints();
 
@@ -5104,10 +5124,10 @@ FUNCTION mcmc_output
     ofs<<","<<sbt(group)(nyr);
   }
   for(k=1;k<=ngear;k++){
-	  for (j=1;j<=jsel_npar(k);j++){
-	    ofs<<","<<exp(sel_par(k)(j)(1));
-	  }
-	}
+    for (j=1;j<=jsel_npar(k);j++){
+      ofs<<","<<exp(sel_par(k)(j)(1));
+    }
+  }
 
   ofs<<","<<objfun;
   ofs<<endl;
@@ -5140,7 +5160,7 @@ FUNCTION mcmc_output
 
   // output fishing mortality
   ofstream of3("iscam_ft_mcmc.csv",ios::app);
-  int iter = 1;
+  iter = 1;
   for(int ag=1;ag<=n_ags;ag++){
     for(int gear=1;gear<=ngear;gear++){
       for(int yr=syr;yr<=nyr;yr++){
@@ -5156,7 +5176,7 @@ FUNCTION mcmc_output
   of3<<endl;
 
   // output recruitment deviations
-	// This is what the declaration of log_dev_recs looks like:
+  // This is what the declaration of log_dev_recs looks like:
   // init_bounded_matrix log_rec_devs(1,n_ag,syr,nyr,-15.,15.,2);
   ofstream of4("iscam_rdev_mcmc.csv",ios::app);
   iter = 1;
@@ -5173,70 +5193,85 @@ FUNCTION mcmc_output
   of4<<endl;
 
   // output vulnerable biomass to all gears //Added by RF March 19 2015
-    ofstream of5("iscam_vbt_mcmc.csv",ios::app);
-    iter = 1;
-    for(int ag=1;ag<=n_ags;ag++){
-      for(int gear=1;gear<=ngear;gear++){
-        for(int yr=syr;yr<=nyr;yr++){
-          if(iter == 1){
-            of5<<vbt(ag)(gear)(yr);
-          }else{
-            of5<<","<<vbt(ag)(gear)(yr);
-          }
-          iter++;
+  ofstream of5("iscam_vbt_mcmc.csv",ios::app);
+  iter = 1;
+  for(int ag=1;ag<=n_ags;ag++){
+    for(int gear=1;gear<=ngear;gear++){
+      for(int yr=syr;yr<=nyr;yr++){
+        if(iter == 1){
+          of5<<vbt(ag)(gear)(yr);
+        }else{
+          of5<<","<<vbt(ag)(gear)(yr);
         }
+        iter++;
       }
     }
+  }
   of5<<endl;
 
- 
+  // output fishing mortality as U (1-e^-F)
+  ofstream of6("iscam_ut_mcmc.csv",ios::app);
+  iter = 1;
+  for(int ag=1;ag<=n_ags;ag++){
+    for(int gear=1;gear<=ngear;gear++){
+      for(int yr=syr;yr<=nyr;yr++){
+        if(iter == 1){
+          of6<<1.0-exp(-ft(ag)(gear)(yr));
+        }else{
+          of6<<","<<1.0-exp(-ft(ag)(gear)(yr));
+        }
+        iter++;
+      }
+    }
+  }
+  of6<<endl;
+
   ofs.flush();
   of1.flush();
   of2.flush();
   of3.flush();
   of4.flush();
   of5.flush();
+  of6.flush();
 
  //RF:: March 17 2015. RF re-instated projection_model for Arrowtooth Flounder assessment. NOT IMPLEMENTED FOR MULTIPLE AREA/GROUPS
  if(n_ags==1) {
-       int ii;
-   	for(ii=1;ii<=n_tac;ii++)
-   	{
-   		//cout<<ii<<" "<<tac(ii)<<endl;
-   		projection_model(tac(ii));
- 	}
- 
- }
- if(n_ags>1)  {
- 	if(nf==1) cout<<"************Decision Table not yet implemented for number of areas/groups > 1************"<<endl<<endl;
+   int ii;
+   for(ii=1;ii<=n_tac;ii++){
+     //cout<<ii<<" "<<tac(ii)<<endl;
+     projection_model(tac(ii));
    }
+ }
+ if(n_ags>1){
+   if(nf==1) cout<<"************Decision Table not yet implemented for number of areas/groups > 1************"<<endl<<endl;
+ }
 
 // FUNCTION dvector age3_recruitment(const dvector& rt, const double& wt,const double& M)
 //   {
-// 	/*
-// 	This routine returns the poor average and good age-3 recruits
-// 	that is used in constructing the decision table for the pacific
-// 	herring fisheries.
+// /*
+// This routine returns the poor average and good age-3 recruits
+// that is used in constructing the decision table for the pacific
+// herring fisheries.
 
-// 	-1) sort the rt vector from small to large
-// 	-2) find the 33rd and 66th percentiles
-// 	-3) take the averge of the 0-33, 34-66, 67-100
-// 	-4) multiply by the average weight
-// 	-5) return the age-3 recruitment biomass
-// 	*/
+// -1) sort the rt vector from small to large
+// -2) find the 33rd and 66th percentiles
+// -3) take the averge of the 0-33, 34-66, 67-100
+// -4) multiply by the average weight
+// -5) return the age-3 recruitment biomass
+// */
 
-// 	dvector s_rt = sort(rt);
-// 	dvector rbar(1,3);
+// dvector s_rt = sort(rt);
+// dvector rbar(1,3);
 
-// 	double idx = floor((nyr-syr+1.)/3.);
-// 	int ix1 = syr+int(idx);
-// 	int ix2 = syr+int(2.*idx);
-// 	rbar(1) = mean(s_rt(syr,ix1));
-// 	rbar(2) = mean(s_rt(ix1+1,ix2));
-// 	rbar(3) = mean(s_rt(ix2+1,nyr));
-// 	rbar = rbar*wt*exp(-M);
-// 	//cout<<rbar<<endl;
-// 	return(rbar);
+// double idx = floor((nyr-syr+1.)/3.);
+// int ix1 = syr+int(idx);
+// int ix2 = syr+int(2.*idx);
+// rbar(1) = mean(s_rt(syr,ix1));
+// rbar(2) = mean(s_rt(ix1+1,ix2));
+// rbar(3) = mean(s_rt(ix2+1,nyr));
+// rbar = rbar*wt*exp(-M);
+// //cout<<rbar<<endl;
+// return(rbar);
 //   }
 
  //RF re-instated this code (with several updates to match current version, and new code for projection output files for 2014 Arrowtooth Flounder) March 17 2015
@@ -5417,9 +5452,12 @@ FUNCTION void writeProjHeaders(ofstream &ofsP)
   ofsP<<"B"<<nyr+1             <<",";
   ofsP<<"B"<<nyr+2             <<",";
   ofsP<<"B0"                   <<",";
+  ofsP<<"04B0"                 <<",";
+  ofsP<<"02B0"                 <<",";
   ofsP<<"B"<<syr               <<",";
   ofsP<<"B"<<nyr+2<<"B"<<nyr+1 <<",";  //want probability B2016<B2015 - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"B0"       <<",";  //want probability B2016<B2015 - this will be < 1 if true
+  ofsP<<"B"<<nyr+2<<"04B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
+  ofsP<<"B"<<nyr+2<<"02B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
   ofsP<<"B"<<nyr+2<<"B"<<syr   <<",";
   ofsP<<"F"<<nyr               <<",";
   ofsP<<"F"<<nyr+1             <<",";
@@ -5438,27 +5476,30 @@ FUNCTION void writeProjHeaders(ofstream &ofsP)
 
 FUNCTION void writeProjOutput(ofstream &ofsP, double tac, int pyr, dvector p_sbt, dmatrix p_ft)
   // Write the projection output to the file
-  ofsP<<tac                  <<","
-      <<p_sbt(pyr)           <<","
-      <<p_sbt(pyr+1)         <<","
-      <<bo                   <<","
-      <<p_sbt(syr)           <<","
-      <<p_sbt(pyr+1)/p_sbt(pyr)   <<","
-      <<p_sbt(pyr+1)/bo      <<","
-      <<p_sbt(pyr+1)/p_sbt(syr)   <<","
-      <<ft(1)(1,nyr)         <<","
-      <<p_ft(pyr,1)          <<","
-      <<p_ft(pyr,1)/ft(1)(1,nyr)  <<","
-      <<(1. - mfexp(-p_ft(pyr,1)))       <<","
+  ofsP<<tac                        <<","
+      <<p_sbt(pyr)                 <<","
+      <<p_sbt(pyr+1)               <<","
+      <<bo                         <<","
+      <<0.4*bo                     <<","
+      <<0.2*bo                     <<","
+      <<p_sbt(syr)                 <<","
+      <<p_sbt(pyr+1)/p_sbt(pyr)    <<","
+      <<p_sbt(pyr+1)/(0.4*bo)      <<","
+      <<p_sbt(pyr+1)/(0.2*bo)      <<","
+      <<p_sbt(pyr+1)/p_sbt(syr)    <<","
+      <<ft(1)(1,nyr)               <<","
+      <<p_ft(pyr,1)                <<","
+      <<p_ft(pyr,1)/ft(1)(1,nyr)   <<","
+      <<(1. - mfexp(-p_ft(pyr,1))) <<","
       <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1)(1,nyr))) <<","
       //MSY based ref points
-      <<bmsy                 <<   ","
-      <<p_sbt(pyr+1)/bmsy    <<   ","
-      <<p_sbt(pyr+1)/(0.8*bmsy) <<   ","
-      <<p_sbt(pyr+1)/(0.4*bmsy) <<   ","
-      <<fmsy                 <<   ","
-      <<p_ft(pyr,1)/fmsy     <<   ","
-      <<(1. - mfexp(-fmsy))  <<   ","
+      <<bmsy                       <<   ","
+      <<p_sbt(pyr+1)/bmsy          <<   ","
+      <<p_sbt(pyr+1)/(0.8*bmsy)    <<   ","
+      <<p_sbt(pyr+1)/(0.4*bmsy)    <<   ","
+      <<fmsy                       <<   ","
+      <<p_ft(pyr,1)/fmsy           <<   ","
+      <<(1. - mfexp(-fmsy))        <<   ","
       <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy)) <<endl;
 
 FUNCTION void runMSE()

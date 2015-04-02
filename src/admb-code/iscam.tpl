@@ -4987,6 +4987,7 @@ FUNCTION mcmc_output
     for(k=1;k<=ngear;k++){
       for (j=1;j<=jsel_npar(k);j++){
         ofs<<","<<"sel_g"<<k;
+        ofs<<","<<"sel_sd"<<k;
       }
     }
     ofs<<","<<"f";
@@ -5126,6 +5127,7 @@ FUNCTION mcmc_output
   for(k=1;k<=ngear;k++){
     for (j=1;j<=jsel_npar(k);j++){
       ofs<<","<<exp(sel_par(k)(j)(1));
+      ofs<<","<<exp(sel_par(k)(j)(2));
     }
   }
 

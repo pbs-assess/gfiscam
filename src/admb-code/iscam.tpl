@@ -36,107 +36,16 @@
 //             Constants    -> UpperCamelCase                                    //
 //             Functions    -> lowerCamelCase                                    //
 //             Variables    -> lowercase                                         //
-//                                                                               //
-// CHANGED add option for using empirical weight-at-age data                     //
-// TODO:   ? add gtg options for length based fisheries                          //
-// CHANGED add time varying natural mortality rate with splines                  //
-// TODO:   ? add cubic spline interpolation for time varying M                   //
-// CHANGED  Fix the type 6 selectivity implementation. not working.              //
-// TODO:  fix cubic spline selectivity for only years when data avail            //
-// CHANGED: fixed a bug in the simulation model log_ft_pars goes out             //
-//        of bounds.                                                             //
-// TODO: write a projection routine and verify equilibrium calcs                 //
-// TODO: add DIC calculation for MCMC routines (in -mcveal phase)                //
-// CHANGED: add SOK fishery a) egg fishing mort 2) bycatch for closed ponds      //
-//                                                                               //
-// TODO: correct the likelihood function as per Roberto's email. See Schnute     //
-//       and Richards (1995) paper. Table 4 when 0<rho<1                         //
-//                                                                               //
-// TODO: Check the recruitment autocorrelation residuals & likelihood.           //
-//                                                                               //
-//                                                                               //
 // ----------------------------------------------------------------------------- //
-//-- CHANGE LOG:                                                               --//
-//--  Nov 30, 2010 -modified survey biomass by the fraction of total           --//
-//--                mortality that occurred during the time of the             --//
-//--                survey. User specifies this fraction (0-1) in the          --//
-//--                data file as the last column of the relative               --//
-//--                abundance index.                                           --//
-//--                                                                           --//
-//--  Dec 6, 2010 -modified the code to allow for empiracle weight-            --//
-//--               at-age data to be used.                                     --//
-//--              -rescaled catch and relative abundance /1000, this           --//
-//--               should be done in the data file and not here.               --//
-//--                                                                           --//
-//--  Dec 20, 2010-added prior to survey q's in control file                   --//
-//--                                                                           --//
-//--  Dec 24, 2010-added random walk for natural mortality.                    --//
-//--                                                                           --//
-//--  Jan 23, 2011-in Penticton Hospital with my mom in ICU, adopting          --//
-//--               the naming conventions in The Elements of C++               --//
-//--               style to keep my mind busy.                                 --//
-//--                                                                           --//
-//-- May 5, 2011- added logistic selectcitivty as a fucntion of                --//
-//--              mean body weight.  3 parameter logistic.                     --//
-//--              NOT WORKING YET                                              --//
-//--                                                                           --//
-//-- May 6, 2011- added pre-processor commands to determin PLATFORM            --//
-//--              either "Windows" or "Linux"                                  --//
-//--            - change April 10, 2013 to #if defined _WIN32 etc.             --//
-//--                                                                           --//
-//--                                                                           --//
-//-- use -mcmult 1.5 for MCMC with log_m_nodes with SOG herrning               --//
-//--                                                                           --//
-//--                                                                           --//
-//-- Dec 11, 2011- added halibut branch to local git repository aim is to      --//
-//--               add gender dimension and stock dimension.                   --//
-//--               This was created on the "twosex" branch in git merged       --//
-//--                                                                           --//
-//-- Dec 30, 2011- working on length-based selectivity for halibut.            --//
-//--                                                                           --//
-//-- Jan 5, 2012 - adding spawn on kelp fishery as catch_type ivector          --//
-//--             - modified the following routines:                            --//
-//--             - calcCatchAtAge                                              --//
-//--             - calcTotalMortality                                          --//
-//--                                                                           --//
-//-- Oct 31,2012 - added penalty to time-varying changes in selex for          --//
-//--             - isel_type 4 and 5 cases in the objective function.          --//
-//--             - Requires and additional input in the control file.          --//
-//--                                                                           --//
-//--                                                                           --//
-//--                                                                           --//
-//-- TODO: add catch_type to equilibrium calculations for reference points     --//
-//--                                                                           --//
-//-- Feb 18, 2013 - Need to redesign the simulation selectivities.             --//
-//--              - Should probably use a separate simulation control file.    --//
-//--                                                                           --//
-//-- April 16, - Created new IPHC branch for developing sex/area/group         --//
-//--           - INDEXS:                                                       --//
-//--             area     f                                                    --//
-//--             group    g                                                    --//
-//--             sex      h                                                    --//
-//--             year     i                                                    --//
-//--             age      j                                                    --//
-//--             gear     k                                                    --//
-//--                                                                           --//
-//--  ToDo: add mirror selectivity option so one fishery can assume the same   --//
-//--        Selectivity value as another fishery with informative data.        --//
-//--                                                                           --//
-//--                                                                           --//
-//--                                                                           --//
-//--                                                                           --//
-// ----------------------------------------------------------------------------- //
-
-
 
 DATA_SECTION
 	// |---------------------------------------------------------------------------------|
 	// | STRINGS FOR INPUT FILES                                                         |
 	// |---------------------------------------------------------------------------------|
-	/// | DataFile.dat           : data to condition the assessment model on     
+	/// | DataFile.dat           : data to condition the assessment model on
 	init_adstring DataFile;      ///< String for the input datafile name.
 	/// | ControlFile.ctl        : controls for phases, selectivity options 
-	init_adstring ControlFile;	 ///< String for the control file.
+	init_adstring ControlFile;   ///< String for the control file.
 	/// | ProjectFileControl.pfc : used for stock projections under TAC
 	init_adstring ProjectFileControl;  ///< String for the projection file.
 
@@ -148,9 +57,9 @@ DATA_SECTION
 	/// | ReportFileName         : file name to copy report file to.
 	!! ReportFileName = BaseFileName + adstring(".rep");
 	!! cout<<BaseFileName<<endl;
-	
-	 // |---------------------------------------------------------------------------------|
-	// | READ IN PROJECTION FILE CONTROLS                                         
+
+  // |---------------------------------------------------------------------------------|
+	// | READ IN PROJECTION FILE CONTROLS
 	// |---------------------------------------------------------------------------------|
 	// | n_tac    : length of catch vector for decision table catch stream.
 	// | tac      : vector of total catch values to be used in the decision table.
@@ -185,14 +94,13 @@ DATA_SECTION
 			ad_exit(1);
 		}
 	END_CALCS
-	
-	
+
 	// |---------------------------------------------------------------------------------|
 	// | COMMAND LINE ARGUMENTS FOR SIMULATION & RETROSPECTIVE ANALYSIS
 	// |---------------------------------------------------------------------------------|
 	// | SimFlag    : if user specifies -sim, then turn SimFlag on.
 	// | retro_yrs  : number of terminal years to remove.
-	
+
 	int SimFlag;  ///< Flag for simulation mode
 	int mseFlag;  ///< Flag for management strategy evaluation mode
 	int rseed;    ///< Random number seed for simulated data.
@@ -210,7 +118,7 @@ DATA_SECTION
 			SimFlag = 1;
 			rseed   = atoi(ad_comm::argv[on+1]);
 		}
-		
+
 		// command line option for retrospective analysis. "-retro retro_yrs"
 		retro_yrs=0;
 		if((on=option_match(ad_comm::argc,ad_comm::argv,"-retro",opt))>-1)
@@ -1712,22 +1620,6 @@ PROCEDURE_SECTION
 	
 	if( verbose ) {cout<<"End of main function calls"<<endl;}
 
-FUNCTION saveXMLFile
-	//ADMB_XMLDoc xml;
-
-	/**
-	Purpose:  This function calculates the sdreport variables.
-	Author: Steven Martell
-	
-	Arguments:
-		None
-	
-	NOTES:
-		
-	
-	TODO list:
-	  [?] - Calculate spawning biomass depletion for each group.
-	*/
 FUNCTION void calcSdreportVariables()
   {
 	sd_depletion.initialize();
@@ -5427,82 +5319,26 @@ FUNCTION void projection_model(const double& tac);
    if(nf==1 && runNo==1){
     cout<<"Running MCMC projections"<<endl;
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-    writeProjHeaders(ofsmcmc);
+    write_proj_headers(ofsmcmc, syr, nyr);
     ofsmcmc.flush();
    }
    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-   writeProjOutput(ofsmcmc, tac, pyr, p_sbt, p_ft);
+   write_proj_output(ofsmcmc, syr, nyr, tac, pyr, p_sbt, p_ft, ft(1), bo, fmsy, bmsy);
    ofsmcmc.flush();
   }else{
-   if(runNo==1){
-    cout<<"Running MPD projections"<<endl;
-    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
-    writeProjHeaders(ofsmpd);
-    ofsmpd.flush();
-   }
-   ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
-   writeProjOutput(ofsmpd, tac, pyr, p_sbt, p_ft);
-   ofsmpd.flush();
+//   if(runNo==1){
+//    cout<<"Running MPD projections"<<endl;
+//    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
+//    write_proj_output(ofsmpd);
+//    ofsmpd.flush();
+//   }
+//   ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
+//   write_proj_output(ofsmpd, tac, pyr, p_sbt, p_ft);
+//   ofsmpd.flush();
   }
   if(!mceval_phase()){
    cout<<"Finished projection model for TAC = "<<tac<<endl;
   }
-
-FUNCTION void writeProjHeaders(ofstream &ofsP)
-  // Write the decision table headers for projection years
-  ofsP<<"TAC"                  <<",";
-  ofsP<<"B"<<nyr+1             <<",";
-  ofsP<<"B"<<nyr+2             <<",";
-  ofsP<<"B0"                   <<",";
-  ofsP<<"04B0"                 <<",";
-  ofsP<<"02B0"                 <<",";
-  ofsP<<"B"<<syr               <<",";
-  ofsP<<"B"<<nyr+2<<"B"<<nyr+1 <<",";  //want probability B2016<B2015 - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"04B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"02B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"B"<<syr   <<",";
-  ofsP<<"F"<<nyr               <<",";
-  ofsP<<"F"<<nyr+1             <<",";
-  ofsP<<"F"<<nyr+1<<"F"<<nyr   <<",";  //want probability F2015>F2014     - this will be > 1 if true
-  ofsP<<"U"<<nyr+1             <<",";
-  ofsP<<"U"<<nyr+1<<"U"<<nyr   <<",";
-  //MSY based ref points
-  ofsP<<"BMSY"                 <<",";
-  ofsP<<"B"<<nyr+2<<"BMSY"     <<",";  //want probability B2016<BMSY - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"08BMSY"   <<",";  //want probability B2016<0.8BMSY - this will be< 1 if true
-  ofsP<<"B"<<nyr+2<<"04BMSY"   <<",";  //want probability B2016<0.4BMSY - this will be < 1 if true
-  ofsP<<"FMSY"                 <<",";
-  ofsP<<"F"<<nyr+1<<"FMSY"     <<",";
-  ofsP<<"UMSY"                 <<",";
-  ofsP<<"U"<<nyr+1<<"UMSY"     <<endl; //want probability F2015>FMSY - this will be > 1 if true
-
-FUNCTION void writeProjOutput(ofstream &ofsP, double tac, int pyr, dvector p_sbt, dmatrix p_ft)
-  // Write the projection output to the file
-  ofsP<<tac                        <<","
-      <<p_sbt(pyr)                 <<","
-      <<p_sbt(pyr+1)               <<","
-      <<bo                         <<","
-      <<0.4*bo                     <<","
-      <<0.2*bo                     <<","
-      <<p_sbt(syr)                 <<","
-      <<p_sbt(pyr+1)/p_sbt(pyr)    <<","
-      <<p_sbt(pyr+1)/(0.4*bo)      <<","
-      <<p_sbt(pyr+1)/(0.2*bo)      <<","
-      <<p_sbt(pyr+1)/p_sbt(syr)    <<","
-      <<ft(1)(1,nyr)               <<","
-      <<p_ft(pyr,1)                <<","
-      <<p_ft(pyr,1)/ft(1)(1,nyr)   <<","
-      <<(1. - mfexp(-p_ft(pyr,1))) <<","
-      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1)(1,nyr))) <<","
-      //MSY based ref points
-      <<bmsy                       <<   ","
-      <<p_sbt(pyr+1)/bmsy          <<   ","
-      <<p_sbt(pyr+1)/(0.8*bmsy)    <<   ","
-      <<p_sbt(pyr+1)/(0.4*bmsy)    <<   ","
-      <<fmsy                       <<   ","
-      <<p_ft(pyr,1)/fmsy           <<   ","
-      <<(1. - mfexp(-fmsy))        <<   ","
-      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy)) <<endl;
 
 FUNCTION void runMSE()
 	cout<<"Start of runMSE"<<endl;
@@ -5602,6 +5438,7 @@ GLOBALS_SECTION
 	// #include "Selex.h"
 
 	//#if defined _WIN32 || defined _WIN64
+//  #include "lib/Stock.cpp"
 	#include "lib/LogisticNormal.cpp"
 	#include "lib/LogisticStudentT.cpp"
 	#include "lib/msy.cpp"
@@ -5610,209 +5447,22 @@ GLOBALS_SECTION
 	#include "lib/multinomial.cpp"
 	#include "lib/multivariate_t.cpp"
 	#include "lib/fvar_m58.cpp"
-        #include "lib/msy.hpp"
+  #include "lib/msy.hpp"
+  #include "lib/utilities.cpp"
   //#endif
-
-	ivector getIndex(const dvector& a, const dvector& b)
-	{
-		int i,j,n;
-		n = 0;
-		j = 1;
-		for( i = a.indexmin(); i <= a.indexmax(); i++ )
-		{
-			 if(b(i) != NA) n++;
-		}
-		ivector tmp(1,n);
-		for( i = a.indexmin(); i <= a.indexmax(); i++ )
-		{
-			if(b(i) != NA )
-			{
-				tmp(j++) = a(i);
-			}
-		}
-		
-		return(tmp);
-	}
-
-	void readMseInputs()
-	{
-	  	cout<<"yep this worked"<<endl;
-	}
 
 	time_t start,finish;
 	long hour,minute,second;
 	double elapsed_time;
 	bool mcmcPhase = 0;
 	bool mcmcEvalPhase = 0;
-	
 	adstring BaseFileName;
 	adstring ReportFileName;
 	adstring NewFileName;
-
-	adstring stripExtension(adstring fileName)
-	{
-		/*
-		This function strips the file extension
-		from the fileName argument and returns
-		the file name without the extension.
-		*/
-		const int length = fileName.size();
-		for (int i=length; i>=0; --i)
-		{
-			if (fileName(i)=='.')
-			{
-				return fileName(1,i-1);
-			}
-		}
-		return fileName;
-	}
-	
-	
-
-	// class selex_vector
-	// {
-	// 	private:
-	// 		int m_length;
-			
-
-	// 	public:
-
-	// 	selex_vector()
-	// 	{
-	// 		m_length = 0;
-			
-	// 	}
-
-	// 	~selex_vector()
-	// 	{
-			
-	// 	}
-
-		
-	// };
-
-
-	
-	// #ifdef __GNUDOS__
-	//   #include <gccmanip.h>
-	// #endif
 	// Variables to store results from DIC calculations.
 	double dicNoPar = 0;
 	double dicValue = 0;
 
-
-
-
-// 	void function_minimizer::mcmc_eval(void)
-// 	{
-// 		// |---------------------------------------------------------------------------|
-// 		// | Added DIC calculation.  Martell, Jan 29, 2013                             |
-// 		// |---------------------------------------------------------------------------|
-// 		// | DIC = pd + dbar
-// 		// | pd  = dbar - dtheta  (Effective number of parameters)
-// 		// | dbar   = expectation of the likelihood function (average f)
-// 		// | dtheta = expectation of the parameter sample (average y) 
-
-// 	  gradient_structure::set_NO_DERIVATIVES();
-// 	  initial_params::current_phase=initial_params::max_number_phases;
-// 	  uistream * pifs_psave = NULL;
-
-// 	#if defined(USE_LAPLACE)
-// 	#endif
-
-// 	#if defined(USE_LAPLACE)
-// 	    initial_params::set_active_random_effects();
-// 	    int nvar1=initial_params::nvarcalc(); 
-// 	#else
-// 	  int nvar1=initial_params::nvarcalc(); // get the number of active parameters
-// 	#endif
-// 	  int nvar;
-	  
-// 	  pifs_psave= new
-// 	    uistream((char*)(ad_comm::adprogram_name + adstring(".psv")));
-// 	  if (!pifs_psave || !(*pifs_psave))
-// 	  {
-// 	    cerr << "Error opening file "
-// 	            << (char*)(ad_comm::adprogram_name + adstring(".psv"))
-// 	       << endl;
-// 	    if (pifs_psave)
-// 	    {
-// 	      delete pifs_psave;
-// 	      pifs_psave=NULL;
-// 	      return;
-// 	    }
-// 	  }
-// 	  else
-// 	  {     
-// 	    (*pifs_psave) >> nvar;
-// 	    if (nvar!=nvar1)
-// 	    {
-// 	      cout << "Incorrect value for nvar in file "
-// 	           << "should be " << nvar1 << " but read " << nvar << endl;
-// 	      if (pifs_psave)
-// 	      {
-// 	        delete pifs_psave;
-// 	        pifs_psave=NULL;
-// 	      }
-// 	      return;
-// 	    }
-// 	  }
-	  
-// 	  int nsamp = 0;
-// 	  double sumll = 0;
-// 	  independent_variables y(1,nvar);
-// 	  independent_variables sumy(1,nvar);
-
-// 	  do
-// 	  {
-// 	    if (pifs_psave->eof())
-// 	    {
-// 	      break;
-// 	    }
-// 	    else
-// 	    {
-// 	      (*pifs_psave) >> y;
-// 	      sumy = sumy + y;
-// 	      if (pifs_psave->eof())
-// 	      {
-// 	      	double dbar = sumll/nsamp;
-// 	      	int ii=1;
-// 	      	y = sumy/nsamp;
-// 	      	initial_params::restore_all_values(y,ii);
-// 	        initial_params::xinit(y);   
-// 	        double dtheta = 2.0 * get_monte_carlo_value(nvar,y);
-// 	        double pd     = dbar - dtheta;
-// 	        double dic    = pd + dbar;
-// 	        dicValue      = dic;
-// 	        dicNoPar      = pd;
-
-// 	        cout<<"Number of posterior samples    = "<<nsamp    <<endl;
-// 	        cout<<"Expectation of log-likelihood  = "<<dbar     <<endl;
-// 	        cout<<"Expectation of theta           = "<<dtheta   <<endl;
-// 	        cout<<"Number of estimated parameters = "<<nvar1    <<endl;
-// 		    cout<<"Effective number of parameters = "<<dicNoPar <<endl;
-// 		    cout<<"DIC                            = "<<dicValue <<endl;
-// 	        break;
-// 	      }
-// 	      int ii=1;
-// 	      initial_params::restore_all_values(y,ii);
-// 	      initial_params::xinit(y);   
-// 	      double ll = 2.0 * get_monte_carlo_value(nvar,y);
-// 	      sumll    += ll;
-// 	      nsamp++;
-// 	      // cout<<sumy(1,3)/nsamp<<" "<<get_monte_carlo_value(nvar,y)<<endl;
-// 	    }
-// 	  }
-// 	  while(1);
-// 	  if (pifs_psave)
-// 	  {
-// 	    delete pifs_psave;
-// 	    pifs_psave=NULL;
-// 	  }
-// 	  return;
-// 	}
-	
- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
  //Extra test functions by RF to test ref points
  //Called by run_FRP() in calcReferencePoints
 FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, double& fmsy, double& bmsy )
@@ -5967,6 +5617,3 @@ FINAL_SECTION
 	cout<<hour<<" hours, "<<minute<<" minutes, "<<second<<" seconds"<<endl;
 	cout<<"--Number of function evaluations: "<<nf<<endl;
 	cout<<"*******************************************"<<endl;
-
-	if(mseFlag) runMSE();
-	cout<<"End of class testing"<<endl;

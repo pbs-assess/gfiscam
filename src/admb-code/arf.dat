@@ -30,11 +30,6 @@
 ## One column for each gear:                                                 ##
 ## ------------------------------------------------------------------------- ##
 1 0 0 0 0
-## If you want your gears to have names in the plots, follow the format below
-## Gears: Trawl Fishery, QCS Synoptic, HS Multispecies Assemblage, Hecate Strait Synoptic, WCVI Synoptic
-##
-## ------------------------------------------------------------------------- ##
-##
 ## ------------------------------------------------------------------------- ##
 ## Age-schedule and population parameters                                    ##
 ## ------------------------------------------------------------------------- ##

@@ -4583,20 +4583,15 @@ REPORT_SECTION
 	REPORT(rt);
 	REPORT(delta);
 
-	 report<<"vbt"<<endl;
-		for(k=1;k<=ngear;k++)
-		{
-			for(int ig=1;ig<=n_ags;ig++)
-			{
-				for(i=syr;i<=nyr+1;i++)
-				{
-					report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<vbt(ig)(k)(i)<<endl;	
+  report<<"vbt"<<endl;
+		for(k=1;k<=ngear;k++){
+			for(int ig=1;ig<=ngroup;ig++){
+				for(i=syr;i<=nyr+1;i++){
+					report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<vbt(ig)(k)(i)<<endl;
 				}
 			}
 	 }
-	
 
-		
 	dmatrix rep_rt = value( exp(trans(trans(log_rt).sub(syr,nyr))) );
 	for(int ig = 1; ig <= n_ag; ig++ )
 	{
@@ -4939,10 +4934,9 @@ FUNCTION mcmc_output
     }
     of4<<endl;
 
-    //vulnerable biomass to all gears //Added by RF March 19 2015
     ofstream of5("iscam_vbt_mcmc.csv");
     iter = 1;
-    for(int ag=1;ag<=n_ags;ag++){
+    for(int ag=1;ag<=ngroup;ag++){
       for(int gear=1;gear<=ngear;gear++){
         for(int yr=syr;yr<=nyr+1;yr++){
           if(iter == 1){
@@ -5089,7 +5083,7 @@ FUNCTION mcmc_output
   // output vulnerable biomass to all gears //Added by RF March 19 2015
   ofstream of5("iscam_vbt_mcmc.csv",ios::app);
   iter = 1;
-  for(int ag=1;ag<=n_ags;ag++){
+  for(int ag=1;ag<=ngroup;ag++){
     for(int gear=1;gear<=ngear;gear++){
       for(int yr=syr;yr<=nyr;yr++){
         if(iter == 1){

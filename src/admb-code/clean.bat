@@ -13,7 +13,6 @@ del *.out /Q /F
 del *.pdf /Q /F
 del *.txt /Q /F
 del *.eva /Q /F
-del *.exe /Q /F
 del *.htp /Q /F
 del *.obj /Q /F
 del *.par /Q /F

@@ -1,5 +1,4 @@
-#include <admodel.h>
-#include "multinomial.h"
+#include "../../include/multinomial.h"
 
 
 dvariable multivariate_t_likelihood(const dmatrix &o, const dvar_matrix &p, 

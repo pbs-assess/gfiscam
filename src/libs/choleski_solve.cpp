@@ -1,9 +1,8 @@
-  #define HOME_VERSION
   #include "fvar.hpp"
-  #include "multinomial.h"
-  
+  #include "../../include/multinomial.h"
+
   void dfcholeski_solve(void);
-  
+
   dvar_vector choleski_solve(const dvar_matrix& MM,const dvar_vector& vv,
     const prevariable& det,const int& sgn)
   {
@@ -20,12 +19,10 @@
     M.rowshift(1);
     M.colshift(1);
     int n=M.rowmax();
-  
     dmatrix L(1,n,1,n);
   #ifndef SAFE_INITIALIZE
       L.initialize();
   #endif
-  
     int i,j,k;
     double tmp;
       if (M(1,1)<=0)
@@ -39,7 +36,6 @@
     {
       L(i,1)=M(i,1)/L(1,1);
     }
-  
     for (i=2;i<=n;i++)
     {
       for (j=2;j<=i-1;j++)
@@ -70,7 +66,6 @@
     {
       cdet+=log(L(i,i));
     }
-  
     v.shift(1);
     dvector x(1,n);
     x(1)=v(1)/L(1,1);
@@ -83,7 +78,6 @@
       }
       x(i)=(v(i)-ssum)/L(i,i);
     }
-  
     save_identifier_string("PO");
     value(det)=cdet;
     det.save_prevariable_position();
@@ -107,7 +101,6 @@
         set_gradient_stack(dfcholeski_solve);
     return vx;
   }
-  
   void dfcholeski_solve(void)
   {
     verify_identifier_string("QQ");
@@ -127,7 +120,7 @@
     prevariable_position detpos=restore_prevariable_position();
     double dfdet=restore_prevariable_derivative(detpos);
     verify_identifier_string("PO");
-  
+
     if (M.colsize() != M.rowsize())
     {
       cerr << "Error in chol_decomp. Matrix not square" << endl;
@@ -138,7 +131,7 @@
     M.rowshift(1);
     M.colshift(1);
     int n=M.rowmax();
-  
+
     dmatrix L(1,n,1,n);
     dmatrix dfL(1,n,1,n);
     dvector tmp(1,n);
@@ -157,7 +150,6 @@
   #ifndef SAFE_INITIALIZE
       L.initialize();
   #endif
-  
     int i,j,k;
     if (M(1,1)<=0)
     {
@@ -170,7 +162,6 @@
     {
       L(i,1)=M(i,1)/L(1,1);
     }
-  
     for (i=2;i<=n;i++)
     {
       for (j=2;j<=i-1;j++)
@@ -201,7 +192,6 @@
     {
       cdet+=log(L(i,i));
     }
-  
     v.shift(1);
     dvector vsum(2,n);
     dvector x(1,n);
@@ -218,7 +208,6 @@
     }
     dvector dfvsum(2,n);
     dfvsum.initialize();
-  
     //for (int i=2;i<=n;i++)
     for (int i=n;i>=2;i--)
     {
@@ -239,15 +228,11 @@
     //x(1)=v(1)/L(1,1);
     dfv(1)+=dfx(1)/L(1,1);
     dfL(1,1)-=dfx(1)*v(1)/square(L(1,1));
-  
-    
     for (int i=1;i<=n;i++)
     {
       //cdet+=log(L(i,i));
       dfL(i,i)+=dfdet/L(i,i);
     }
-  
-  
     for (i=n;i>=2;i--)
     {
       //L(i,i)=sqrt(tmp(i));
@@ -289,13 +274,10 @@
     }
     //L(1,1)=sqrt(M(1,1));
     dfM(1,1)+=dfL(1,1)/(2.*L(1,1));
-  
     dfM.rowshift(rowsave);
     dfM.colshift(colsave);
-  
+
     save_double_derivative(dfdet,detpos);
     dfM.save_dmatrix_derivatives(MMpos);
     dfv.save_dvector_derivatives(vvpos);
   }
-  
-  #undef HOME_VERSION

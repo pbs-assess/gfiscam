@@ -1,3 +1,5 @@
+#include <admodel.h>
+#include <fvar.hpp>
 #ifndef __MULTINOMIAL_H
 #define __MULTINOMIAL_H
 

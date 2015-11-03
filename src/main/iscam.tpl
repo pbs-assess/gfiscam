@@ -1,3 +1,5 @@
+// Go to objects dir and this command will give you all references to the function 'func'
+// nm  -A ./*.o | grep func
 /// @file iscam.tpl
 /// @author Steve Martell, IPHC
 
@@ -2275,6 +2277,7 @@ FUNCTION calcNumbersAtAge
 FUNCTION calcComposition
   {
   	int ii,ig,kk;
+    ig = 0;
   	dvar_vector va(sage,nage);
   	dvar_vector fa(sage,nage);
   	dvar_vector sa(sage,nage);
@@ -5189,7 +5192,7 @@ FUNCTION void projection_model(const double& tac);
   */
   static int runNo=0;
   runNo ++;
-  int i,j,k;
+  int i,k;
   int pyr = nyr+1;
   BaranovCatchEquation cBaranov;
   // | (2) : Average weight and mature spawning biomass for reference years  (copied from calcReferencePoints() but only implemented for ig=1)
@@ -5199,11 +5202,11 @@ FUNCTION void projection_model(const double& tac);
   fa_bar = elem_prod(dWt_bar(1),ma(1));
   M_bar  = colsum(value(M(1).sub(pf_cntrl(3),pf_cntrl(4))));
   M_bar /= pf_cntrl(4)-pf_cntrl(3)+1;
-  // --derive stock recruitment parameters
+  // --derive stock re4cruitment parameters
   // --survivorship of spawning biomass
   dvector lx(sage,nage);
   double  tau = value(sqrt(1.-rho)*varphi);
-  double m_rho = d_iscamCntrl(13);
+  //double m_rho = d_iscamCntrl(13);
   lx(sage)     = 1.;
   for(i=sage+1; i<=nage; i++){
    lx(i) = lx(i-1)*mfexp(-M_bar(i-1));
@@ -5212,7 +5215,7 @@ FUNCTION void projection_model(const double& tac);
   double phib = lx*fa_bar;   //average fecundity is calculated for all area/groups but projections are currently only implemented for n_ags=1
   double so = value(kappa(1)/phib);
   double bo  = value(ro(1)*phib);
-  double beta;
+  double beta = 1;
   switch(int(d_iscamCntrl(2))){
    case 1:  // Beverton-Holt
     beta = value((kappa(1)-1.)/bo);
@@ -5274,7 +5277,7 @@ FUNCTION void projection_model(const double& tac);
     //NOTE that this treatment of rec devs is different from historical model
     double  xx = randn(nf+i)*tau;
     if(i>=syr+sage-1){
-      double rt;
+      double rt = 1;
       double et = p_sbt(i-sage+1);  //lagged spawning biomass  (+1 because we want recruits for year i+1)
       if(d_iscamCntrl(2)==1){      // Beverton-Holt model
         rt=(so*et/(1.+beta*et));
@@ -5338,59 +5341,56 @@ FUNCTION void runMSE()
 	cout<<"Start of runMSE"<<endl;
 
 	// STRUCT FOR MODEL VARIABLES
-	ModelVariables s_mv;
-	s_mv.log_ro    = value( theta(1) );
-	s_mv.steepness = value( theta(2) );
-	s_mv.m         = value( theta(3) );
-	s_mv.log_rbar  = value( theta(4) );
-	s_mv.log_rinit = value( theta(5) );
-	s_mv.rho       = value( theta(6) );
-	s_mv.varphi    = value( theta(7) );
+	// ModelVariables s_mv;
+	// s_mv.log_ro    = value( theta(1) );
+	// s_mv.steepness = value( theta(2) );
+	// s_mv.m         = value( theta(3) );
+	// s_mv.log_rbar  = value( theta(4) );
+	// s_mv.log_rinit = value( theta(5) );
+	// s_mv.rho       = value( theta(6) );
+	// s_mv.varphi    = value( theta(7) );
 
-	// Selectivity parameters
-	d3_array log_sel_par(1,ngear,1,jsel_npar,1,isel_npar);
-	d4_array d4_log_sel(1,ngear,1,n_ags,syr,nyr,sage,nage);
-	for(int k = 1; k <= ngear; k++ )
-	{
-		log_sel_par(k) = value(sel_par(k));
-		d4_log_sel(k)  = value(log_sel(k));
-	}
+	// // Selectivity parameters
+	// d3_array log_sel_par(1,ngear,1,jsel_npar,1,isel_npar);
+	// d4_array d4_log_sel(1,ngear,1,n_ags,syr,nyr,sage,nage);
+	// for(int k = 1; k <= ngear; k++ )
+	// {
+	// 	log_sel_par(k) = value(sel_par(k));
+	// 	d4_log_sel(k)  = value(log_sel(k));
+	// }
 	
-	s_mv.d3_log_sel_par = &log_sel_par;
-	s_mv.d4_logSel      = &d4_log_sel;
+	// s_mv.d3_log_sel_par = &log_sel_par;
+	// s_mv.d4_logSel      = &d4_log_sel;
 
-	d3_array d3_M(1,n_ags,syr,nyr,sage,nage);
-	d3_array d3_F(1,n_ags,syr,nyr,sage,nage);
-	for(int ig = 1; ig <= n_ags; ig++ )
-	{
-		d3_M(ig) = value(M(ig));
-		d3_F(ig) = value(F(ig));
-	}
+	// d3_array d3_M(1,n_ags,syr,nyr,sage,nage);
+	// d3_array d3_F(1,n_ags,syr,nyr,sage,nage);
+	// for(int ig = 1; ig <= n_ags; ig++ )
+	// {
+	// 	d3_M(ig) = value(M(ig));
+	// 	d3_F(ig) = value(F(ig));
+	// }
 
-	s_mv.d3_M = &d3_M;
-	s_mv.d3_F = &d3_F;
-	s_mv.log_rec_devs = value(log_rec_devs);
-	s_mv.init_log_rec_devs = value(init_log_rec_devs);
+	// s_mv.d3_M = &d3_M;
+	// s_mv.d3_F = &d3_F;
+	// s_mv.log_rec_devs = value(log_rec_devs);
+	// s_mv.init_log_rec_devs = value(init_log_rec_devs);
 
-	s_mv.q = value(q);
-	s_mv.sbt = value(sbt);
-	d3_array tmp_ft=value(ft);
-	s_mv.d3_ft = &tmp_ft;
+	// s_mv.q = value(q);
+	// s_mv.sbt = value(sbt);
+	// d3_array tmp_ft=value(ft);
+	// s_mv.d3_ft = &tmp_ft;
 
-	s_mv.sbo = value(sbo);
-	s_mv.so = value(so);
-
-
-	// |-----------------------------------|
-	// | Instantiate Operating Model Class |
-	// |-----------------------------------|
-	OperatingModel om(s_mv,argc,argv);
-	om.runScenario(rseed);
-
-	COUT("DONE");
+	// s_mv.sbo = value(sbo);
+	// s_mv.so = value(so);
 
 
+	// // |-----------------------------------|
+	// // | Instantiate Operating Model Class |
+	// // |-----------------------------------|
+	// OperatingModel om(s_mv,argc,argv);
+	// om.runScenario(rseed);
 
+	// COUT("DONE");
 
 TOP_OF_MAIN_SECTION
 	time(&start);
@@ -5418,32 +5418,18 @@ GLOBALS_SECTION
 	#undef NA
 	#define NA -99.0
 
-	#include <admodel.h>
+	//#include <admodel.h>
 	#include <time.h>
-
 	#include <string.h>
-	//#include "lib/ADMB_XMLDoc.h"
-	// #include "lib/msy.h"
-	// #include "lib/msy.hpp"
-	// #include "lib/baranov.h"
-  // #include "lib/LogisticNormal.h"
-  // #include "lib/milka.h"
-  // #include "lib/multinomial.h"
-	// #include "Selex.h"
 
 	//#if defined _WIN32 || defined _WIN64
-//  #include "lib/Stock.cpp"
-	#include "lib/LogisticNormal.cpp"
-	#include "lib/LogisticStudentT.cpp"
-	#include "lib/msy.cpp"
-	#include "lib/baranov.cpp"
-	#include "lib/milka.cpp"
-	#include "lib/multinomial.cpp"
-	#include "lib/multivariate_t.cpp"
-	#include "lib/fvar_m58.cpp"
-  #include "lib/msy.hpp"
-  #include "lib/utilities.cpp"
-  //#endif
+  #include "../../include/baranov.h"
+  #include "../../include/LogisticNormal.h"
+  #include "../../include/LogisticStudentT.h"
+	#include "../../include/msy.h"
+  #include "../../include/msy.hpp"
+	#include "../../include/multinomial.h"
+  #include "../../include/utilities.h"
 
 	time_t start,finish;
 	long hour,minute,second;
@@ -5484,7 +5470,7 @@ FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, do
 	vd = exp(value(log_sel(1)(1)(nyr)));
 	
 	double Ro=value(ro(1));
-	double CR=value(kappa(1));
+	//double CR=value(kappa(1));
 	double Mbar;
 	M_bar  = colsum(value(M(1).sub(pf_cntrl(3),pf_cntrl(4)))); //mean across years
 	M_bar /= pf_cntrl(4)-pf_cntrl(3)+1;
@@ -5579,7 +5565,7 @@ FUNCTION void run_FRP()
 	double Bmsy;
 	dvector Ye(1,Nf); //Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
 	dvector Be(1,Nf); //Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
-	double fmsy,msy,bmsy,msy2;
+	double fmsy,msy,bmsy;
 	dvector ye(1,Nf);
 	dvector be(1,Nf);
 	

@@ -4,6 +4,7 @@
 #define SELEX_HPP
 
 #include <admodel.h>
+#include <fvar.hpp>
 
 /**
  * @defgroup Selectivities

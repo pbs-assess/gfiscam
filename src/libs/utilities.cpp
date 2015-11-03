@@ -1,3 +1,8 @@
+#include "../../include/utilities.h"
+#ifndef NA
+#define NA -99.0
+#endif
+
 adstring stripExtension(adstring fileName){
   /*
 		This function strips the file extension

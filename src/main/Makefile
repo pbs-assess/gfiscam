@@ -48,14 +48,6 @@ $(OBJDIR)%.o: %.cpp
 	@if [ ! -d "$(OBJDIR)" ]; then mkdir -p $(OBJDIR); fi
 	$(COMPILER) $(COMPILERFLAGS) -c $< -o $@
 
-clean:
-	rm $(EXEC).cpp
-	rm -rf ../../build/dist/
-
-dclean:
-	rm $(EXEC).cpp
-	rm -rf ../../build/debug/
-
 # Show variable values and compiler information
 rules:
 	@echo EXEC = $(EXEC)

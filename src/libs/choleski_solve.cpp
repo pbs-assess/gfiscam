@@ -1,5 +1,4 @@
-  #include "fvar.hpp"
-  #include "../../include/multinomial.h"
+#include "../../include/multinomial.h"
 
   void dfcholeski_solve(void);
 

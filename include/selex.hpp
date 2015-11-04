@@ -3,9 +3,6 @@
 #ifndef SELEX_HPP
 #define SELEX_HPP
 
-#include <admodel.h>
-#include <fvar.hpp>
-
 /**
  * @defgroup Selectivities
  * @Selectivities All of the alternative selectivity functions in the SLX namespace are
@@ -20,6 +17,7 @@
  * <br>Nonparametric            nonparametric            SelectivityCoefficients
  * <br>
  */
+#include <admodel.h>
 namespace slx {
 	
 	/**

@@ -12,7 +12,6 @@
 #endif
 
 #include <admodel.h>
-#include <fvar.hpp>
 
 namespace rfp {
 	/**

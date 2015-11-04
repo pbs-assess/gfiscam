@@ -106,10 +106,10 @@ Descrition:
 
 **/
 
-#include <admodel.h>
-#include <fvar.hpp>
 #ifndef __LOGISTIC_NORMAL_H
 #define __LOGISTIC_NORMAL_H
+
+#include <admodel.h>
 
 class logistic_normal
 {

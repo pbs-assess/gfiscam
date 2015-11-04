@@ -12,7 +12,7 @@ ADMB          = $(ADMB_HOME)
 DESTDIR       = ../../build/dist/
 OBJDIR        = ../../build/dist/objects/
 BINDIR        = ../../build/dist/bin/
-COMPILERFLAGS = -c -O2 -fpermissive -D_FILE_OFFSET_BITS=64 -Wall -DSAFE_ALL -D__GNUDOS__ -Dlinux -DUSE_LAPLACE  -std=c++11 -I. -I$(ADMB)/include -I$(ADMB)/contrib/include
+COMPILERFLAGS = -c -O2 -D_FILE_OFFSET_BITS=64 -Wall -DSAFE_ALL -D__GNUDOS__ -Dlinux -DUSE_LAPLACE  -std=c++11 -I. -I$(ADMB)/include -I$(ADMB)/contrib/include
 endif
 
 # Must come after the if statement so debug or dist dirs are correctly prepended
@@ -22,7 +22,7 @@ OBJS := $(SRCS:.cpp=.o)
 OBJECTS := $(addprefix $(OBJDIR), $(OBJS))
 
 all: $(OBJECTS)
-	@echo iscam build completed, DEBUG = $(DEBUG)
+	@echo iscam libraries build completed, DEBUG = $(DEBUG)
 
 $(OBJDIR)%.o: %.cpp
 	@if [ ! -d "$(DESTDIR)" ]; then mkdir -p $(DESTDIR); fi

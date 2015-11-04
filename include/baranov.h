@@ -1,11 +1,14 @@
-#include <admodel.h>
-#include <fvar.hpp>
-
 #ifndef BARANOV_CATCH_EQUATION_H
 #define BARANOV_CATCH_EQUATION_H
 
+#ifndef MAXITS
 #define MAXITS 50
+#endif
+
+#ifndef MAXF
 #define MAXF   5.0
+#endif
+
 #ifndef TOL
 #define TOL    1.e-9
 #endif
@@ -22,6 +25,8 @@
 	\version 1.0
 	\sa
 **/
+#include <admodel.h>
+
 class BaranovCatchEquation
 {
 	dmatrix m_hCt;

@@ -1,8 +1,8 @@
-#include <admodel.h>
-#include <fvar.hpp>
-#include "LogisticNormal.h"
 #ifndef __LOGISTIC_STUDENT_T_H
 #define __LOGISTIC_STUDENT_T_H
+
+#include <admodel.h>
+#include "LogisticNormal.h"
 
 class logistic_student_t: public logistic_normal
 {

@@ -1,9 +1,10 @@
-#include <admodel.h>
-#include <fvar.hpp>
-
 #ifndef _MSY_H_
 #define _MSY_H_
+
+#ifndef MAXITER
 #define MAXITER 300
+#endif
+
 #ifndef TOL
 #define TOL 1.e-04
 #endif
@@ -32,6 +33,8 @@
 	\version 1.1
 	\sa
 **/
+#include <admodel.h>
+
 class Msy
 {
 private:

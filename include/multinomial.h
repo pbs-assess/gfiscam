@@ -1,9 +1,11 @@
-#include <admodel.h>
-#include <fvar.hpp>
 #ifndef __MULTINOMIAL_H
 #define __MULTINOMIAL_H
 
+#ifndef TINY
 #define TINY     1.e-08
+#endif
+
+#include <admodel.h>
 
 dvariable mult_likelihood(const dmatrix &o, const dvar_matrix &p, dvar_matrix &nu, 
                           const dvariable &log_vn);

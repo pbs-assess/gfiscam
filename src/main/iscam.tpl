@@ -172,23 +172,21 @@ DATA_SECTION
 	// | age    j
 	// | gear   k  - number of gears with unique selectivity
 	int f;
-	int g; 
+	int g;
 	int h;
 	int i;
 	int j;
 	int k;
 
-	init_int narea;			
-	init_int ngroup;			
-	init_int nsex;			
-	init_int syr;			
-	init_int nyr;				
-	init_int sage;			
-	init_int nage;			
-	init_int ngear;				
-	vector age(sage,nage);			
-
-
+	init_int narea;
+	init_int ngroup;
+	init_int nsex;
+	init_int syr;
+	init_int nyr;
+	init_int sage;
+	init_int nage;
+	init_int ngear;
+	vector   age(sage,nage);
 
 	// |---------------------------------------------------------------------------------|
 	// | LINKS TO MANAGE ARRAY INDEXING
@@ -202,7 +200,6 @@ DATA_SECTION
 	// | - pntr_ag: matrix of indices for area and group.
 	// | - pntr_gs: matrix of indices for group and sex.
 	// | - pntr_ags: d3_array of indices for area group sex.
-	// |	
 	int n_ags;
 	!! n_ags = narea * ngroup * nsex;
 	int n_ag;
@@ -215,9 +212,7 @@ DATA_SECTION
 	imatrix  pntr_ag(1,narea,1,ngroup);
 	imatrix  pntr_gs(1,ngroup,1,nsex);
 	3darray pntr_ags(1,narea,1,ngroup,1,nsex);
-	
-	
-	
+
 	LOC_CALCS
 		age.fill_seqadd(sage,1);
 		int ig,ih,is;
@@ -266,7 +261,7 @@ DATA_SECTION
 		cout<<"| pntr_ags\n"<<pntr_ags(1)<<endl;
 		cout<<"| ----------------------- |\n"<<endl;
 		}
-		
+
 		/* Check for dimension errors in projection control file. */
 		if( pf_cntrl(1)<syr || pf_cntrl(3)<syr || pf_cntrl(5)<syr )
 		{
@@ -279,13 +274,12 @@ DATA_SECTION
 		}
 		if( pf_cntrl(2)>nyr || pf_cntrl(4)>nyr || pf_cntrl(6)>nyr )
 		{
-			cout<<"ERROR: last year in projection file control is" 
+			cout<<"ERROR: last year in projection file control is"
 			" greater than last model year."<<endl;
 			exit(1);
 		}
 	END_CALCS
-	
-	
+
 	// |---------------------------------------------------------------------------------|
 	// | Allocation for each gear in (ngear), use 0 for survey gears.
 	// |---------------------------------------------------------------------------------|
@@ -293,11 +287,9 @@ DATA_SECTION
 	// | If dAllocation >0 then set fish flag =1 else 0
 	// | nfleet is the number of non-survey gear fleet with dAllocations > 0
 	// |
-
 	int nfleet;
 	init_vector dAllocation(1,ngear);
-	
-	//init_ivector catch_sex_composition(1,ngear); 
+	//init_ivector catch_sex_composition(1,ngear);
 	//init_ivector catch_type(1,ngear);
 
 	ivector fsh_flag(1,ngear);
@@ -312,7 +304,7 @@ DATA_SECTION
 		}
 		nfleet = sum(fsh_flag);
 	END_CALCS
-	
+
 	ivector nFleetIndex(1,nfleet);
 	LOC_CALCS
 		j = 1;
@@ -321,8 +313,7 @@ DATA_SECTION
 			if(fsh_flag(k)) nFleetIndex(j++) = k;
 		}
 	END_CALCS
-	
-	
+
 	// |---------------------------------------------------------------------------------|
 	// | Growth and maturity parameters
 	// |---------------------------------------------------------------------------------|

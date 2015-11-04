@@ -1,9 +1,7 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef __UTILITIES_H
+#define __UTILITIES_H
 
 #include <admodel.h>
-#include <fvar.hpp>
-
 adstring stripExtension(adstring fileName);
 ivector getIndex(const dvector& a, const dvector& b);
 void write_proj_headers(ofstream &ofsP, int syr, int nyr);

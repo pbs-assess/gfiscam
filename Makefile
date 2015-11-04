@@ -1,4 +1,4 @@
-COMPILER:=g++
+COMPILER:=clang
 all:
 	$(MAKE) --directory=src DEBUG=no COMPILER=$(COMPILER)
 

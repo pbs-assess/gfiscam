@@ -15,7 +15,7 @@ DESTDIR       := ../../build/dist/
 OBJDIR        := ../../build/dist/objects/
 BINDIR        := ../../build/dist/bin/
 LINKERFLAGS   :=
-LINKERLIBS    := $(ADMB)/lib/libadmb-contrib.a
+LINKERLIBS    := -ladmb-contrib
 COMPILERFLAGS := -c -O3 -D_FILE_OFFSET_BITS=64 -Wall -DSAFE_ALL -D__GNUDOS__ -Dlinux -DUSE_LAPLACE  -std=c++11 -I. -I$(ADMB)/include -I$(ADMB)/contrib/include
 LIBOBJS       := $(wildcard ../../build/dist/objects/*.o)
 endif
@@ -34,7 +34,7 @@ all: $(EXEC)
 	@echo iscam build completed, DEBUG = $(DEBUG)
 
 $(EXEC): $(OBJECTS)
-	$(LINKER) $(LINKERFLAGS) -o $@ $^ -L$(ADMB)/lib $(LIBOBJS) -ladmb-contrib
+	$(LINKER) $(LINKERFLAGS) -o $@ $^ -L$(ADMB)/lib $(LIBOBJS) $(LINKERLIBS)
 	@if [ ! -d "$(BINDIR)" ]; then mkdir -p $(BINDIR); fi
 	-cp $(EXEC) $(BINDIR)
 	-cp $(EXEC).exe $(BINDIR)

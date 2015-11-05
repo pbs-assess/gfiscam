@@ -19,6 +19,8 @@ LINKERLIBS    := $(ADMB)/lib/libadmb-contrib.a
 COMPILERFLAGS := -c -O3 -D_FILE_OFFSET_BITS=64 -Wall -DSAFE_ALL -D__GNUDOS__ -Dlinux -DUSE_LAPLACE  -std=c++11 -I. -I$(ADMB)/include -I$(ADMB)/contrib/include
 LIBOBJS       := $(wildcard ../../build/dist/objects/*.o)
 endif
+# LIBOBJS may contain iscam.o, if so remove it from the list so linker call does not have two iscam.o's.
+LIBOBJS := $(filter-out ../../build/dist/objects/iscam.o, $(LIBOBJS))
 
 # Must come after the if statement so debug or dist dirs are correctly prepended
 EXEC := iscam
@@ -34,8 +36,8 @@ all: $(EXEC)
 $(EXEC): $(OBJECTS)
 	$(LINKER) $(LINKERFLAGS) -o $@ $^ -L$(ADMB)/lib $(LIBOBJS) -ladmb-contrib
 	@if [ ! -d "$(BINDIR)" ]; then mkdir -p $(BINDIR); fi
-	-mv $(EXEC) $(BINDIR)
-	-mv $(EXEC).exe $(BINDIR)
+	-cp $(EXEC) $(BINDIR)
+	-cp $(EXEC).exe $(BINDIR)
 	-cp *.dat $(BINDIR)
 	-cp *.ctl $(BINDIR)
 	-cp *.pfc $(BINDIR)
@@ -56,6 +58,7 @@ rules:
 	@echo OBJDIR = $(OBJDIR)
 	@echo OBJS = $(OBJS)
 	@echo OBJECTS = $(OBJECTS)
+	@echo Library objects = $(LIBOBJS)
 	@echo SRCS = $(SRCS)
 	@echo TPLS = $(TPLS)
 	@echo ADMB = $(ADMB)

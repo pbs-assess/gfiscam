@@ -34,7 +34,7 @@ all: $(EXEC)
 	@echo iscam build completed, DEBUG = $(DEBUG)
 
 $(EXEC): $(OBJECTS)
-	$(LINKER) $(LINKERFLAGS) -o $@ $^ -L$(ADMB)/lib $(LIBOBJS) $(LINKERLIBS)
+	$(LINKER) $(LINKERFLAGS) -o $@ $^ $(LIBOBJS) -L$(ADMB)/lib $(LINKERLIBS)
 	@if [ ! -d "$(BINDIR)" ]; then mkdir -p $(BINDIR); fi
 	-cp $(EXEC) $(BINDIR)
 	-cp $(EXEC).exe $(BINDIR)
@@ -60,7 +60,6 @@ rules:
 	@echo OBJECTS = $(OBJECTS)
 	@echo Library objects = $(LIBOBJS)
 	@echo SRCS = $(SRCS)
-	@echo TPLS = $(TPLS)
 	@echo ADMB = $(ADMB)
 	@echo MAKE = $(MAKE)
 	@echo Debug = $(DEBUG)

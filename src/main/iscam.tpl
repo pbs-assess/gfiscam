@@ -1,3 +1,4 @@
+
 // Go to objects dir and this command will give you all references to the function 'func'
 // nm  -A ./*.o | grep func
 /// @file iscam.tpl
@@ -5577,7 +5578,8 @@ FUNCTION void run_FRP()
 
 FINAL_SECTION
 	time(&finish);
-	elapsed_time=difftime(finish,start);
+
+  elapsed_time=difftime(finish,start);
 	hour=long(elapsed_time)/3600;
 	minute=long(elapsed_time)%3600/60;
 	second=(long(elapsed_time)%3600)%60;

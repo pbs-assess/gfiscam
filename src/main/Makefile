@@ -1,5 +1,8 @@
-# Make sure to set up the ADMB_HOME and ADMB_HOME_DEBUG
-# environment variables for debug and dist builds of ADMB on your system
+## C. Grandin, Nov 2015. Tested for g++/clang on Linux and g++ on Windows (mingw).
+##
+## **Make sure to set up the ADMB_HOME and ADMB_HOME_DEBUG
+##  environment variables for debug and dist builds of ADMB on your system
+
 ifeq ($(DEBUG),yes)
 ADMB          := $(ADMB_HOME_DEBUG)
 DESTDIR       := ../../build/debug/
@@ -38,10 +41,6 @@ $(EXEC): $(OBJECTS)
 	@if [ ! -d "$(BINDIR)" ]; then mkdir -p $(BINDIR); fi
 	-cp $(EXEC) $(BINDIR)
 	-cp $(EXEC).exe $(BINDIR)
-	-cp *.dat $(BINDIR)
-	-cp *.ctl $(BINDIR)
-	-cp *.pfc $(BINDIR)
-	-cp *.bat $(BINDIR)
 
 $(EXEC).cpp:
 	$(ADMB)/bin/tpl2cpp $(EXEC)

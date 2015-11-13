@@ -1,5 +1,5 @@
 #include "../../include/multinomial.h"
-
+#include "../../include/Logger.h"
 
 dvariable multivariate_t_likelihood(const dmatrix &o, const dvar_matrix &p, 
                                     const dvariable &log_var, const dvariable &log_v,
@@ -9,15 +9,13 @@ dvariable multivariate_t_likelihood(const dmatrix &o, const dvar_matrix &p,
 	if(o.colsize()!=p.colsize() || o.rowsize()!=p.rowsize())
 	{
 		cerr<<"Error in multivariate_t_likelihood, observed and predicted matrixes"
-		" are not the same size"<<endl;
+      " are not the same size\n";
 		ad_exit(1);
 	}
-	
 	dmatrix O = o;
 	dvar_matrix P = p;
 	O.colshift(1);
 	P.colshift(1);
-
 
 	int r1 = o.rowmin();
 	int r2 = o.rowmax();

@@ -1,4 +1,5 @@
 #include "../../include/msy.h"
+#include "../../include/Logger.h"
 
 /// Constructor with arguments (most likely way user will create an Msy object)
 Msy::Msy(double ro, double h, double m, double rho, dvector wa, dvector fa, dmatrix V)
@@ -89,7 +90,7 @@ void Msy::get_fmsy(dvector& fe)
 		// calc_equilibrium(fe);
 		calcEquilibrium(fe);
 		fe  += m_p;
-		//cout<<iter<<" fe "<<fe<<" f "<<m_f<<endl;
+		//LOG<<iter<<" fe "<<fe<<" f "<<m_f<<'\n';
 		
 		// check boundary conditions
 		for(i = 1; i<=n; i++)
@@ -170,7 +171,7 @@ void Msy::get_fmsy(dvector& fe, dvector& ak)
 		// derivatives of the total catch equation to update fbar;
 		fk     = fbar*lambda;
 		calcEquilibrium(fk);
-		cout<<iter<<" fbar "<<fbar<<" dYe "<<fabs(m_dYe)<<" fk "<<fk<<endl;
+		LOG<<iter<<" fbar "<<fbar<<" dYe "<<fabs(m_dYe)<<" fk "<<fk<<'\n';
 		
 		fbar   = fbar - m_dYe/m_d2Ye;
 		iter++;
@@ -178,7 +179,7 @@ void Msy::get_fmsy(dvector& fe, dvector& ak)
 		// Check boundary conditions and reduce step size if necessary.
 		if( (x1-fbar)*(fbar-x2)<0.0 )
 		{
-			cout<<"get_fmsy:: reducing Newton-step"<<endl;
+			LOG<<"get_fmsy:: reducing Newton-step"<<'\n';
 			fbar += 0.98 * m_dYe/m_d2Ye;
 			//exit(1);
 		}
@@ -413,7 +414,7 @@ void Msy::calc_equilibrium(const dvector& fe)
 	m_g    = diagonal(d2ye);		//Gradient vector
 	m_f    = dye;   				//Value of the function to minimize
 	
-	cout<<"OB1 fe "<<fe<<" ye "<<ye<<" dye "<<dye<<endl;
+	LOG<<"OB1 fe "<<fe<<" ye "<<ye<<" dye "<<dye<<'\n';
 }
 
 

@@ -1,4 +1,6 @@
 #include "../../include/utilities.h"
+#include "../../include/Logger.h"
+
 #ifndef NA
 #define NA -99.0
 #endif
@@ -67,7 +69,7 @@ void write_proj_headers(ofstream &ofsP, int syr, int nyr){
   ofsP<<"FMSY"                 <<",";
   ofsP<<"F"<<nyr+1<<"FMSY"     <<",";
   ofsP<<"UMSY"                 <<",";
-  ofsP<<"U"<<nyr+1<<"UMSY"     <<endl; //want probability F2015>FMSY - this will be > 1 if true
+  ofsP<<"U"<<nyr+1<<"UMSY"     <<'\n'; //want probability F2015>FMSY - this will be > 1 if true
 }
 
 void write_proj_output(ofstream &ofsP, int syr, int nyr, double tac, int pyr, dvector p_sbt, dmatrix p_ft, dvar_matrix ft, double bo, dmatrix fmsy, dvector bmsy){
@@ -97,5 +99,5 @@ void write_proj_output(ofstream &ofsP, int syr, int nyr, double tac, int pyr, dv
       <<fmsy                       <<","
       <<p_ft(pyr,1)/fmsy           <<","
       <<(1. - mfexp(-fmsy))        <<","
-      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy)) <<endl;
+      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy))<<'\n';
 }

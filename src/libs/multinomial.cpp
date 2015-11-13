@@ -1,4 +1,6 @@
 #include "../../include/multinomial.h"
+#include "../../include/Logger.h"
+
 dvariable mult_likelihood(const dmatrix &o, const dvar_matrix &p, dvar_matrix &nu, 
                           const dvariable &log_vn)
 {
@@ -7,10 +9,9 @@ dvariable mult_likelihood(const dmatrix &o, const dvar_matrix &p, dvar_matrix &n
 	if(o.colsize()!=p.colsize() || o.rowsize()!=p.rowsize())
 	{
 		cerr<<"Error in multivariate_t_likelihood, observed and predicted matrixes"
-		" are not the same size"<<endl;
+		" are not the same size\n";
 		ad_exit(1);
 	}
-	
 	dvariable vn = mfexp(log_vn);
 	dvariable ff = 0.0;
 	int r1 = o.rowmin();
@@ -28,7 +29,6 @@ dvariable mult_likelihood(const dmatrix &o, const dvar_matrix &p, dvar_matrix &n
 				ff += gammln(sobs(j));
 		}
 		ff -= sobs * log(TINY + p(i));
-		
 		dvar_vector o1=o(i)/sum(o(i));
 		dvar_vector p1=p(i)/sum(p(i));
 		nu(i) = elem_div(o1-p1,sqrt(elem_prod(p1,1.-p1)/vn));

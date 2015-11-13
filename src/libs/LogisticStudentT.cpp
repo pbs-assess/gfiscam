@@ -1,4 +1,5 @@
 #include "../../include/LogisticStudentT.h"
+#include "../../include/Logger.h"
 
 // Constructor
 logistic_student_t::logistic_student_t(const dmatrix& _O,const dvar_matrix& _E,
@@ -69,8 +70,7 @@ dvariable logistic_student_t::negative_log_likelihood()
 {
 	// 7) Compute nll using student t-distrbution.
 	// v is the degrees of freedom.
-	
-	cout<<"Student T, df = "<<m_v<<endl;
+	LOG<<"Student T, df = "<<m_v<<'\n';
 	RETURN_ARRAYS_INCREMENT();
 	dvariable v = m_v;
 	int p = 1;

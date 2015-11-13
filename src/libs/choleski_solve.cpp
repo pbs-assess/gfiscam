@@ -1,4 +1,5 @@
 #include "../../include/multinomial.h"
+#include "../../include/Logger.h"
 
   void dfcholeski_solve(void);
 

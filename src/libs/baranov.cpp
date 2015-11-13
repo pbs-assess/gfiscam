@@ -1,4 +1,5 @@
 #include "../../include/baranov.h"
+#include "../../include/Logger.h"
 
 BaranovCatchEquation::BaranovCatchEquation()
 {
@@ -88,8 +89,8 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const doubl
 		fx   = ct - chat;
 		//The following couts were used to debug the transpose error in the Jacobian.
 		
-		//cout<<"fx = "<<fx<<endl;
-		// cout<<"Jacobian\t"<<"its = "<<its<<"\n"<<J<<endl;
+		//LOG<<"fx = "<<fx<<'\n';
+		// LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
 		invJ = -inv(J);
 		ft  += fx*invJ;
 		
@@ -176,9 +177,8 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const doubl
 		}
 		fx   = ct - chat;
 		//The following couts were used to debug the transpose error in the Jacobian.
-		
-		//cout<<"fx = "<<fx<<endl;
-		//cout<<"Jacobian\t"<<"its = "<<its<<"\n"<<J<<endl;
+		//LOG<<"fx = "<<fx<<'\n';
+		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
 		invJ = -inv(J);
 		ft  += fx*invJ;
 		
@@ -266,9 +266,8 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dvect
 		}
 		fx   = ct - chat;
 		//The following couts were used to debug the transpose error in the Jacobian.
-		
-		//cout<<"fx = "<<fx<<endl;
-		//cout<<"Jacobian\t"<<"its = "<<its<<"\n"<<J<<endl;
+		//LOG<<"fx = "<<fx<<'\n';
+		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
 		invJ = -inv(J);
 		ft  += fx*invJ;
 		
@@ -356,9 +355,8 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dvect
 		}
 		fx   = ct - chat;
 		//The following couts were used to debug the transpose error in the Jacobian.
-		
-		// cout<<"fx = "<<fx<<"\t ft = "<<max(ft)<<endl;
-		// cout<<"Jacobian\t"<<"its = "<<its<<"\n"<<J<<endl;
+		//LOG<<"fx = "<<fx<<'\n';
+		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
 		invJ = -inv(J);
 		ft  += fx*invJ;
 		
@@ -511,9 +509,8 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 		}  // end of sex
 		fx   = ct - chat;
 		//The following couts were used to debug the transpose error in the Jacobian.
-		
-		//cout<<"fx = "<<fx<<endl;
-		//cout<<"Jacobian\t"<<"its = "<<its<<"\n"<<J<<endl;
+		//LOG<<"fx = "<<fx<<'\n';
+		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
 		invJ = -inv(J);
 		ft  += fx*invJ;
 		
@@ -621,9 +618,8 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 		}  // end of sex
 		fx   = ct - chat;
 		//The following couts were used to debug the transpose error in the Jacobian.
-		
-		// cout<<"its = "<<its<<" fx = "<<fx<<endl;
-		//cout<<"Jacobian\t"<<"its = "<<its<<"\n"<<J<<endl;
+		//LOG<<"fx = "<<fx<<'\n';
+		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
 		invJ = -inv(J);
 		ft  += fx*invJ;
 		
@@ -758,9 +754,9 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 				 
 // 		    ft(i) -= (ct_hat(i)-ctmp(i))/dct_hat(i);
 // 		}
-// 		//cout<<iter<<"\t"<<ft<<"\t"<<ct_hat-ct<<endl;
+// 		//LOG<<iter<<"\t"<<ft<<"\t"<<ct_hat-ct<<'\n';
 // 	}
-// 	//cout<<ft<<"\t\t"<<ct<<"\t\t"<<ctmp<<endl;
+// 	//LOG<<ft<<"\t\t"<<ct<<"\t\t"<<ctmp<<'\n';
 	
 // 	return(ft);
 // }  
@@ -782,7 +778,7 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 
 // 	   THis function should be deprecated.
 	
-// 	cout<<"I'm in the Baranov equation for multiple fleets"<<endl;
+// 	LOG<<"I'm in the Baranov equation for multiple fleets\n";;
 // 	int i,a,A;
 // 	double minsurv = 0.05;
 // 	int ng=size_count(ct);	//number of gears
@@ -844,11 +840,11 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 				 
 // 		    ft(i) -= (ct_hat(i)-ctmp(i))/dct_hat(i);
 // 		}
-// 		//cout<<iter<<"\t"<<ft<<"\t"<<ct_hat-ctmp<<endl;
+// 		//LOG<<iter<<"\t"<<ft<<"\t"<<ct_hat-ctmp<<'\n';
 // 		//SJDM, this algorithm does converge niceley for multiple fleets
 // 	}
-// 	//cout<<ft<<"\t\t"<<ct<<"\t\t"<<ctmp<<endl;
-// 	//cout<<ct<<endl;
+// 	//LOG<<ft<<"\t\t"<<ct<<"\t\t"<<ctmp<<'\n';
+// 	//LOG<<ct<<'\n';
 // 	return(ft);
 // }  
 

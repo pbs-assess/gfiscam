@@ -1,45 +1,4 @@
-
-// Go to objects dir and this command will give you all references to the function 'func'
-// nm  -A ./*.o | grep func
-/// @file iscam.tpl
-/// @author Steve Martell, IPHC
-
-///
-/// \def REPORT(object)
-/// \brief Prints name and value of \a object on ADMB report %ofstream file.
-///
-
-///
-/// \def COUT(object)
-/// \brief Screen dump using cout<<"object\n"<<object<<endl;
-///
-
-///
-/// \def TINY
-/// \brief A small number (1.e-08)`
-///
-
-// ----------------------------------------------------------------------------- //
-//         integrated Statistical Catch Age Model (iSCAM)                        //
-//                                                                               //
-//                           VERSION 1.1                                         //
-//               Tue Jul 19 22:23:58 PDT 2011                                    //
-//                                                                               //
-//                                                                               //
-//           Created by Steven Martell on 2010-04-09                             //
-//           Copyright (c) 2010. All rights reserved.                            //
-//                                                                               //
-// AUTHORS: SJDM Steven Martell                                                  //
-//                                                                               //
-// CONVENTIONS: Formatting conventions are based on the The                      //
-//               Elements of C++ Style (Misfeldt et al. 2004)                    //
-//                                                                               //
-// NAMING CONVENTIONS:                                                           //
-//             Macros       -> UPPERCASE                                         //
-//             Constants    -> UpperCamelCase                                    //
-//             Functions    -> lowerCamelCase                                    //
-//             Variables    -> lowercase                                         //
-// ----------------------------------------------------------------------------- //
+/// iSCAM = integrated Statistical Catch Age Model
 
 DATA_SECTION
 	// |---------------------------------------------------------------------------------|
@@ -47,7 +6,7 @@ DATA_SECTION
 	// |---------------------------------------------------------------------------------|
 	/// | DataFile.dat           : data to condition the assessment model on
 	init_adstring DataFile;      ///< String for the input datafile name.
-	/// | ControlFile.ctl        : controls for phases, selectivity options 
+	/// | ControlFile.ctl        : controls for phases, selectivity options
 	init_adstring ControlFile;   ///< String for the control file.
 	/// | ProjectFileControl.pfc : used for stock projections under TAC
 	init_adstring ProjectFileControl;  ///< String for the projection file.
@@ -59,7 +18,7 @@ DATA_SECTION
 	!! BaseFileName = stripExtension(ControlFile);  ///< BaseName given by the control file
 	/// | ReportFileName         : file name to copy report file to.
 	!! ReportFileName = BaseFileName + adstring(".rep");
-	!! cout<<BaseFileName<<endl;
+	!! LOG<<"Base part of file names:\n"<<BaseFileName<<'\n';
 
   // |---------------------------------------------------------------------------------|
 	// | READ IN PROJECTION FILE CONTROLS
@@ -78,8 +37,8 @@ DATA_SECTION
 	!! ad_comm::change_datafile_name(ProjectFileControl);
 	/// | Number of catch options to explore in the decision table.
 	init_int n_tac; ///< Number of catch options to explore in the decision table.
-	!! COUT(ProjectFileControl);
-	!! COUT(n_tac);
+  !! LOG<<"Number of TAC options to explore in decision table:\n";
+	!! LOG<<n_tac<<'\n';
 	/// | Vector of catch options.
 	init_vector tac(1,n_tac);
 	init_int n_pfcntrl;
@@ -91,9 +50,9 @@ DATA_SECTION
 	LOC_CALCS
 		if(eof_pf!=-999)
 		{
-			cout<<"Error reading projection file."<<endl;
-			cout<<"Last integer read is "<<eof_pf<<endl;
-			cout<<"The file should end with -999.\n Aborting!"<<endl;
+			LOG<<"Error reading projection file.\n";
+			LOG<<"Last integer read is "<<eof_pf<<'\n';
+			LOG<<"The file should end with -999.\n Aborting!\n";
 			ad_exit(1);
 		}
 	END_CALCS
@@ -127,10 +86,10 @@ DATA_SECTION
 		if((on=option_match(ad_comm::argc,ad_comm::argv,"-retro",opt))>-1)
 		{
 			retro_yrs = atoi(ad_comm::argv[on+1]);
-			cout<<"|____________________________________________________|\n";
-			cout<<"| Implementing Retrospective analysis                |\n";
-			cout<<"|____________________________________________________|\n";
-			cout<<"| Number of retrospective years = "<<retro_yrs<<endl;
+			LOG<<" ____________________________________________________ \n";
+			LOG<<"| Implementing Retrospective analysis                |\n";
+			LOG<<"|____________________________________________________|\n";
+			LOG<<"| Number of retrospective years = "<<retro_yrs<<'\n';
 		}
 
 		// Management strategy evaluation.
@@ -139,27 +98,22 @@ DATA_SECTION
 		{
 			mseFlag = 1;
 			rseed   = atoi(ad_comm::argv[on+1]);
-			cout<<"|_________________________________________________|\n";
-			cout<<"|Implementing Management Strategy Evaluation      |\n";
-			cout<<"|_________________________________________________|\n";
+			LOG<<" _________________________________________________ \n";
+			LOG<<"|Implementing Management Strategy Evaluation      |\n";
+			LOG<<"|_________________________________________________|\n";
 		}
 
 		// Test MSY
 		testMSY = 0;
-		if((on=option_match(ad_comm::argc,ad_comm::argv,"-msy",opt))>-1)
-		{
-			cout<<"Testing MSY calculations with Spreadsheet MSF.xlsx"<<endl;
+		if((on=option_match(ad_comm::argc,ad_comm::argv,"-msy",opt))>-1){
+			LOG<<"Testing MSY calculations with Spreadsheet MSF.xlsx\n";
 			testMSY = 1;
-			
 		}
 
 	END_CALCS
 
-
-	// |---------------------------------------------------------------------------------|
-	// | MODEL DATA FROM DATA FILE
-	// |---------------------------------------------------------------------------------|
-	// |
+  // Set up the datafile to be the name found on the first line in
+  //  the original datafile (iscam.dat)
 	!! ad_comm::change_datafile_name(DataFile);
 
 	// |---------------------------------------------------------------------------------|
@@ -172,12 +126,13 @@ DATA_SECTION
 	// | year   i
 	// | age    j
 	// | gear   k  - number of gears with unique selectivity
+  // They all have to be on seperate lines due to limitations of the tpl2cpp scanner.
 	int f;
-	int g;
-	int h;
-	int i;
-	int j;
-	int k;
+  int g;
+  int h;
+  int i;
+  int j;
+  int k;
 
 	init_int narea;
 	init_int ngroup;
@@ -220,63 +175,56 @@ DATA_SECTION
 		ig = 0;
 		ih = 0;
 		is = 0;
-		for(f=1; f<=narea; f++)
-		{
-			for(g=1; g<=ngroup; g++)
-			{
+		for(f=1; f<=narea; f++){
+			for(g=1; g<=ngroup; g++){
 				ih ++;
 				pntr_ag(f,g) = ih;
-				for(h=1;h<=nsex;h++)
-				{
+				for(h=1;h<=nsex;h++){
 					ig ++;
 					n_area(ig)  = f;
 					n_group(ig) = g;
 					n_sex(ig)   = h;
 					pntr_ags(f,g,h) = ig;
-					if(f==1)
-					{
+					if(f==1){
 						is ++;
 						pntr_gs(g,h) = is;
 					}
 				}
 			}
 		}
-		if(!mseFlag)
-		{
-		cout<<"| ----------------------- |"<<endl;
-		cout<<"| MODEL DIMENSION         |"<<endl;
-		cout<<"| ----------------------- |"<<endl;
-		cout<<"| narea  \t"<<narea<<endl;
-		cout<<"| ngroup \t"<<ngroup<<endl;
-		cout<<"| nsex   \t"<<nsex<<endl;
-		cout<<"| syr    \t"<<syr<<endl;
-		cout<<"| nyr    \t"<<nyr<<endl;
-		cout<<"| sage   \t"<<sage<<endl;
-		cout<<"| nage   \t"<<nage<<endl;
-		cout<<"| ngear  \t"<<ngear<<endl;
-		cout<<"| n_area \t"<<n_area<<endl;
-		cout<<"| n_group\t"<<n_group<<endl;
-		cout<<"| n_sex  \t"<<n_sex<<endl;
-		cout<<"| pntr_ag\n"<<pntr_ag<<endl;
-		cout<<"| pntr_gs\n"<<pntr_gs<<endl;
-		cout<<"| pntr_ags\n"<<pntr_ags(1)<<endl;
-		cout<<"| ----------------------- |\n"<<endl;
+		if(!mseFlag){
+      LOG<<"| ----------------------- |\n";
+		  LOG<<"| MODEL DIMENSION         |\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<"| narea  \t"<<narea<<'\n';
+		  LOG<<"| ngroup \t"<<ngroup<<'\n';
+		  LOG<<"| nsex   \t"<<nsex<<'\n';
+		  LOG<<"| syr    \t"<<syr<<'\n';
+		  LOG<<"| nyr    \t"<<nyr<<'\n';
+		  LOG<<"| sage   \t"<<sage<<'\n';
+		  LOG<<"| nage   \t"<<nage<<'\n';
+		  LOG<<"| ngear  \t"<<ngear<<'\n';
+		  LOG<<"| n_area \t"<<n_area<<'\n';
+		  LOG<<"| n_group\t"<<n_group<<'\n';
+		  LOG<<"| n_sex  \t"<<n_sex<<'\n';
+		  LOG<<"| pntr_ag\t"<<pntr_ag<<'\n';
+		  LOG<<"| pntr_gs\t"<<pntr_gs<<'\n';
+		  LOG<<"| pntr_ags\t"<<pntr_ags(1)<<'\n';
+		  LOG<<"| ----------------------- |\n\n";
 		}
 
 		/* Check for dimension errors in projection control file. */
-		if( pf_cntrl(1)<syr || pf_cntrl(3)<syr || pf_cntrl(5)<syr )
-		{
-			cout<<"WARNING: start year in projection file control is" 
-			" less than initial model year. Setting to syr."<<endl;
+		if(pf_cntrl(1)<syr || pf_cntrl(3)<syr || pf_cntrl(5)<syr){
+			LOG<<"WARNING: start year in projection file control is"
+			" less than initial model year. Setting to syr.\n";
 			// exit(1);
 			pf_cntrl(1) = syr;
 			pf_cntrl(3) = syr;
 			pf_cntrl(5) = syr;
 		}
-		if( pf_cntrl(2)>nyr || pf_cntrl(4)>nyr || pf_cntrl(6)>nyr )
-		{
-			cout<<"ERROR: last year in projection file control is"
-			" greater than last model year."<<endl;
+		if(pf_cntrl(2)>nyr || pf_cntrl(4)>nyr || pf_cntrl(6)>nyr){
+			LOG<<"ERROR: last year in projection file control is"
+			" greater than last model year.\n";
 			exit(1);
 		}
 	END_CALCS
@@ -296,8 +244,7 @@ DATA_SECTION
 	ivector fsh_flag(1,ngear);
 	LOC_CALCS
 		dAllocation = dAllocation/sum(dAllocation);
-		for(int k=1;k<=ngear;k++)
-		{
+		for(int k=1;k<=ngear;k++){
 			if(dAllocation(k)>0)
 				fsh_flag(k)=1;
 			else
@@ -309,8 +256,7 @@ DATA_SECTION
 	ivector nFleetIndex(1,nfleet);
 	LOC_CALCS
 		j = 1;
-		for(int k=1; k<=ngear;k++)
-		{
+		for(int k=1; k<=ngear;k++){
 			if(fsh_flag(k)) nFleetIndex(j++) = k;
 		}
 	END_CALCS
@@ -319,72 +265,58 @@ DATA_SECTION
 	// | Growth and maturity parameters
 	// |---------------------------------------------------------------------------------|
 	// | n_ags -> number of areas * groups * sex
-	// |
-
-	init_vector  d_linf(1,n_ags);
+	init_vector d_linf(1,n_ags);
 	init_vector d_vonbk(1,n_ags);
-	init_vector    d_to(1,n_ags);
-	init_vector     d_a(1,n_ags);
-	init_vector     d_b(1,n_ags);
-	init_vector    d_ah(1,n_ags);
-	init_vector    d_gh(1,n_ags);
-	init_int 		n_MAT;
+	init_vector d_to(1,n_ags);
+	init_vector d_a(1,n_ags);
+	init_vector d_b(1,n_ags);
+	init_vector d_ah(1,n_ags);
+	init_vector d_gh(1,n_ags);
+	init_int n_MAT;
 	int t1;
 	int t2;
 	LOC_CALCS
-		if(n_MAT)
-		{
+		if(n_MAT){
 			t1 = sage;
 			t2 = nage;
-		}
-		else
-		{
+		}else{
 			t1 = 0;
 			t2 = 0;
 		}
-	END_CALCS 
-	
-	init_vector 	d_maturityVector(t1,t2);
-
-
+	END_CALCS
+	init_vector d_maturityVector(t1,t2);
 	matrix la(1,n_ags,sage,nage);		//length-at-age
 	matrix wa(1,n_ags,sage,nage);		//weight-at-age
 	matrix ma(1,n_ags,sage,nage);		//maturity-at-age
 	LOC_CALCS
-		if(!mseFlag)
-		{
-		cout<<setw(8)<<setprecision(4)<<endl;
-	  cout<<"| ----------------------- |"<<endl;
-		cout<<"| GROWTH PARAMETERS       |"<<endl;
-		cout<<"| ----------------------- |"<<endl;
-		cout<<"| d_linf  \t"<<d_linf<<endl;
-	  	cout<<"| d_vonbk \t"<<d_vonbk<<endl;
-	  	cout<<"| d_to    \t"<<d_to<<endl;
-	  	cout<<"| d_a     \t"<<d_a<<endl;
-	  	cout<<"| d_b     \t"<<d_b<<endl;
-	  	cout<<"| d_ah    \t"<<d_ah<<endl;
-	  	cout<<"| d_gh    \t"<<d_gh<<endl;
-	  	cout<<"| ----------------------- |\n"<<endl;
-	  	}
-	  	// length & weight-at-age based on input growth pars
-	  	ma.initialize();
-                 for(ig=1;ig<=n_ags;ig++)
-	  	{
-	  		la(ig) = d_linf(ig)*(1. - exp(-d_vonbk(ig)*(age-d_to(ig))));
-	  		wa(ig) = d_a(ig) * pow(la(ig),d_b(ig));
-	  		h = n_sex(ig);
-	  		if(n_MAT==0)
-	  		{
+		if(!mseFlag){
+		  LOG<<setw(8)<<setprecision(4)<<'\n';
+	    LOG<<"| ----------------------- |\n";
+		  LOG<<"| GROWTH PARAMETERS       |\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<"| d_linf  \t"<<d_linf<<'\n';
+	  	LOG<<"| d_vonbk \t"<<d_vonbk<<'\n';
+	  	LOG<<"| d_to    \t"<<d_to<<'\n';
+	  	LOG<<"| d_a     \t"<<d_a<<'\n';
+	  	LOG<<"| d_b     \t"<<d_b<<'\n';
+	  	LOG<<"| d_ah    \t"<<d_ah<<'\n';
+	  	LOG<<"| d_gh    \t"<<d_gh<<'\n';
+	  	LOG<<"| ----------------------- |\n\n";
+    }
+	  // length & weight-at-age based on input growth pars
+	  ma.initialize();
+    for(ig=1;ig<=n_ags;ig++){
+      la(ig) = d_linf(ig)*(1. - exp(-d_vonbk(ig)*(age-d_to(ig))));
+	  	wa(ig) = d_a(ig) * pow(la(ig),d_b(ig));
+	  	h = n_sex(ig);
+	  	if(n_MAT==0){
 	  			ma(ig) = plogis(age,d_ah(ig),d_gh(ig));
-	  		}
-	  		else if( n_MAT>0 && h !=2 )
-	  		{
-	  			ma(ig) = d_maturityVector;
-	  		}
+	  	}else if(n_MAT>0 && h !=2){
+        ma(ig) = d_maturityVector;
 	  	}
-		 
+	  }
 	END_CALCS
-		    
+
 	// |---------------------------------------------------------------------------------|
 	// | Historical removal
 	// |---------------------------------------------------------------------------------|
@@ -399,45 +331,38 @@ DATA_SECTION
 	3darray d3_Ct(1,n_ags,syr,nyr,1,ngear);
 
 	int ft_count;
- 	
 
 	LOC_CALCS
 		ft_count = nCtNobs;
-		if(!mseFlag)
-		{
-		cout<<"| ----------------------- |"<<endl;
-		cout<<"| HEAD(dCatchData)        |"<<endl;
-		cout<<"| ----------------------- |"<<endl;
-		cout<<dCatchData.sub(1,3)<<endl;
-		cout<<"| ----------------------- |\n"<<endl;
-		cout<<"| ----------------------- |"<<endl;
-		cout<<"| TAIL(dCatchData)        |"<<endl;
-		cout<<"| ----------------------- |"<<endl;
-		cout<<dCatchData.sub(nCtNobs-3,nCtNobs)<<endl;
-		cout<<"| ----------------------- |\n"<<endl;
+		if(!mseFlag){
+      LOG<<"| ----------------------- |\n";
+		  LOG<<"| HEAD(dCatchData)        |\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<dCatchData.sub(1,3)<<'\n';
+		  LOG<<"| ----------------------- |\n\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<"| TAIL(dCatchData)        |\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<dCatchData.sub(nCtNobs-3,nCtNobs)<<'\n';
+		  LOG<<"| ----------------------- |\n";
 		}
 		d3_Ct.initialize();
 		int k;
-		for(int ii=1;ii<=nCtNobs;ii++)
-		{
+		for(int ii=1;ii<=nCtNobs;ii++){
 			i = dCatchData(ii)(1);
 			k = dCatchData(ii)(2);
 			f = dCatchData(ii)(3);
 			g = dCatchData(ii)(4);
 			h = dCatchData(ii)(5);
-			if( h==0 )
-			{
-				for(h=1;h<=nsex;h++)
-				{
+			if(h==0){
+        for(h=1;h<=nsex;h++){
 					ig = pntr_ags(f,g,h);
 					d3_Ct(ig)(i)(k) = 1./nsex*dCatchData(ii)(7);
 				}
-			}
-			else
-			{
+			}else{
 				ig = pntr_ags(f,g,h);
 				d3_Ct(ig)(i)(k) = dCatchData(ii)(7);
-			} 
+			}
 		}
 	END_CALCS
 
@@ -465,11 +390,11 @@ DATA_SECTION
 	LOC_CALCS
 		if(!mseFlag)
 		{
-		cout<<"| ----------------------- |"<<endl;
-		cout<<"| TAIL(d3_survey_data)       |"<<endl;
-		cout<<"| ----------------------- |"<<endl;
-		cout<<d3_survey_data(nItNobs).sub(n_it_nobs(nItNobs)-3,n_it_nobs(nItNobs))<<endl;
-		cout<<"| ----------------------- |\n"<<endl;
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| TAIL(d3_survey_data)    |\n";
+		LOG<<"| ----------------------- |\n";
+		LOG<<d3_survey_data(nItNobs).sub(n_it_nobs(nItNobs)-3,n_it_nobs(nItNobs))<<'\n';
+		LOG<<"| ----------------------- |\n\n";
 		}
 		for(int k=1;k<=nItNobs;k++)
 		{
@@ -514,11 +439,11 @@ DATA_SECTION
 			{
 				if(n_A_nobs(nAgears) > 3)
 				{
-					cout<<"| ----------------------- |"<<endl;
-					cout<<"| TAIL(A)       |"<<endl;
-					cout<<"| ----------------------- |"<<endl;
-					cout<<setw(4)<<d3_A(nAgears).sub(n_A_nobs(nAgears)-2,n_A_nobs(nAgears))<<endl;
-					cout<<"| ----------------------- |\n"<<endl;
+					LOG<<"| ----------------------- |\n";
+					LOG<<"| TAIL(A)       |"<<'\n';
+					LOG<<"| ----------------------- |\n";
+					LOG<<setw(4)<<d3_A(nAgears).sub(n_A_nobs(nAgears)-2,n_A_nobs(nAgears))<<'\n';
+					LOG<<"| ----------------------- |\n\n";
 				  }
 			}
 			for(k=1;k<=nAgears;k++)
@@ -533,18 +458,15 @@ DATA_SECTION
 				}
 				d3_A_obs(k) = tmp;
 				//d3_A_obs(k) = trans(trans(d3_A(k)).sub(n_A_sage(k),n_A_nage(k)));
-				
-			}      
-
+			}
 		}
 		else if(!mseFlag)
 		{
-			cout<<"| ----------------------- |"<<endl;
-			cout<<"| NO AGE OR LENGTH DATA   |"<<endl;
-			cout<<"| ----------------------- |"<<endl;
+			LOG<<"| ----------------------- |\n";
+			LOG<<"| NO AGE OR LENGTH DATA   |\n";
+			LOG<<"| ----------------------- |\n";
 		}
 	END_CALCS
-	
 	// |---------------------------------------------------------------------------------|
 	// | EMPIRICAL WEIGHT_AT_AGE DATA
 	// |---------------------------------------------------------------------------------|
@@ -591,22 +513,17 @@ DATA_SECTION
 		projwt.initialize();
 		n_bf_wt_row.initialize();
 		tmp_nWtNobs.initialize();
-
 		for(int k=1; k<=nWtTab; k++)
 		{
 			tmp_nWtNobs(k) = nWtNobs(k);
 			projwt(k)=1;
-
 			for(i=1; i<=nWtNobs(k); i++)
 			{
 				if(nWtNobs(k) > 0 && d3_inp_wt_avg(k)(i)(sage-5) < 0)
 				{
 					n_bf_wt_row(k)++ ;
-
 				}
-
-			}	
-			
+			}
 			if(n_bf_wt_row(k)>0)
 			{
 				for(int i=1; i<=n_bf_wt_row(k); i++)
@@ -615,15 +532,13 @@ DATA_SECTION
 					tmp_nWtNobs(k) += exp_nyr; 
 				}
 				projwt(k)=-n_bf_wt_row(k);
-			}	
-				
+			}
 			else if (n_bf_wt_row(k) == 0)
 			{
 				tmp_nWtNobs(k) = nWtNobs(k);
 				projwt(k)=1;
 			}
 		}
-		
 		sum_tmp_nWtNobs = sum(tmp_nWtNobs);	
 	END_CALCS
 
@@ -701,8 +616,8 @@ DATA_SECTION
 	// !!nrh(2) = 2;
 	// !!nch(1) = 1;
 	// !!nch(2) = 2;
-	// !!COUT(nrh);
-	// !!COUT(nch);
+	// !!LOG<<nrh;
+	// !!LOG<<nch;
 	// 4darray d4_alk(1,nAgears,1,n_A_nobs,sage,nrh,nage,nch);
 
 	LOC_CALCS
@@ -791,7 +706,7 @@ DATA_SECTION
 			dmatrix mtmp = trans( d3_wt_avg(ig) );
 			for(j=sage;j<=nage;j++)
 			{
-				//COUT(sum(first_difference(mtmp(j)(syr,nyr))));
+				//LOG<<sum(first_difference(mtmp(j)(syr,nyr)));
 				if( sum( first_difference(mtmp(j)(syr,nyr))) )
 				{
 					mtmp(j) = ( mtmp(j)-mean(mtmp(j)(syr,nyr)) ) 
@@ -806,38 +721,34 @@ DATA_SECTION
 			
 			if( min(d3_wt_avg(ig))<=0.000 && min(d3_wt_avg(ig))!=NA )
 			{
-				cout<<"|-----------------------------------------------|"<<endl;
-				cout<<"| ERROR IN INPUT DATA FILE FOR MEAN WEIGHT DATA |"<<endl;
-				cout<<"|-----------------------------------------------|"<<endl;
-				cout<<"| - Cannot have an observed mean weight-at-age  |"<<endl;
-				cout<<"|   less than or equal to 0.  Please fix.       |"<<endl;
-				cout<<"| - You are permitted to use '-99.0' for missing|"<<endl;
-				cout<<"|   values in your weight-at-age data.          |"<<endl;
-				cout<<"| - Aborting program!                           |"<<endl;
-				cout<<"|-----------------------------------------------|"<<endl;
+				LOG<<"|-----------------------------------------------|\n";
+				LOG<<"| ERROR IN INPUT DATA FILE FOR MEAN WEIGHT DATA |\n";
+				LOG<<"|-----------------------------------------------|\n";
+				LOG<<"| - Cannot have an observed mean weight-at-age  |\n";
+				LOG<<"|   less than or equal to 0.  Please fix.       |\n";
+				LOG<<"| - You are permitted to use '-99.0' for missing|\n";
+				LOG<<"|   values in your weight-at-age data.          |\n";
+				LOG<<"| - Aborting program!                           |\n";
+				LOG<<"|-----------------------------------------------|\n";
 				ad_exit(1);
 			}
 		}
 	END_CALCS
-	
-	
 	// |---------------------------------------------------------------------------------|
 	// | END OF DATA FILE
 	// |---------------------------------------------------------------------------------|
 	// |
-	init_int eof;	
+	init_int eof;
 	LOC_CALCS
 	  if(eof==999){
-		cout<<"\n| -- END OF DATA SECTION -- |\n";
-	  	cout<<"|         eof = "<<eof<<"         |"<<endl;
-		cout<<"|___________________________|"<<endl;
+      LOG<<" ______________________________ \n";
+      LOG<<"|      END OF DATA SECTION     |\n";
+	    LOG<<"|______________________________|\n";
 	  }else{
-		cout<<"\n *** ERROR READING DATA *** \n"<<endl; exit(1);
+      LOG<<"\n *** ERROR READING DATA *** \n\n";
+      exit(1);
 	  }
 	END_CALCS
-
-	
-	
 	// |---------------------------------------------------------------------------------|
 	// | VARIABLES FOR MSY-BASED REFERENCE POINTS
 	// |---------------------------------------------------------------------------------|
@@ -911,7 +822,9 @@ DATA_SECTION
 	LOC_CALCS
 		if(check != -12345) 
 		{
-			COUT(check);cout<<"Error reading composition controls\n"<<endl; exit(1);
+			LOG<<"Check integer for EOF, should be -12345.. = "<<check<<'\n';
+      LOG<<"Error reading composition controls\n";
+      exit(1);
 		}
 	END_CALCS
 
@@ -1117,7 +1030,7 @@ DATA_SECTION
 	init_int eofc;
 	LOC_CALCS
 		verbose = d_iscamCntrl(1);
-		if(verbose) COUT(d_iscamCntrl);
+		if(verbose) LOG<<d_iscamCntrl;
 		for(int ig=1;ig<=n_ags;ig++)
 		{
 			for(int i = syr; i <= nyr; i++)
@@ -1127,11 +1040,12 @@ DATA_SECTION
 		}
 
 		if(eofc==999){
-			cout<<"\n| -- END OF CONTROL SECTION -- |\n";
-		  	cout<<"|          eofc = "<<eofc<<"          |"<<endl;
-			cout<<"|______________________________|"<<endl;
+      LOG<<" ______________________________ \n";
+	    LOG<<"|     END OF CONTROL FILE      |\n";
+	    LOG<<"|______________________________|\n";
 		}else{
-			cout<<"\n ***** ERROR CONTROL FILE ***** \n"<<endl; exit(1);
+			LOG<<"\n ***** ERROR READING CONTROL FILE ***** \n";
+      exit(1);
 		}
 	END_CALCS
 
@@ -1242,8 +1156,8 @@ DATA_SECTION
     }
 	END_CALCS
 
-	!! COUT((n_saa));
-	!! COUT((n_naa));
+	!! LOG<<n_saa<<'\n';
+	!! LOG<<n_naa<<'\n';
 
 	// |---------------------------------------------------------------------------------|
 	// | MANAGEMENT STRATEGY EVALUATION INPUTS
@@ -1253,7 +1167,7 @@ DATA_SECTION
 	//	ifstream ifile("Halibut2012.mse");
 	//	if(ifile)
 	//	{
-	//		cout<<"Vader is happy"<<endl;
+	//		LOG<<"Vader is happy\n";;
 	//		readMseInputs();
 	//		exit(1);
 	//	}
@@ -1261,7 +1175,7 @@ DATA_SECTION
 
 
 	// END OF DATA_SECTION
-	!! if(verbose) cout<<"||-- END OF DATA_SECTION --||"<<endl;
+	!! if(verbose) LOG<<"||-- END OF DATA_SECTION --||\n";
 
 	// |--------------------------------------|
 	// | Friend Class Operating Model for MSE |
@@ -1565,7 +1479,7 @@ PRELIMINARY_CALCS_SECTION
 		simulationModel(rseed);
 	}
 
-	if(verbose) cout<<"||-- END OF PRELIMINARY_CALCS_SECTION --||"<<endl;
+	if(verbose) LOG<<"||-- END OF PRELIMINARY_CALCS_SECTION --||\n";
 
 RUNTIME_SECTION
     maximum_function_evaluations 100,  200,   500, 25000, 25000
@@ -1573,46 +1487,33 @@ RUNTIME_SECTION
 
 
 PROCEDURE_SECTION
-	
 	initParameters();
-	 
 	calcSelectivities(isel_type);
-	
  	calcTotalMortality();
-	
  	calcNumbersAtAge();
-	
 	calcTotalCatch();
-	
 	calcComposition();
-	
 	calcSurveyObservations();
-	
 	calcStockRecruitment();
-
-	calcAnnualMeanWeight(); //START_RF_ADD ;  END_RF_ADD
-	
+	calcAnnualMeanWeight();
 	calcObjectiveFunction();
-
 	if(sd_phase())
 	{
 		calcSdreportVariables();
 	}
-	
-	    
 	if(mc_phase())
 	{
 		mcmcPhase=1;
 	}
-	
 	if(mceval_phase())
 	{
 		mcmcEvalPhase=1;
 		mcmc_output();
-    cout<<"Running mceval phase"<<endl;
+    LOG<<"Running mceval phase\n";
 	}
-	
-	if( verbose ) {cout<<"End of main function calls"<<endl;}
+	if(verbose){
+    LOG<<"End of main function calls\n";
+  }
 
 FUNCTION void calcSdreportVariables()
   {
@@ -1625,15 +1526,15 @@ FUNCTION void calcSdreportVariables()
 
 		sd_log_sbt(g) = log(sbt(g));
 	}
-	if( verbose ) { cout<<"**** Ok after calcSdreportVariables ****"<<endl;}
+	if(verbose){
+    LOG<<"**** Ok after calcSdreportVariables ****\n";
   }
-
+  }
 
   	/**
   	Purpose: This function extracts the specific parameter values from the theta vector
   	       to initialize the leading parameters in the model.
   	Author: Steven Martell
-  	
   	Arguments:
   		None
   	
@@ -1686,7 +1587,9 @@ FUNCTION void initParameters()
 		break;
 	}
 	
-	if(verbose)cout<<"**** Ok after initParameters ****"<<endl;
+	if(verbose){
+    LOG<<"**** Ok after initParameters ****\n";
+  }
 	
   }
 	
@@ -1704,9 +1607,9 @@ FUNCTION dvar_vector cubic_spline(const dvar_vector& spline_coffs)
 	//some testing here
 	/*dvar_vector spline_nodes(1,nodes);
 		spline_nodes.fill_seqadd(-0.5,1./(nodes-1));
-		cout<<spline_nodes<<endl;
+		LOG<<spline_nodes<<'\n';
 		vcubic_spline_function test_ffa(ia,spline_nodes);
-		cout<<test_ffa(fa)<<endl;
+		LOG<<test_ffa(fa)<<'\n';
 		exit(1);*/
 	return(ffa(fa));
   }
@@ -1856,7 +1759,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 							if( byr < n_sel_blocks(k) ) byr++;
 						}
 
-						// cout<<"Testing selex class"<<endl;
+						// LOG<<"Testing selex class"<<'\n';
 						// log_sel(k)(ig)(i) = log( cSelex.logistic(sel_par(k)(bpar)) );
 						// log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(bpar)) );
 						p1 = mfexp(sel_par(k,bpar,1));
@@ -2026,8 +1929,9 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 		}
 	}  //end of gear k
  
-	if(verbose)cout<<"**** Ok after calcSelectivities ****"<<endl;
-	
+	if(verbose){
+    LOG<<"**** Ok after calcSelectivities ****\n";
+  }
   }	
 
   	
@@ -2151,7 +2055,9 @@ FUNCTION calcTotalMortality
 		S(ig) = mfexp(-Z(ig));
 	}
 	 
-	if(verbose) cout<<"**** OK after calcTotalMortality ****"<<endl;	
+	if(verbose){
+    LOG<<"**** OK after calcTotalMortality ****\n";
+  }
   }
 	
 	
@@ -2236,7 +2142,7 @@ FUNCTION calcNumbersAtAge
 		//vulnerable biomass to all gears //Added by RF March 19 2015
 		for(kgear=1; kgear<=ngear; kgear++) vbt(g)(kgear)(nyr+1) = sum(elem_prod(elem_prod(N(ig)(nyr+1),d3_wt_avg(ig)(nyr+1)), mfexp(log_sel(kgear)(ig)(nyr))));      //use nyr selectivity
 	}
-	if(verbose)cout<<"**** Ok after calcNumbersAtAge ****"<<endl;	
+	if(verbose)LOG<<"**** Ok after calcNumbersAtAge ****\n";
   }	
   	/**
   	Purpose:  This function calculates the predicted age-composition samples (A) for 
@@ -2374,11 +2280,11 @@ FUNCTION calcComposition
   	 	}
   	}
 
-	if(verbose)cout<<"**** Ok after calcComposition ****"<<endl;
+	if(verbose){
+    LOG<<"**** Ok after calcComposition ****\n";
+  }
 
   }	
-
-
 
 FUNCTION calcTotalCatch
   {
@@ -2498,11 +2404,11 @@ FUNCTION calcTotalCatch
 		// | catch residual
 		eta(ii) = log(d_ct+TINY) - log(ct(ii)+TINY);
 	}
-	if(verbose)cout<<"**** Ok after calcTotalCatch ****"<<endl;
+	if(verbose){
+    LOG<<"**** Ok after calcTotalCatch ****\n";
   }
-
-
-	
+  }
+  
   	/**
   	Purpose:  This function computes the mle for survey q, calculates the survey 
   	          residuals (epsilon).
@@ -2630,7 +2536,9 @@ FUNCTION calcSurveyObservations
 		}
 	}
 	
-	if(verbose)cout<<"**** Ok after calcSurveyObservations ****"<<endl;
+	if(verbose){
+    LOG<<"**** Ok after calcSurveyObservations ****\n";
+  }
 	
   }
 
@@ -2776,7 +2684,9 @@ FUNCTION void calcStockRecruitment()
 
 
 	}
-     	if(verbose)cout<<"**** Ok after calcStockRecruitment ****"<<endl;
+  if(verbose){
+    LOG<<"**** Ok after calcStockRecruitment ****\n";
+  }
 	
   }
 
@@ -2839,11 +2749,11 @@ FUNCTION calcAnnualMeanWeight
 		 annual_mean_weight(kk)(ii) = sum(Vb(ii))/sum(Vn(ii));
 		obs_annual_mean_weight(kk)(ii)	= d3_mean_wt_data(kk)(ii)(2);	  //fill a matrix with observed annual mean weights - makes objective function calcs easier
 		} // end of ii loop
-	  
-	} // end of kk loop		
-	 			
-    	if(verbose)cout<<"**** Ok after calcAnnualMeanWeight ****"<<endl;
-  } //end function	  //END_RF_ADD
+	} // end of kk loop
+	if(verbose){
+    LOG<<"**** Ok after calcAnnualMeanWeight ****\n";
+  }
+  }
 	
 FUNCTION calcObjectiveFunction
   {
@@ -3007,13 +2917,13 @@ FUNCTION calcObjectiveFunction
 					//logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 					if( active(phi1(k)) && !active(phi2(k)) )  // LN2 Model
 					{
-            //cout<<endl;
-            //cout<<"        log_age_tau2: "<<log_age_tau2<<endl;
-            //cout<<"                   k: "<<k<<endl;
-            //cout<<"     log_age_tau2(k): "<<log_age_tau2(k)<<endl;
-            //cout<<"exp(log_age_tau2(k)): "<<exp(log_age_tau2(k))<<endl;
-            //cout<<"             phi2(k): "<<phi2(k)<<endl;
-            //cout<<" cLN_Age(expk,phi2k): "<<cLN_Age(exp(log_age_tau2(k)))<<endl<<endl;
+            //LOG<<'\n';
+            //LOG<<"        log_age_tau2: "<<log_age_tau2<<'\n';
+            //LOG<<"                   k: "<<k<<'\n';
+            //LOG<<"     log_age_tau2(k): "<<log_age_tau2(k)<<'\n';
+            //LOG<<"exp(log_age_tau2(k)): "<<exp(log_age_tau2(k))<<'\n';
+            //LOG<<"             phi2(k): "<<phi2(k)<<'\n';
+            //LOG<<" cLN_Age(expk,phi2k): "<<cLN_Age(exp(log_age_tau2(k)))<<'\n'<<'\n';
 						nlvec(3,k)   = cLN_Age(exp(log_age_tau2(k)),phi1(k));
 					}
 					if( active(phi1(k)) && active(phi2(k)) )   // LN3 Model
@@ -3322,29 +3232,25 @@ FUNCTION calcObjectiveFunction
 	
 	if(verbose)
 	{
-		COUT(nlvec);
-		COUT(lvec);
-		COUT(priors);
-		COUT(pvec);
-		COUT(qvec);
+		LOG<<nlvec<<'\n';
+		LOG<<lvec<<'\n';
+		LOG<<priors<<'\n';
+		LOG<<pvec<<'\n';
+		LOG<<qvec<<'\n';
 	}
-	// COUT(nlvec);
+	// LOG<<nlvec;
 	objfun  = sum(nlvec);
 	objfun += sum(lvec);
 	objfun += sum(priors);
 	objfun += sum(pvec);
 	objfun += sum(qvec);
 	nf++;
-	if(verbose)cout<<"**** Ok after calcObjectiveFunction ****"<<endl;
-	
-	
-	//cout<<"nlvec3 is "<<nlvec(3)<<endl;
-
-	
-	//	ad_exit(1); //para!
+	if(verbose){
+    LOG<<"**** Ok after calcObjectiveFunction ****\n";
   }
-
-
+	//LOG<<"nlvec3 is "<<nlvec(3)<<'\n';
+  //	ad_exit(1); //para!
+  }
 
 // FUNCTION void equilibrium(const double& fe, const dvector& ak, const double& ro, const double& kap, const double& m, const dvector& age, const dvector& wa, const dvector& fa, const dmatrix& va,double& re,double& ye,double& be,double& ve,double& dye_df,double& d2ye_df2)//,double& phiq,double& dphiq_df, double& dre_df)
 //   {
@@ -3481,8 +3387,8 @@ FUNCTION calcObjectiveFunction
 // 	dye_df   = sum(dyek_df);
 // 	d2ye_df2 = sum(d2yek_df2);
 
-// 	// cout<<"EQUILIBRIUM CODE "<<setprecision(4)<<setw(2)<<fe<<setw(3)<<" "
-// 	// <<ye<<setw(5)<<" "<<dye_df<<"  "<<dyek_df(1,3)<<endl;
+// 	// LOG<<"EQUILIBRIUM CODE "<<setprecision(4)<<setw(2)<<fe<<setw(3)<<" "
+// 	// <<ye<<setw(5)<<" "<<dye_df<<"  "<<dyek_df(1,3)<<'\n';
 //   }
 
 
@@ -3555,19 +3461,19 @@ FUNCTION calcObjectiveFunction
 // 	}
 // 	//CHANGED need to account for fraction of mortality that occurs
 // 	//before the spawning season in the recruitment calculation.
-// 	//cout<<"lz\t"<<elem_prod(lz,exp(-za*d_iscamCntrl(13)))<<endl;
+// 	//LOG<<"lz\t"<<elem_prod(lz,exp(-za*d_iscamCntrl(13)))<<'\n';
 // 	//exit(1);
 // 	//double phif = lz*fa;
 // 	double phif = elem_prod(lz,exp(-za*d_iscamCntrl(13)))*fa;
 // 	phiq=sum(elem_prod(elem_prod(lz,wa),qa));
 // 	re=ro*(kap-phie/phif)/(kap-1.);
-// 	//cout<<fe<<" spr ="<<phif/phie<<endl;
+// 	//LOG<<fe<<" spr ="<<phif/phie<<'\n';
 // 	if(re<=0) re=0;
 // 	dre_df=(ro/(kap-1.))*phie/square(phif)*dphif_df;
 // 	ye=fe*re*phiq;
 // 	be=re*phif;	//spawning biomass
 	
-// 	//cout<<"Equilibrium\n"<<ro<<"\n"<<re<<"\n"<<ye<<endl;
+// 	//LOG<<"Equilibrium\n"<<ro<<"\n"<<re<<"\n"<<ye<<'\n';
 	
 //   }
 	
@@ -3726,7 +3632,7 @@ FUNCTION void calcReferencePoints()
 		//delete pMSY;
 		
 
-		//cout<<"Initial Fe "<<dftry<<endl;		 //RF turned this off
+		//LOG<<"Initial Fe "<<dftry<<'\n';
 		rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
 		c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
 
@@ -3741,21 +3647,16 @@ FUNCTION void calcReferencePoints()
 
 		
 	}
-
  	// Data-type version of MSY-based reference points.
-	for( ig = 1; ig <= n_ags; ig++ )
-	{
-		fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
+	for( ig = 1; ig <= n_ags; ig++ ) {
+    fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
 		M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
 		M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
 	}
-	
-	for( g = 1; g <= ngroup; g++ )
-	{
+	for( g = 1; g <= ngroup; g++ ) {
 		double d_ro  = value(ro(g));
 		double d_h   = value(steepness(g));
 		double d_rho = d_iscamCntrl(13);
-		
 		rfp::msy<double,dvector,dmatrix,d3_array>
 		c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
 		fmsy(g) = c_dMSY.getFmsy(value(dftry));
@@ -3766,9 +3667,8 @@ FUNCTION void calcReferencePoints()
 		dvector finit(1,nfleet);
 		finit=fmsy(g);
 		c_dMSY.checkDerivatives(finit);
-		//cout<<"group \t"<<g<<endl;
+		//LOG<<"group \t"<<g<<'\n';
 		//exit(1);
-
 
 		Msy c_msy(d_ro,d_h,M_bar,d_rho,dWt_bar,fa_bar,&d_V);
 		fmsy(g) = 0.1;
@@ -3776,15 +3676,16 @@ FUNCTION void calcReferencePoints()
 		bo = c_msy.getBo();
 		bmsy(g) = c_msy.getBmsy();
 		msy(g) = c_msy.getMsy();
-		//cout<<"Old Msy class"<<endl;	   RF turned this off
-		//c_msy.print();	  RF turned this off
+		//LOG<<"Old Msy class\n;
+    //LOG<<c_msy<<'\n';
 	}
 
 	/*RF added a test of ref point calcs - runs out the model for 100 y and calculates fmsy and bmsy conditional on model parameters and data
 	  Just run once in last MPD phase. Turn off after testing.*/
 	//if(!mceval_phase()) run_FRP();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
-	
-	if(verbose)cout<<"**** Ok after calcReferencePoints ****"<<endl;
+	if(verbose){
+    LOG<<"**** Ok after calcReferencePoints ****\n";
+  }
   }
 
   /**
@@ -3793,7 +3694,6 @@ FUNCTION void calcReferencePoints()
    * method.  Its a permanent feature of the iscam code for testing.
    */	
 FUNCTION void testMSYxls()
-
 	double ro = 1.0;
 	double steepness = 0.75;
 	double d_rho = 0.0;
@@ -3810,12 +3710,11 @@ FUNCTION void testMSYxls()
 
 	dvector dftry(1,2);
 	dftry = 0.1 ;
-	cout<<"Initial Fe "<<dftry<<endl;	    
-	rfp::msy<double,dvector,dmatrix,d3_array> 
+	LOG<<"Initial Fe "<<dftry<<'\n';
+	rfp::msy<double,dvector,dmatrix,d3_array>
 	c_MSY(ro,steepness,d_rho,m_bar,dWt_bar,fa_bar,dvar_V);
 	dvector dfmsy = c_MSY.getFmsy(dftry);
-	cout<<"Fmsy = "<<dfmsy<<endl;		  
-
+	LOG<<"Fmsy = "<<dfmsy<<'\n';
 
 	dvector ak(1,2);
 	ak = 0.3;
@@ -3823,7 +3722,7 @@ FUNCTION void testMSYxls()
 	rfp::msy<double,dvector,dmatrix,d3_array>
 	c_MSYk(ro,steepness,d_rho,m_bar,dWt_bar,fa_bar,dvar_V);
 	dvector dkmsy = c_MSYk.getFmsy(dftry,ak);
-	cout<<"Fmsy_k ="<<dkmsy<<endl;
+	LOG<<"Fmsy_k ="<<dkmsy<<'\n';
 
 	c_MSYk.print();
 
@@ -3879,22 +3778,20 @@ FUNCTION void testMSYxls()
   	*/
 FUNCTION void simulationModel(const long& seed)
   {
-	cout<<global_parfile<<endl;
+	LOG<<global_parfile<<'\n';
 	bool pinfile = 0;
-	cout<<"___________________________________________________\n"<<endl;
-	cout<<"  **Implementing Simulation--Estimation trial**    "<<endl;
-	cout<<"___________________________________________________"<<endl;
+	LOG<<"___________________________________________________\n";
+	LOG<<"  **Implementing Simulation--Estimation trial**    \n";
+	LOG<<"___________________________________________________\n";
 	//if(norm(log_rec_devs)!=0)
-	if( global_parfile )
+	if(global_parfile)
 	{
-		cout<<"\tUsing pin file for simulation"<<endl;
+		LOG<<"\tUsing pin file for simulation\n";;
 		pinfile = 1;
 	}
-	cout<<"\tRandom Seed No.:\t"<< rseed<<endl;
-	cout<<"\tNumber of retrospective years: "<<retro_yrs<<endl;
-	cout<<"___________________________________________________\n"<<endl;
-	
-	
+	LOG<<"\tRandom Seed No.:\t"<< rseed<<'\n';
+	LOG<<"\tNumber of retrospective years: "<<retro_yrs<<'\n';;
+	LOG<<"___________________________________________________\n\n";
 
 	int ii,ig,ih;
 	// |---------------------------------------------------------------------------------|
@@ -3902,7 +3799,6 @@ FUNCTION void simulationModel(const long& seed)
 	// |---------------------------------------------------------------------------------|
 	// |
     calcSelectivities(isel_type);
-    
 
     // |---------------------------------------------------------------------------------|
     // | 2) MORTALITY
@@ -3914,8 +3810,6 @@ FUNCTION void simulationModel(const long& seed)
     F.initialize();
     Z.initialize();
     S.initialize();
-
-
 
     // |---------------------------------------------------------------------------------|
     // | 3) GENERATE RANDOM NUMBERS
@@ -4112,7 +4006,9 @@ FUNCTION void simulationModel(const long& seed)
 			// | [ ] TODO: Stock-Recruitment model
 			// | [ ] TODO: Add autocorrelation.
 
-			if( !pinfile ) COUT("Add stock recruitment Model")
+			if(!pinfile){
+        LOG<<"Add stock recruitment Model\n";
+      }
 			/* 
 			sbt(ig)(i) = (elem_prod(N(ig)(i),exp(-zt(i)*d_iscamCntrl(13)))*d3_wt_mat(ig)(i));
 			if(i>=syr+sage-1 && !pinfile)
@@ -4190,7 +4086,7 @@ FUNCTION void simulationModel(const long& seed)
 			d3_Ct(ig)(i)(k) = dCatchData(ii)(7);
 		} 
 	}
-	// cout<<d3_Ct(1)<<endl;
+	// LOG<<d3_Ct(1)<<'\n';
 
 
 	// |---------------------------------------------------------------------------------|
@@ -4220,7 +4116,7 @@ FUNCTION void simulationModel(const long& seed)
 				d3_inp_wt_avg(ii,1,sage-5) = d3_inp_wt_avg(ii,1,sage-5)*projwt(ii);
 			}
 		}
-		cout<< d3_inp_wt_avg(1)(1)(sage-5,nage) <<endl;
+		LOG<<d3_inp_wt_avg(1)(1)(sage-5,nage)<<'\n';
 
 	// |---------------------------------------------------------------------------------|
 	// | 11) WRITE SIMULATED DATA TO FILE
@@ -4230,35 +4126,35 @@ FUNCTION void simulationModel(const long& seed)
 
 	
 // 	calcReferencePoints();
-// 	//cout<<"	OK after reference points\n"<<fmsy<<endl;
+// 	//LOG<<"	OK after reference points\n"<<fmsy<<'\n';
 // 	//exit(1);
 // 	//	REPORT(fmsy);
 // 	//	REPORT(msy);
 // 	//	REPORT(bmsy);
 	
 	
-// 	cout<<"___________________________________________________"<<endl;
+// 	LOG<<"___________________________________________________"<<'\n';
 // 	ofstream ofs("iscam.sim");
-// 	ofs<<"fmsy\n"<<fmsy<<endl;
-// 	ofs<<"msy\n"<<msy<<endl;
-// 	ofs<<"bmsy\n"<<bmsy<<endl;
-// 	ofs<<"bo\n"<<bo<<endl;
-// 	ofs<<"va\n"<<va<<endl;
-// 	ofs<<"sbt\n"<<sbt<<endl;//<<rowsum(elem_prod(N,fec))<<endl;
-// 	ofs<<"log_rec_devs\n"<<log_rec_devs<<endl;
-// 	ofs<<"rt\n"<<rt<<endl;
-// 	ofs<<"ct\n"<<obs_ct<<endl;
-// 	ofs<<"ft\n"<<trans(ft)<<endl;
-// 	//ofs<<"ut\n"<<elem_div(colsum(obs_ct),N.sub(syr,nyr)*wa)<<endl;
-// 	ofs<<"iyr\n"<<iyr<<endl;
-// 	ofs<<"it\n"<<it<<endl;
-// 	ofs<<"N\n"<<N<<endl;
-// 	ofs<<"A\n"<<A<<endl;
-// 	ofs<<"dlog_sel\n"<<dlog_sel<<endl;
-// 	cout<<"  -- Simuation results written to iscam.sim --\n";
-// 	cout<<"___________________________________________________"<<endl;
+// 	ofs<<"fmsy\n"<<fmsy<<'\n';
+// 	ofs<<"msy\n"<<msy<<'\n';
+// 	ofs<<"bmsy\n"<<bmsy<<'\n';
+// 	ofs<<"bo\n"<<bo<<'\n';
+// 	ofs<<"va\n"<<va<<'\n';
+// 	ofs<<"sbt\n"<<sbt<<'\n';//<<rowsum(elem_prod(N,fec))<<'\n';
+// 	ofs<<"log_rec_devs\n"<<log_rec_devs<<'\n';
+// 	ofs<<"rt\n"<<rt<<'\n';
+// 	ofs<<"ct\n"<<obs_ct<<'\n';
+// 	ofs<<"ft\n"<<trans(ft)<<'\n';
+// 	//ofs<<"ut\n"<<elem_div(colsum(obs_ct),N.sub(syr,nyr)*wa)<<'\n';
+// 	ofs<<"iyr\n"<<iyr<<'\n';
+// 	ofs<<"it\n"<<it<<'\n';
+// 	ofs<<"N\n"<<N<<'\n';
+// 	ofs<<"A\n"<<A<<'\n';
+// 	ofs<<"dlog_sel\n"<<dlog_sel<<'\n';
+// 	LOG<<"  -- Simuation results written to iscam.sim --\n";
+// 	LOG<<"___________________________________________________"<<'\n';
 	
-// 	//cout<<N<<endl;
+// 	//LOG<<N<<'\n';
 // 	//exit(1);
   }
 
@@ -4287,55 +4183,55 @@ FUNCTION writeSimulatedDataFile
   {
   	adstring sim_datafile_name = "Simulated_Data_"+str(rseed)+".dat";
   	ofstream dfs(sim_datafile_name);
-  	dfs<<"#Model dimensions"<<endl;
-  	dfs<< narea 		<<endl;
-  	dfs<< ngroup		<<endl;
-  	dfs<< nsex			<<endl;
-  	dfs<< syr   		<<endl;
-  	dfs<< nyr   		<<endl;
-  	dfs<< sage  		<<endl;
-  	dfs<< nage  		<<endl;
-  	dfs<< ngear 		<<endl;
+  	dfs<<"#Model dimensions"<<'\n';
+  	dfs<< narea 		<<'\n';
+  	dfs<< ngroup		<<'\n';
+  	dfs<< nsex			<<'\n';
+  	dfs<< syr   		<<'\n';
+  	dfs<< nyr   		<<'\n';
+  	dfs<< sage  		<<'\n';
+  	dfs<< nage  		<<'\n';
+  	dfs<< ngear 		<<'\n';
  
-  	dfs<<"#Allocation"	<<endl;
-  	dfs<< dAllocation 	<<endl;
+  	dfs<<"#Allocation"	<<'\n';
+  	dfs<< dAllocation 	<<'\n';
   	
-  	dfs<<"#Age-schedule and population parameters"<<endl;
-  	dfs<< d_linf  			<<endl;
-  	dfs<< d_vonbk  			<<endl;
-  	dfs<< d_to  			<<endl;
-  	dfs<< d_a  				<<endl;
-  	dfs<< d_b  				<<endl;
-  	dfs<< d_ah  			<<endl;
-  	dfs<< d_gh  			<<endl;
-  	dfs<< n_MAT				<<endl;
-	dfs<< d_maturityVector <<endl;
+  	dfs<<"#Age-schedule and population parameters"<<'\n';
+  	dfs<< d_linf  			<<'\n';
+  	dfs<< d_vonbk  			<<'\n';
+  	dfs<< d_to  			<<'\n';
+  	dfs<< d_a  				<<'\n';
+  	dfs<< d_b  				<<'\n';
+  	dfs<< d_ah  			<<'\n';
+  	dfs<< d_gh  			<<'\n';
+  	dfs<< n_MAT				<<'\n';
+	dfs<< d_maturityVector <<'\n';
 
-  	dfs<<"#Observed catch data"<<endl;
-  	dfs<< nCtNobs 		<<endl;
-  	dfs<< dCatchData    <<endl;
+  	dfs<<"#Observed catch data"<<'\n';
+  	dfs<< nCtNobs 		<<'\n';
+  	dfs<< dCatchData    <<'\n';
 
-  	dfs<<"#Abundance indices"	<<endl;
-  	dfs<< nItNobs 					<<endl;
-  	dfs<< n_it_nobs 				<<endl;
-  	dfs<< n_survey_type 			<<endl;
-  	dfs<< d3_survey_data 			<<endl;
+  	dfs<<"#Abundance indices"	<<'\n';
+  	dfs<< nItNobs 					<<'\n';
+  	dfs<< n_it_nobs 				<<'\n';
+  	dfs<< n_survey_type 			<<'\n';
+  	dfs<< d3_survey_data 			<<'\n';
 
-  	dfs<<"#Age composition"		<<endl;
-  	dfs<< nAgears				<<endl;
-  	dfs<< n_A_nobs				<<endl;
-  	dfs<< n_A_sage				<<endl;
-  	dfs<< n_A_nage				<<endl;
-  	dfs<< inp_nscaler 			<<endl;
-  	dfs<< d3_A					<<endl;
+  	dfs<<"#Age composition"		<<'\n';
+  	dfs<< nAgears				<<'\n';
+  	dfs<< n_A_nobs				<<'\n';
+  	dfs<< n_A_sage				<<'\n';
+  	dfs<< n_A_nage				<<'\n';
+  	dfs<< inp_nscaler 			<<'\n';
+  	dfs<< d3_A					<<'\n';
 
-  	dfs<<"#Empirical weight-at-age data"	<<endl;
-  	dfs<< nWtTab 				<<endl;
-  	dfs<< nWtNobs				<<endl;
-	dfs<< d3_inp_wt_avg			<<endl; // not sure if this shoud be d3_inp_wt_avg, and how this would affect simDatfile 
+  	dfs<<"#Empirical weight-at-age data"	<<'\n';
+  	dfs<< nWtTab 				<<'\n';
+  	dfs<< nWtNobs				<<'\n';
+	dfs<< d3_inp_wt_avg			<<'\n'; // not sure if this shoud be d3_inp_wt_avg, and how this would affect simDatfile 
 
-	dfs<<"#EOF"	<<endl;
-	dfs<< 999	<<endl;
+	dfs<<"#EOF"	<<'\n';
+	dfs<< 999	<<'\n';
 	
 	// | END OF WRITING SIMULATED DATAFILE.
   }
@@ -4371,18 +4267,20 @@ FUNCTION dvector ifdSelex(const dvector& va, const dvector& ba, const double& mp
 
 REPORT_SECTION
 
-	if(verbose)cout<<"Start of Report Section..."<<endl;
-	report<<"ObjectiveFunction\n"<<objfun<<endl;
-  report<<"FuncEvals\n"<<nf<<endl;
-  report<<"NumParams\n"<<npar<<endl;
-  report<<"MaxGrad\n"<<objective_function_value::gmax<<endl;
-  report<<"ExitCode\n"<<iexit<<endl;
-  report<<"HangCode\n"<<ihang<<endl;
-  report<<"Runtime\n"<<(long(difftime(finish,start))%3600)%60<<endl;
+	if(verbose){
+    LOG<<"Start of Report Section...\n";
+  }
+	report<<"ObjectiveFunction\n"<<objfun<<'\n';
+  report<<"FuncEvals\n"<<nf<<'\n';
+  report<<"NumParams\n"<<npar<<'\n';
+  report<<"MaxGrad\n"<<objective_function_value::gmax<<'\n';
+  report<<"ExitCode\n"<<iexit<<'\n';
+  report<<"HangCode\n"<<ihang<<'\n';
+  report<<"Runtime\n"<<(long(difftime(finish,start))%3600)%60<<'\n';
 
-	report<<DataFile<<endl;
-	report<<ControlFile<<endl;
-	report<<ProjectFileControl<<endl;
+	report<<DataFile<<'\n';
+	report<<ControlFile<<'\n';
+	report<<ProjectFileControl<<'\n';
 	REPORT(objfun);
 	REPORT(nlvec);
 	REPORT(ro);
@@ -4397,8 +4295,8 @@ REPORT_SECTION
 	REPORT(m);
 	// double tau = value(sqrt(1.-rho)*varphi);
 	// double sig = value(sqrt(rho)*varphi);
-	report<<"rho"<<endl<<theta(6)<<endl;
-	report<<"vartheta"<<endl<<theta(7)<<endl;
+	report<<"rho\n"<<theta(6)<<'\n';
+	report<<"vartheta\n"<<theta(7)<<'\n';
 	REPORT(varphi);
 	REPORT(tau);
 	REPORT(sig);
@@ -4460,7 +4358,7 @@ REPORT_SECTION
 		/// for the multinomial distributions.
 
 		// FIXED the retrospective bug here near line 4507 (if iyr<=nyr)
-		report<<"Neff"<<endl;
+		report<<"Neff"<<'\n';
 		dvector nscaler(1,nAgears);
 		nscaler.initialize();
    	 int naa;
@@ -4484,7 +4382,7 @@ REPORT_SECTION
 				for(j = 1; j<= naa; j++)
 				{
 					double effectiveN = neff(O(j)/sum(O(j)),P(j));
-					report<<sum(O(j))<<"\t"<<effectiveN<<endl;
+					report<<sum(O(j))<<"\t"<<effectiveN<<'\n';
 					nscaler(k) += effectiveN;
 				}
 
@@ -4502,7 +4400,7 @@ REPORT_SECTION
 	REPORT(d3_wt_mat);
 	REPORT(d3_wt_dev);
 
-	report<<"d3_wt_avg"<<endl;
+	report<<"d3_wt_avg"<<'\n';
 	for(int ig=1;ig<=n_ags;ig++)
 	{
 		f = n_area(ig);
@@ -4516,7 +4414,7 @@ REPORT_SECTION
 			report<<f<<tt;
 			report<<g<<tt;
 			report<<h<<tt;
-			report<<d3_wt_avg(ig)(i)<<endl;
+			report<<d3_wt_avg(ig)(i)<<'\n';
 		}
 	
 	}
@@ -4525,23 +4423,23 @@ REPORT_SECTION
 	// | SELECTIVITIES (4darray)
 	// |---------------------------------------------------------------------------------|
 	// |
-  report<<"sel_par"<<endl;
+  report<<"sel_par"<<'\n';
 	for(k=1;k<=ngear;k++)
 	{
 	  for (j=1;j<=jsel_npar(k);j++)
 	  {
-	  	report<<k<<"\t"<<j<<"\t"<<exp(sel_par(k)(j))<<endl;
+	  	report<<k<<"\t"<<j<<"\t"<<exp(sel_par(k)(j))<<'\n';
 	  }
 	}
 
-	report<<"log_sel"<<endl;
+	report<<"log_sel"<<'\n';
 	for(k=1;k<=ngear;k++)
 	{
 		for(int ig=1;ig<=n_ags;ig++)
 		{
 			for(i=syr;i<=nyr;i++)
 			{
-				report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<log_sel(k)(ig)(i)<<endl;	
+				report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<log_sel(k)(ig)(i)<<'\n';	
 			}
 		}
 	}
@@ -4551,15 +4449,15 @@ REPORT_SECTION
 	// |---------------------------------------------------------------------------------|
 	// |
 	// REPORT(ft);
-	report<<"ft"<<endl;
+	report<<"ft"<<'\n';
 	for(int ig = 1; ig <= n_ags; ig++ )
 	{
-		report<<ft(ig)<<endl;
+		report<<ft(ig)<<'\n';
 	}
-	report<<"ut"<<endl;
+	report<<"ut"<<'\n';
 	for(int ig = 1; ig <= n_ags; ig++ )
 	{
-		report<<1.0-exp(-ft(ig))<<endl;
+		report<<1.0-exp(-ft(ig))<<'\n';
 	}
 	REPORT(M);
 	REPORT(F);
@@ -4578,11 +4476,11 @@ REPORT_SECTION
 	REPORT(rt);
 	REPORT(delta);
 
-  report<<"vbt"<<endl;
+  report<<"vbt"<<'\n';
 		for(k=1;k<=ngear;k++){
 			for(int ig=1;ig<=ngroup;ig++){
 				for(i=syr;i<=nyr+1;i++){
-					report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<vbt(ig)(k)(i)<<endl;
+					report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<vbt(ig)(k)(i)<<'\n';
 				}
 			}
 	 }
@@ -4616,34 +4514,32 @@ REPORT_SECTION
 	// |
 	if( last_phase() )
 	{
-		cout<<"Calculating MSY-based reference points"<<endl;
+		LOG<<"Calculating MSY-based reference points\n";
 		calcReferencePoints();
-		cout<<"Finished calcReferencePoints"<<endl;
+		LOG<<"Finished calcReferencePoints\n";
 		//exit(1);
 		REPORT(bo);
 		REPORT(fmsy);
 		REPORT(msy);
 		REPORT(bmsy);
 		// REPORT(Umsy);
-	
-	        cout<<"Running Projections"<<endl;
-	        //RF RE-INSTATED PROJECTION_MODEL :: ONLY IMPLEMENTED FOR AGS=1 AND FOR GEAR 1 (FISHERY)
-		 if(n_ags==1) {
-		       int ii;
-		   	for(ii=1;ii<=n_tac;ii++)	//
-		   	{
-		   		//cout<<ii<<" "<<tac(ii)<<endl;
-		   		projection_model(tac(ii));
+    LOG<<"Running Projections\n";
+    //RF RE-INSTATED PROJECTION_MODEL :: ONLY IMPLEMENTED FOR AGS=1 AND FOR GEAR 1 (FISHERY)
+    if(n_ags==1) {
+		  int ii;
+		  for(ii=1;ii<=n_tac;ii++){
+        //LOG<<ii<<" "<<tac(ii)<<'\n';
+		   	projection_model(tac(ii));
 		 	}
 		 }
-		 
-		 if(n_ags>1)  {
-		 	if(nf==1) cout<<"************Projections not yet implemented for number of areas/groups > 1************"<<endl<<endl;
-		   }
-
+		 if(n_ags>1){
+       if(nf==1) LOG<<"************Projections not yet implemented for number of areas/groups > 1************\n\n";
+		 }
+     LOG<<" ______________________________ \n";
+     LOG<<"|    END OF REPORT SECTION     |\n";
+	   LOG<<"|______________________________|\n";
 	}
 
-	cout<<"You got to the end of the report section"<<endl;
 	// |---------------------------------------------------------------------------------|
 	// | OUTPUT FOR OPERATING MODEL
 	// |---------------------------------------------------------------------------------|
@@ -4652,16 +4548,16 @@ REPORT_SECTION
 	{
 		ofstream ofs("iSCAM.res");
 
-		ofs<<"# Bo\n"<<bo<<endl;
-		ofs<<"# Fmsy\n"<<fmsy<<endl;
-		ofs<<"# MSY\n"<<msy<<endl;
-		ofs<<"# Bmsy\n"<<bmsy<<endl;
+		ofs<<"# Bo\n"<<bo<<'\n';
+		ofs<<"# Fmsy\n"<<fmsy<<'\n';
+		ofs<<"# MSY\n"<<msy<<'\n';
+		ofs<<"# Bmsy\n"<<bmsy<<'\n';
 		ofs<<"# Sbt\n";
 		for( g = 1; g <= ngroup; g++ )
 		{
 			ofs<<sbt(g)(nyr+1)<<"\t";
 		}
-		ofs<<endl;
+		ofs<<'\n';
 
 		// projected biomass
 		// The total biomass for each stock
@@ -4670,24 +4566,24 @@ REPORT_SECTION
 		{
 			ofs<<bt(g)(nyr+1)<<"\t";
 		}
-		ofs<<endl;
+		ofs<<'\n';
 
 		ofs<<"# Numbers-at-age\n";
 		for(int ig = 1; ig <= n_ags; ig++ )
 		{
-			ofs<<N(ig)(nyr+1)<<endl;
+			ofs<<N(ig)(nyr+1)<<'\n';
 		}
 
 		ofs<<"# Weight-at-age\n";
 		for(int ig = 1; ig <= n_ags; ig++ )
 		{
-			ofs<<d3_wt_avg(ig)(nyr+1)<<endl;
+			ofs<<d3_wt_avg(ig)(nyr+1)<<'\n';
 		}		
 
 		ofs<<"# Natural mortality-at-age\n";
 		for(int ig = 1; ig <= n_ags; ig++ )
 		{
-			ofs<<M(ig)(nyr)<<endl;
+			ofs<<M(ig)(nyr)<<'\n';
 		}		
 
 
@@ -4697,7 +4593,7 @@ REPORT_SECTION
 		{
 			for(int ig = 1; ig <= n_ags; ig++ )
 			{
-				ofs<<log_sel(k)(ig)(nyr)<<endl;
+				ofs<<log_sel(k)(ig)(nyr)<<'\n';
 			}
 		}
 	}
@@ -4748,36 +4644,9 @@ REPORT_SECTION
 // 	REPORT(future_bt4);
 	
 
-	if(verbose)cout<<"END of Report Section..."<<endl;
-	
-	/*IN the following, I'm renaming the report file
-	in the case where retrospective analysis is occurring*/
-	//#if defined __APPLE__ || defined __linux
-	//if( retro_yrs && last_phase() )
-	//{
-	//	//adstring rep="iscam.ret"+str(retro_yrs);
-	//	//rename("iscam.rep",rep);
-	//	adstring copyrep = "cp iscam.rep iscam.ret"+str(retro_yrs);
-	//	system(copyrep);
-	//}
-	//// cout<<"Ya hoo"<<endl;
-	////exit(1);
-	//#endif
-//
-//	//#if defined _WIN32 || defined _WIN64
-//	//if( retro_yrs && last_phase() )
-//	//{
-//	//	//adstring rep="iscam.ret"+str(retro_yrs);
-//	//	//rename("iscam.rep",rep);
-//	//	adstring copyrep = "copy iscam.rep iscam.ret"+str(retro_yrs);
-//	//	system(copyrep);
-//	//}
-//	//// cout<<"Windows"<<endl;
-//	//// exit(1);
-	//#endif
-	
-   // REPORT_SECTION END
-	
+	if(verbose){
+    LOG<<"END of Report Section...\n";;
+  }
 
 //FUNCTION decision_table
 //   {
@@ -4810,10 +4679,10 @@ REPORT_SECTION
  	//int i;
  	//for(i=1;i<=n_tac;i++)
  	//{
- 	//	cout<<i<<" "<<tac<<endl;
+ 	//	LOG<<i<<" "<<tac<<'\n';
  	//	projection_model(tac(i));
  	//}
- 	// cout<<"Ok to here"<<endl;			       a
+ 	// LOG<<"Ok to here"<<'\n';			       a
      //}
 
 FUNCTION mcmc_output
@@ -4873,7 +4742,7 @@ FUNCTION mcmc_output
       }
     }
     ofs<<","<<"f";
-    ofs<<endl;
+    ofs<<'\n';
 
     ofstream of1("iscam_sbt_mcmc.csv");
     for(int group=1;group<=ngroup;group++){
@@ -4885,7 +4754,7 @@ FUNCTION mcmc_output
         }
       }
     }
-    of1<<endl;
+    of1<<'\n';
 
     ofstream of2("iscam_rt_mcmc.csv");
     for(int group=1;group<=ngroup;group++){
@@ -4897,7 +4766,7 @@ FUNCTION mcmc_output
         }
       }
     }
-    of2<<endl;
+    of2<<'\n';
 
     ofstream of3("iscam_ft_mcmc.csv");
     iter = 1;
@@ -4913,7 +4782,7 @@ FUNCTION mcmc_output
         }
       }
     }
-    of3<<endl;
+    of3<<'\n';
 
     ofstream of4("iscam_rdev_mcmc.csv");
     iter = 1;
@@ -4927,7 +4796,7 @@ FUNCTION mcmc_output
         iter++;
       }
     }
-    of4<<endl;
+    of4<<'\n';
 
     ofstream of5("iscam_vbt_mcmc.csv");
     iter = 1;
@@ -4943,7 +4812,7 @@ FUNCTION mcmc_output
         }
       }
     }
-    of5<<endl;
+    of5<<'\n';
 
     ofstream of6("iscam_ut_mcmc.csv");
     iter = 1;
@@ -4959,7 +4828,7 @@ FUNCTION mcmc_output
         }
       }
     }
-    of6<<endl;
+    of6<<'\n';
   }
 
   // Leading parameters & reference points
@@ -5013,7 +4882,7 @@ FUNCTION mcmc_output
   }
 
   ofs<<","<<objfun;
-  ofs<<endl;
+  ofs<<'\n';
 
   // output spawning stock biomass
   ofstream of1("iscam_sbt_mcmc.csv",ios::app);
@@ -5026,7 +4895,7 @@ FUNCTION mcmc_output
       }
     }
   }
-  of1<<endl;
+  of1<<'\n';
 
   // output age-1 recruits
   ofstream of2("iscam_rt_mcmc.csv",ios::app);
@@ -5039,7 +4908,7 @@ FUNCTION mcmc_output
       }
     }
   }
-  of2<<endl;
+  of2<<'\n';
 
   // output fishing mortality
   ofstream of3("iscam_ft_mcmc.csv",ios::app);
@@ -5056,7 +4925,7 @@ FUNCTION mcmc_output
       }
     }
   }
-  of3<<endl;
+  of3<<'\n';
 
   // output recruitment deviations
   // This is what the declaration of log_dev_recs looks like:
@@ -5073,7 +4942,7 @@ FUNCTION mcmc_output
       iter++;
     }
   }
-  of4<<endl;
+  of4<<'\n';
 
   // output vulnerable biomass to all gears //Added by RF March 19 2015
   ofstream of5("iscam_vbt_mcmc.csv",ios::app);
@@ -5090,7 +4959,7 @@ FUNCTION mcmc_output
       }
     }
   }
-  of5<<endl;
+  of5<<'\n';
 
   // output fishing mortality as U (1-e^-F)
   ofstream of6("iscam_ut_mcmc.csv",ios::app);
@@ -5107,7 +4976,7 @@ FUNCTION mcmc_output
       }
     }
   }
-  of6<<endl;
+  of6<<'\n';
 
   ofs.flush();
   of1.flush();
@@ -5121,12 +4990,12 @@ FUNCTION mcmc_output
  if(n_ags==1) {
    int ii;
    for(ii=1;ii<=n_tac;ii++){
-     //cout<<ii<<" "<<tac(ii)<<endl;
+     //LOG<<ii<<" "<<tac(ii)<<'\n';
      projection_model(tac(ii));
    }
  }
  if(n_ags>1){
-   if(nf==1) cout<<"************Decision Table not yet implemented for number of areas/groups > 1************"<<endl<<endl;
+   if(nf==1) LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
  }
 
 // FUNCTION dvector age3_recruitment(const dvector& rt, const double& wt,const double& M)
@@ -5153,7 +5022,7 @@ FUNCTION mcmc_output
 // rbar(2) = mean(s_rt(ix1+1,ix2));
 // rbar(3) = mean(s_rt(ix2+1,nyr));
 // rbar = rbar*wt*exp(-M);
-// //cout<<rbar<<endl;
+// //LOG<<rbar<<'\n';
 // return(rbar);
 //   }
 
@@ -5286,13 +5155,13 @@ FUNCTION void projection_model(const double& tac);
 
     //Predicted catch for checking calculations    (RF tested this March 17, 2015)
     //if(i > nyr){
-    //        cout<<p_ft<<endl;
+    //        LOG<<p_ft<<'\n';
     // for(k=1;k<=ngear;k++)
     // {
     //  dvector ba = elem_prod(p_N(i),dWt_bar(1));
     //  double ctest;
     //  ctest = sum(elem_div(elem_prod(elem_prod(ba,p_ft(i,k)*va_bar(k)),1.-exp(-p_Z(i))),p_Z(i)));
-    //  cout<<"gear = "<<k<<" tac = "<<tac<<"\t ct = "<<ctest<<endl;
+    //  LOG<<"gear = "<<k<<" tac = "<<tac<<"\t ct = "<<ctest<<'\n';
     // }
     //}
   } //end year loop
@@ -5306,7 +5175,7 @@ FUNCTION void projection_model(const double& tac);
 
   if(mceval_phase()){
    if(nf==1 && runNo==1){
-    cout<<"Running MCMC projections"<<endl;
+    LOG<<"Running MCMC projections\n";
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
     write_proj_headers(ofsmcmc, syr, nyr);
     ofsmcmc.flush();
@@ -5316,7 +5185,7 @@ FUNCTION void projection_model(const double& tac);
    ofsmcmc.flush();
   }else{
 //   if(runNo==1){
-//    cout<<"Running MPD projections"<<endl;
+//    LOG<<"Running MPD projections"<<'\n';
 //    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
 //    write_proj_output(ofsmpd);
 //    ofsmpd.flush();
@@ -5326,11 +5195,11 @@ FUNCTION void projection_model(const double& tac);
 //   ofsmpd.flush();
   }
   if(!mceval_phase()){
-   cout<<"Finished projection model for TAC = "<<tac<<endl;
+   LOG<<"Finished projection model for TAC = "<<tac<<'\n';
   }
 
 FUNCTION void runMSE()
-	cout<<"Start of runMSE"<<endl;
+	LOG<<"Start of runMSE"<<'\n';
 
 	// STRUCT FOR MODEL VARIABLES
 	// ModelVariables s_mv;
@@ -5382,7 +5251,7 @@ FUNCTION void runMSE()
 	// OperatingModel om(s_mv,argc,argv);
 	// om.runScenario(rseed);
 
-	// COUT("DONE");
+	// LOG<<"DONE\n";
 
 TOP_OF_MAIN_SECTION
 	time(&start);
@@ -5392,17 +5261,13 @@ TOP_OF_MAIN_SECTION
 	gradient_structure::set_MAX_NVAR_OFFSET(5000);
 	gradient_structure::set_NUM_DEPENDENT_VARIABLES(5000);
 
-
 GLOBALS_SECTION
 	/**
 	\def REPORT(object)
 	Prints name and value of \a object on ADMB report %ofstream file.
 	*/
 	#undef REPORT
-	#define REPORT(object) report << #object "\n" << object << endl;
-
-	#undef COUT
-	#define COUT(object) cout << #object "\n" << object <<endl;
+	#define REPORT(object) report << #object "\n" << object << '\n';
 
 	#undef TINY
 	#define TINY 1.e-08
@@ -5410,11 +5275,8 @@ GLOBALS_SECTION
 	#undef NA
 	#define NA -99.0
 
-	//#include <admodel.h>
 	#include <time.h>
 	#include <string.h>
-
-	//#if defined _WIN32 || defined _WIN64
   #include "../../include/baranov.h"
   #include "../../include/LogisticNormal.h"
   #include "../../include/LogisticStudentT.h"
@@ -5422,6 +5284,7 @@ GLOBALS_SECTION
   #include "../../include/msy.hpp"
 	#include "../../include/multinomial.h"
   #include "../../include/utilities.h"
+  #include "../../include/Logger.h"
 
 	time_t start,finish;
 	long hour,minute,second;
@@ -5497,10 +5360,10 @@ FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, do
 		Ss=mfexp(-za);
 		
 		/*
-		cout<<"Nn "<<endl<<Nn(1)<<endl;
-		cout<<"SS "<<endl<<Ss<<endl;
-		cout<<"SSb "<<endl<<Ssb(1)<<endl;
-		cout<<"wt "<<avg_wt<<endl; 
+		LOG<<"Nn "<<'\n'<<Nn(1)<<'\n';
+		LOG<<"SS "<<'\n'<<Ss<<'\n';
+		LOG<<"SSb "<<'\n'<<Ssb(1)<<'\n';
+		LOG<<"wt "<<avg_wt<<'\n';
 		*/
 			
 		for(t=1;t<=Nyr;t++){
@@ -5532,21 +5395,18 @@ FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, do
 		if(mtest==msy) fmsy=ftest(k);
 		if(mtest==msy) bmsy=be(k);
 	}
-	
-	cout<<"Ref points from running out model"<<endl;
-	cout<<msy<<endl;
-	cout<<fmsy<<endl;
-	cout<<bmsy<<endl;	
+	LOG<<"Ref points from running out model\n";;
+	LOG<<msy<<'\n';
+	LOG<<fmsy<<'\n';
+	LOG<<bmsy<<'\n';
 
 //RF's function for calling slow msy routine to test ref points
 FUNCTION void run_FRP()
 	//Reference points
 	if(last_phase()){
-	cout<<"                                                            "<<endl;
-	cout<<"*********Getting reference points the slow way************"<<endl;
-	cout<<"*******************************************"<<endl;
+	  LOG<<"\n*********Getting reference points the slow way************\n";
+	  LOG<<"*******************************************\n\n";
 	}
-	
 	dvector ftest(1,4001);
 	ftest.fill_seqadd(0,0.01);
 	ftest(1) =  21.7117; //option to put in a test value
@@ -5560,7 +5420,7 @@ FUNCTION void run_FRP()
 	double fmsy,msy,bmsy;
 	dvector ye(1,Nf);
 	dvector be(1,Nf);
-	
+
 	slow_msy(ftest, ye, be, msy, fmsy, bmsy);
 	Fmsy=fmsy;
 	MSY=msy;
@@ -5569,24 +5429,13 @@ FUNCTION void run_FRP()
 	Be=be;
 
 	ofstream ofsr("TEST_frp.rep");
-	ofsr<<"Fmsy"<<endl<<Fmsy<<endl;
-	ofsr<<"MSY"<<endl<<MSY<<endl;
-	ofsr<<"Bmsy"<<endl<<Bmsy<<endl;
-	ofsr<<"ftest"<<endl<<ftest<<endl;
-	ofsr<<"Ye"<<endl<<Ye<<endl;	
-	ofsr<<"Be"<<endl<<Be<<endl;	
+	ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
+	ofsr<<"MSY"<<'\n'<<MSY<<'\n';
+	ofsr<<"Bmsy"<<'\n'<<Bmsy<<'\n';
+	ofsr<<"ftest"<<'\n'<<ftest<<'\n';
+	ofsr<<"Ye"<<'\n'<<Ye<<'\n';	
+	ofsr<<"Be"<<'\n'<<Be<<'\n';	
 
 FINAL_SECTION
-	time(&finish);
+	LOG<<"\n\nNumber of function evaluations: "<<nf<<'\n';
 
-  elapsed_time=difftime(finish,start);
-	hour=long(elapsed_time)/3600;
-	minute=long(elapsed_time)%3600/60;
-	second=(long(elapsed_time)%3600)%60;
-	cout<<endl<<endl<<"*******************************************"<<endl;
-	cout<<"--Start time: "<<ctime(&start)<<endl;
-	cout<<"--Finish time: "<<ctime(&finish)<<endl;
-	cout<<"--Runtime: ";
-	cout<<hour<<" hours, "<<minute<<" minutes, "<<second<<" seconds"<<endl;
-	cout<<"--Number of function evaluations: "<<nf<<endl;
-	cout<<"*******************************************"<<endl;

@@ -1,3 +1,5 @@
+#include "Logger.h"
+
 #ifndef _MSY_H
 #define _MSY_H
 
@@ -122,20 +124,20 @@ namespace rfp {
 
 			if(m_Ma.indexmin() != m_Fa.indexmin() || m_Ma.indexmax() != m_Fa.indexmax())
 			{
-			cerr<<"Indexes do not mach in calcPhie"<<endl;
-			exit(1);
+        cerr<<"Indexes do not mach in calcPhie\n";
+        exit(1);
 			}
 
 			m_nGrp = m_Ma.rowmax() - m_Ma.rowmin() + 1;
 			m_nGear = m_Va(1).rowmax();
-			//cout<<"NGEAR "<<m_nGear<<endl;
+			//LOG<<"NGEAR "<<m_nGear<<'\n';
 			
 			m_sage = m_Ma.colmin();
 			m_nage = m_Ma.colmax();
 
 			calcPhie();
 
-			//cout<<"In constructor\n"<<m_phie<<endl;
+			//LOG<<"In constructor\n"<<m_phie<<'\n';
 		}
 		virtual const T1 getFmsy(const T1 &fe);
 		virtual const T1 getFmsy(const T1 &fe, const T1 &ak);
@@ -157,28 +159,28 @@ namespace rfp {
 	template<class T,class T1,class T2,class T3>
 	void msy<T,T1,T2,T3>::print()
 	{
-		cout<<"|------------------------------------------|" <<endl;
-		cout<<"| MSY-BASED REFERENCE POINTS               |" <<endl;
-		cout<<"|------------------------------------------|" <<endl;
-		cout<<"| Bo         = "<<setw(10)<<m_bo              <<endl;
-		cout<<"| Re         = "<<setw(10)<<m_re              <<endl;
-		cout<<"| Rmsy       = "<<setw(10)<<m_rmsy            <<endl;
-		cout<<"| Bmsy       = "<<setw(10)<<m_bmsy            <<endl;
-		cout<<"| Fmsy       = "<<setw(10)<<m_fmsy            <<endl;
-		cout<<"| MSY        = "<<setw(10)<<m_msy             <<endl;
-		cout<<"| ∑MSY       = "<<setw(10)<<sum(m_msy)        <<endl;
-		cout<<"| Allocation = "<<setw(10)<<m_allocation      <<endl;
-		cout<<"| SPR        = "<<setw(10)<<m_spr             <<endl;
-		cout<<"|------------------------------------------|" <<endl;
-		cout<<"| DIAGNOSTICS                              |" <<endl;
-		cout<<"|------------------------------------------|" <<endl;
-		cout<<"| dye/dfe    = "<<setw(10)<<m_dye             <<endl;
-		cout<<"| ∑dye/dfe   = "<<setw(10)<<m_dYe             <<endl;
-		// cout<<"| BPR  = "<<setw(10)<<m_phie                  <<endl;
-		// cout<<"| bpr  = "<<setw(10)<<m_phif                  <<endl;
-		// cout<<"| dYes = "<<setw(10)<<sum(m_f)                <<endl;
-		// cout<<"| FAIL = "<<setw(10)<<m_FAIL                  <<endl;
-		cout<<"|------------------------------------------|" <<endl;
+		LOG<<"|------------------------------------------|\n";
+		LOG<<"| MSY-BASED REFERENCE POINTS               |\n";
+		LOG<<"|------------------------------------------|\n";
+		LOG<<"| Bo         = "<<setw(10)<<m_bo              <<'\n';
+		LOG<<"| Re         = "<<setw(10)<<m_re              <<'\n';
+		LOG<<"| Rmsy       = "<<setw(10)<<m_rmsy            <<'\n';
+		LOG<<"| Bmsy       = "<<setw(10)<<m_bmsy            <<'\n';
+		LOG<<"| Fmsy       = "<<setw(10)<<m_fmsy            <<'\n';
+		LOG<<"| MSY        = "<<setw(10)<<m_msy             <<'\n';
+		LOG<<"| ∑MSY       = "<<setw(10)<<sum(m_msy)        <<'\n';
+		LOG<<"| Allocation = "<<setw(10)<<m_allocation      <<'\n';
+		LOG<<"| SPR        = "<<setw(10)<<m_spr             <<'\n';
+		LOG<<"|------------------------------------------|\n";
+		LOG<<"| DIAGNOSTICS                              |\n";
+		LOG<<"|------------------------------------------|\n";
+		LOG<<"| dye/dfe    = "<<setw(10)<<m_dye             <<'\n';
+		LOG<<"| ∑dye/dfe   = "<<setw(10)<<m_dYe             <<'\n';
+		// LOG<<"| BPR  = "<<setw(10)<<m_phie                  <<'\n';
+		// LOG<<"| bpr  = "<<setw(10)<<m_phif                  <<'\n';
+		// LOG<<"| dYes = "<<setw(10)<<sum(m_f)                <<'\n';
+		// LOG<<"| FAIL = "<<setw(10)<<m_FAIL                  <<'\n';
+		LOG<<"|------------------------------------------|\n\n";
 	}
 
 	/**
@@ -218,30 +220,29 @@ namespace rfp {
 			q2 = (m_phiq - q1)/hh;
 
 
-			cout<<"|———————————————————————————————————————————————————————|" <<endl;
-			cout<<"| Gear "<<k<<" fe\t"<<fe(k)<<endl;
-			cout<<"| Variable"<<setw(15)<<std::setfill(' ')
+			LOG<<"|———————————————————————————————————————————————————————|\n";
+			LOG<<"| Gear "<<k<<" fe\t"<<fe(k)<<'\n';
+			LOG<<"| Variable"<<setw(15)<<std::setfill(' ')
 				<<"Numerical" <<setw(15)<<std::setfill(' ')
 				<<"Analytical"<<setw(15)<<std::setfill(' ')
-				<<"Difference"<<endl;
-			cout<<"|———————————————————————————————————————————————————————|" <<endl;
-			cout<<"| dye/dfe "         <<setw(15)
+				<<"Difference"<<'\n';
+			LOG<<"|———————————————————————————————————————————————————————|\n";
+			LOG<<"| dye/dfe "         <<setw(15)
 					<<y2(k)            <<setw(15)
 					<<m_dye(k)         <<setw(15)
-					<<y2(k)-m_dye(k)   <<endl;
-			cout<<"| dre/dfe "         <<setw(15)
+					<<y2(k)-m_dye(k)   <<'\n';
+			LOG<<"| dre/dfe "         <<setw(15)
 					<<r2               <<setw(15)
 					<<m_dre(k)         <<setw(15)
-					<<r2-m_dre         <<endl;
-			cout<<"| dphiq/dfe"        <<setw(15)
+					<<r2-m_dre         <<'\n';
+			LOG<<"| dphiq/dfe"        <<setw(15)
 					<<q2(k)            <<setw(15)
 					<<m_dphiq(k)       <<setw(15)
-					<<q2(k)-m_dphiq(k) <<endl;
+					<<q2(k)-m_dphiq(k) <<'\n';
 
-			// cout<<setprecision(10)<<fe<<endl<<fh<<endl<<hh<<endl;
+			// LOG<<setprecision(10)<<fe<<'\n'<<fh<<'\n'<<hh<<'\n';
 		}
-		cout<<"|———————————————————————————————————————————————————————|" <<endl;
-
+		LOG<<"|———————————————————————————————————————————————————————|\n\n";
 	}
 
 	/**
@@ -281,8 +282,8 @@ namespace rfp {
 
 			// fbar = fbar - m_dYe/m_d2Ye;
 			fbar -= m_fbar_stp;
-			// cout<<iter<<" fbar "<<fbar<<" dYe "<<m_dYe<<" fk "<<fk;
-			// cout<<" lambda = "<<lambda<<" ak = "<<m_ye/sum(m_ye)<<endl;
+			// LOG<<iter<<" fbar "<<fbar<<" dYe "<<m_dYe<<" fk "<<fk;
+			// LOG<<" lambda = "<<lambda<<" ak = "<<m_ye/sum(m_ye)<<'\n';
 
 			// Backtrack if necessary;
 			if( (lb-fbar)*(fbar-ub) < 0.0 )
@@ -338,7 +339,7 @@ namespace rfp {
 					m_fe(i) -= delta*m_fstp(i);
 				}
 			}
-			//cout<<iter<<" delta = "<<delta<<" fmsy = "<<m_fe<<endl;
+			//LOG<<iter<<" delta = "<<delta<<" fmsy = "<<m_fe<<'\n';
 			
 			
 		}
@@ -352,7 +353,7 @@ namespace rfp {
 	template<class T, class T1, class T2, class T3>
 	void msy<T,T1,T2,T3>::calcEquilibrium(const T1 &fe)
 	{
-		//cout<<"Working on this routine"<<endl;
+		//LOG<<"Working on this routine"<<'\n';
 		int j,h,k,kk;
 		T phif = 0.0;
 		
@@ -382,14 +383,14 @@ namespace rfp {
 		T3  dlw_m(1,m_nGrp,1,m_nGear,m_sage,m_nage);
 		T3 d2lw_m(1,m_nGrp,1,m_nGear,m_sage,m_nage);
 
-		//cout<<m_Va<<endl;
+		//LOG<<m_Va<<'\n';
 		for( h = 1; h <= m_nGrp; h++ )
 		{
 			za(h) = m_Ma(h);
 			for( k = 1; k <= m_nGear; k++ )
 			{
 				za(h) = za(h) + fe(k) * m_Va(h)(k);
-				//cout<<h<<" "<<k<<endl;
+				//LOG<<h<<" "<<k<<'\n';
 			}
 			sa(h) = exp(-za(h));
 			oa(h) = 1.0 - sa(h);
@@ -578,7 +579,7 @@ namespace rfp {
 			  + re*elem_prod(fe,diagonal(dphiq));
 			  
 
-		// cout<<"dye "<<dye<<endl;
+		// LOG<<"dye "<<dye<<'\n';
 
 		// Jacobian matrix (2nd derivative of the catch equations)
 		for(j=1; j<=m_nGear; j++)
@@ -615,7 +616,7 @@ namespace rfp {
 		T2 d2ye_ak(1,m_nGear,1,m_nGear);
 		if(allocated(m_ak)) 
 		{	
-			//cout<<"Allocated"<<endl;
+			//LOG<<"Allocated"<<'\n';
 			for( k = 1; k <= m_nGear; k++ )
 			{
 
@@ -636,29 +637,29 @@ namespace rfp {
 			m_dye      = dye_ak;
 			m_dYe      = sum(dye_ak);
 			m_d2Ye     = sum(diagonal(d2ye_ak));
-			// cout<<sum(dye_ak)/sum(diagonal(d2ye_ak))<<endl;
+			// LOG<<sum(dye_ak)/sum(diagonal(d2ye_ak))<<'\n';
 		}
 
 		// Uncomment for debugging.
-		// cout<<setprecision(8)<<endl;
-		// cout<<"Re     = "<<re<<endl;
-		// cout<<"phie   = "<<m_phie<<endl;
-		// cout<<"phif   = "<<m_phif<<endl;
-		// cout<<"fe     = "<<fe<<endl;
-		// cout<<"dphif  = "<<dphif<<endl;
-		// cout<<"ddphif = "<<d2phif<<endl;  	// minor diff  FIXED
-		// cout<<"ye     = "<<ye<<endl;
-		// cout<<"phiq   = "<<phiq<<endl;
-		// cout<<"dphiq  = "<<dphiq<<endl;   	// Bug: FIXED for ngear > 1
-		// cout<<"d2phiq = "<<d2phiq<<endl;  	// OK
-		// cout<<"dre    = "<<dre<<endl;		// OK
-		// cout<<"dye    = "<<dye<<endl;     	// Bug -> FIXED.
-		// cout<<"Jacobi\n "<<d2ye<<endl;
-		// cout<<"invJ \n  "<<invJ<<endl;
-		// cout<<"fstp   = "<<fstp<<endl;		// Bug -> FIXED.
-		//cout<<"d2lz_m = "<<d2lz_m<<endl;  // plus group is different.
-		//cout<<"Newton step\n"<<fstp<<endl;
-		//cout<<"End of CalcSurvivorship"<<endl;
+		// LOG<<setprecision(8)<<'\n';
+		// LOG<<"Re     = "<<re<<'\n';
+		// LOG<<"phie   = "<<m_phie<<'\n';
+		// LOG<<"phif   = "<<m_phif<<'\n';
+		// LOG<<"fe     = "<<fe<<'\n';
+		// LOG<<"dphif  = "<<dphif<<'\n';
+		// LOG<<"ddphif = "<<d2phif<<'\n';  	// minor diff  FIXED
+		// LOG<<"ye     = "<<ye<<'\n';
+		// LOG<<"phiq   = "<<phiq<<'\n';
+		// LOG<<"dphiq  = "<<dphiq<<'\n';   	// Bug: FIXED for ngear > 1
+		// LOG<<"d2phiq = "<<d2phiq<<'\n';  	// OK
+		// LOG<<"dre    = "<<dre<<'\n';		// OK
+		// LOG<<"dye    = "<<dye<<'\n';     	// Bug -> FIXED.
+		// LOG<<"Jacobi\n "<<d2ye<<'\n';
+		// LOG<<"invJ \n  "<<invJ<<'\n';
+		// LOG<<"fstp   = "<<fstp<<'\n';		// Bug -> FIXED.
+		//LOG<<"d2lz_m = "<<d2lz_m<<'\n';  // plus group is different.
+		//LOG<<"Newton step\n"<<fstp<<'\n';
+		//LOG<<"End of CalcSurvivorship"<<'\n';
 	}
 
 	/**
@@ -693,8 +694,8 @@ namespace rfp {
 		}
 		m_lx = lx;
 		m_bo = m_ro * m_phie;
-		// cout<< "lx\n"<<lx<<endl;
-		// cout<<"Bo = "<<m_bo<<endl;
+		// LOG<< "lx\n"<<lx<<'\n';
+		// LOG<<"Bo = "<<m_bo<<'\n';
 		
 	}
 

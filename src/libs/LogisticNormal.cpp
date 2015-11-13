@@ -1,4 +1,5 @@
 #include "../../include/LogisticNormal.h"
+#include "../../include/Logger.h"
 
 /**
 	Implementation of the logistic normal negative loglikelihood.
@@ -137,7 +138,7 @@ dvariable logistic_normal::operator() (const dvariable &sigma2)
 dvariable logistic_normal::operator() (const dvariable &sigma2,const dvariable &phi)
 {
 	m_nll = 0;
-	// cout<<phi<<endl;
+	// LOG<<phi<<'\n';
 	// Get correlation vector rho
 	get_rho(phi);
 
@@ -258,9 +259,9 @@ void logistic_normal::get_rho(const dvariable &phi, const dvariable &psi)
 
 	if(phi2 <= -1.0 || phi2 >= (1.-fabs(phi1)))
 	{
-		cout<<"Phi1 = "<<phi<<endl;
-		cout<<"Phi2 = "<<psi<<endl;
-		cout<<"Invalid value for phi2"<<endl;
+		LOG<<"Phi1 = "<<phi<<'\n';
+		LOG<<"Phi2 = "<<psi<<'\n';
+		LOG<<"Invalid value for phi2"<<'\n';
 		exit(1);
 	}
 	for( j = lb+1; j <= ub; j++ )
@@ -472,13 +473,13 @@ void logistic_normal::std_residuals()
 	
 // 	if( eps )
 // 	{
-// 		// cout<<"adding constant"<<endl;
+// 		// LOG<<"adding constant"<<'\n';
 // 		add_constant_normalize(Op,eps);
 // 		add_constant_normalize(Ep,eps);
 // 	}
 // 	else
 // 	{
-// 		// cout<<"aggregating cohorts"<<endl;
+// 		// LOG<<"aggregating cohorts"<<'\n';
 // 		aggregate(Op,Ep,minp);
 // 	}
 
@@ -536,13 +537,13 @@ void logistic_normal::std_residuals()
 	
 // 	if( eps )
 // 	{
-// 		// cout<<"adding constant"<<endl;
+// 		// LOG<<"adding constant"<<'\n';
 // 		add_constant_normalize(Op,eps);
 // 		add_constant_normalize(Ep,eps);
 // 	}
 // 	else
 // 	{
-// 		// cout<<"aggregating cohorts"<<endl;
+// 		// LOG<<"aggregating cohorts"<<'\n';
 // 		aggregate(Op,Ep,minp);
 // 	}
 
@@ -600,13 +601,13 @@ void logistic_normal::std_residuals()
 	
 // 	if( eps )
 // 	{
-// 		// cout<<"adding constant"<<endl;
+// 		// LOG<<"adding constant"<<'\n';
 // 		add_constant_normalize(Op,eps);
 // 		add_constant_normalize(Ep,eps);
 // 	}
 // 	else
 // 	{
-// 		// cout<<"aggregating cohorts"<<endl;
+// 		// LOG<<"aggregating cohorts"<<'\n';
 // 		aggregate(Op,Ep,minp);
 // 	}
 

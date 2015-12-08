@@ -68,6 +68,9 @@ DATA_SECTION
 	int rseed;    ///< Random number seed for simulated data.
 	int retro_yrs;///< Number of years to look back from terminal year.
 	int testMSY;
+
+	int delaydiff; ///Flag for delay difference model 
+
 	LOC_CALCS
 		SimFlag=0;
 		rseed=999;
@@ -108,6 +111,18 @@ DATA_SECTION
 		if((on=option_match(ad_comm::argc,ad_comm::argv,"-msy",opt))>-1){
 			LOG<<"Testing MSY calculations with Spreadsheet MSF.xlsx\n";
 			testMSY = 1;
+		}
+
+		//Delay difference
+		//CW Dec 2015 - copied from RF May 22 2013
+		// command line option for implementing delay difference model "-delaydiff"
+		delaydiff=0;
+		if((on=option_match(ad_comm::argc,ad_comm::argv,"-delaydiff",opt))>-1)
+		{
+			delaydiff=1;
+			cout<<"______________________________________________________\n"<<endl;
+			cout<<"    **Implementing Delay Difference model** "<<endl;
+			cout<<"______________________________________________________"<<endl;
 		}
 
 	END_CALCS
@@ -273,6 +288,7 @@ DATA_SECTION
 	init_vector d_ah(1,n_ags);
 	init_vector d_gh(1,n_ags);
 	init_int n_MAT;
+
 	int t1;
 	int t2;
 	LOC_CALCS
@@ -316,6 +332,15 @@ DATA_SECTION
 	  	}
 	  }
 	END_CALCS
+
+	//Delay difference parameter
+
+	init_int kage;  //age at knife-edge recruitment 
+        //DD growth parameters :: RF (02-Apr-2013)
+	init_number alpha_g;  //growth alpha (intercept of Ford-Walford plot; derived from wk and wk-1, H&W 1992, p 334)
+	init_number rho_g;  //growth rho (slope of Ford-Walford plot; H&W 1992, p 332)
+  	init_number wk;
+
 
 	// |---------------------------------------------------------------------------------|
 	// | Historical removal

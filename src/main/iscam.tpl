@@ -34,19 +34,22 @@ DATA_SECTION
 	// | 5) start year for recruitment period (not implemented yet)
 	// | 6)   end year for recruitment period (not implemented yet)
 	// |
+
 	!! ad_comm::change_datafile_name(ProjectFileControl);
 	/// | Number of catch options to explore in the decision table.
 	init_int n_tac; ///< Number of catch options to explore in the decision table.
   !! LOG<<"Number of TAC options to explore in decision table:\n";
-	!! LOG<<n_tac<<'\n';
+  !! LOG<<n_tac<<'\n';
 	/// | Vector of catch options.
 	init_vector tac(1,n_tac);
 	init_int n_pfcntrl;
 	init_vector pf_cntrl(1,n_pfcntrl);
 
+
 	//init_vector mse_cntrl(1,1);
 
 	init_int eof_pf;
+
 	LOC_CALCS
 		if(eof_pf!=-999)
 		{
@@ -124,6 +127,7 @@ DATA_SECTION
 			cout<<"    **Implementing Delay Difference model** "<<endl;
 			cout<<"______________________________________________________"<<endl;
 		}
+
 
 	END_CALCS
 
@@ -242,6 +246,7 @@ DATA_SECTION
 			" greater than last model year.\n";
 			exit(1);
 		}
+
 	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
@@ -274,6 +279,7 @@ DATA_SECTION
 		for(int k=1; k<=ngear;k++){
 			if(fsh_flag(k)) nFleetIndex(j++) = k;
 		}
+
 	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
@@ -331,9 +337,14 @@ DATA_SECTION
         ma(ig) = d_maturityVector;
 	  	}
 	  }
+
+
 	END_CALCS
 
+	//=======================================================================================
 	//Delay difference parameter
+	//=======================================================================================
+	
 
 	init_int kage;  //age at knife-edge recruitment 
         //DD growth parameters :: RF (02-Apr-2013)
@@ -432,6 +443,7 @@ DATA_SECTION
 		{
 			it_wt(k) = it_wt(k)/tmp_mu;
 		}
+
 	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
@@ -491,6 +503,7 @@ DATA_SECTION
 			LOG<<"| NO AGE OR LENGTH DATA   |\n";
 			LOG<<"| ----------------------- |\n";
 		}
+
 	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | EMPIRICAL WEIGHT_AT_AGE DATA
@@ -526,9 +539,9 @@ DATA_SECTION
 	// |---------------------------------------------------------------------------------|
 	// | nMeanWt     - number of independent annual mean weight series
 	// | nMeanWtNobs - vector :: number of annual mean weight observations in each series
-  init_int nMeanWt;
+  	init_int nMeanWt;
 	init_ivector nMeanWtNobs(1,nMeanWt);
-	init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7);
+	init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,8);
 
 	LOC_CALCS
 		/*
@@ -538,10 +551,13 @@ DATA_SECTION
 		projwt.initialize();
 		n_bf_wt_row.initialize();
 		tmp_nWtNobs.initialize();
+		
+
 		for(int k=1; k<=nWtTab; k++)
 		{
 			tmp_nWtNobs(k) = nWtNobs(k);
 			projwt(k)=1;
+			
 			for(i=1; i<=nWtNobs(k); i++)
 			{
 				if(nWtNobs(k) > 0 && d3_inp_wt_avg(k)(i)(sage-5) < 0)
@@ -571,7 +587,6 @@ DATA_SECTION
 		matrix  xxinp_wt_avg(1,sum_tmp_nWtNobs,sage-5,nage);
 
 	LOC_CALCS
-
 
 		/*
 		  This will redimension the d3_inp_wt_avg  according to tmp_nWtNobs and rename 
@@ -646,6 +661,7 @@ DATA_SECTION
 	// 4darray d4_alk(1,nAgears,1,n_A_nobs,sage,nrh,nage,nch);
 
 	LOC_CALCS
+
 		d3_wt_avg.initialize();
 		d3_wt_dev.initialize();
 		d3_wt_mat.initialize();
@@ -664,6 +680,8 @@ DATA_SECTION
 			}
 		}
 
+
+
 		// the overwrite d3_wt_avg & d3_wt_mat with existing empirical data
 		// SM Sept 6, 2013. Added option of using NA values (-99.0) for
 		// missing weight-at-age data, or truncated age-data.
@@ -671,12 +689,15 @@ DATA_SECTION
 		
 		//if(nWtNobs(ii) > 0)
 		//{
+
 		for(i=1;i<=sum_tmp_nWtNobs;i++)
 		{
 			iyr = xxinp_wt_avg(i,sage-5);
 			f   = xxinp_wt_avg(i,sage-3);
 			g   = xxinp_wt_avg(i,sage-2);
 			h   = xxinp_wt_avg(i,sage-1);
+
+			
 
 		// | SM Changed Sept 9, to accomodate NA's (-99) in empirical data.
 			if( h )
@@ -713,7 +734,6 @@ DATA_SECTION
 			}
 		}
 		//}
-		
 		// average weight-at-age in projection years
 		for(ig=1;ig<=n_ags;ig++)
 		{
@@ -758,6 +778,7 @@ DATA_SECTION
 				ad_exit(1);
 			}
 		}
+
 	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | END OF DATA FILE
@@ -765,14 +786,16 @@ DATA_SECTION
 	// |
 	init_int eof;
 	LOC_CALCS
+		
 	  if(eof==999){
-      LOG<<" ______________________________ \n";
-      LOG<<"|      END OF DATA SECTION     |\n";
+      	LOG<<" ______________________________ \n";
+     	LOG<<"|      END OF DATA SECTION     |\n";
 	    LOG<<"|______________________________|\n";
 	  }else{
-      LOG<<"\n *** ERROR READING DATA *** \n\n";
-      exit(1);
+      	LOG<<"\n *** ERROR READING DATA *** \n\n";
+      	exit(1);
 	  }
+
 	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | VARIABLES FOR MSY-BASED REFERENCE POINTS
@@ -845,11 +868,13 @@ DATA_SECTION
 	init_ivector nPhz_df(1,nAgears);
 	init_int check;
 	LOC_CALCS
+		cout<<"check is "<<check<<endl;
 		if(check != -12345) 
 		{
+			cout<<"check is "<<check<<endl;
 			LOG<<"Check integer for EOF, should be -12345.. = "<<check<<'\n';
-      LOG<<"Error reading composition controls\n";
-      exit(1);
+      		LOG<<"Error reading composition controls\n";
+      		exit(1);
 		}
 	END_CALCS
 

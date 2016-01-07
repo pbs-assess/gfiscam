@@ -342,15 +342,19 @@ DATA_SECTION
 	END_CALCS
 
 	//=======================================================================================
-	//Delay difference parameter
+	//Delay difference parameters
 	//=======================================================================================
 	
+	//age at knife-edge recruitment 
+	init_ivector kage(1,n_gs);  
+    
+    //DD growth parameters :: RF (02-Apr-2013)
+    init_vector alpha_g(1,n_gs);  //growth alpha (intercept of Ford-Walford plot; derived from wk and wk-1, H&W 1992, p 334)
+	
+	//growth rho (slope of Ford-Walford plot; H&W 1992, p 332)
+	init_vector rho_g(1,n_gs);  
 
-	init_int kage;  //age at knife-edge recruitment 
-        //DD growth parameters :: RF (02-Apr-2013)
-	init_number alpha_g;  //growth alpha (intercept of Ford-Walford plot; derived from wk and wk-1, H&W 1992, p 334)
-	init_number rho_g;  //growth rho (slope of Ford-Walford plot; H&W 1992, p 332)
-  	init_number wk;
+  	init_number wk(1,n_gs);
 
 
 	// |---------------------------------------------------------------------------------|
@@ -1511,6 +1515,25 @@ PARAMETER_SECTION
 	sdreport_matrix sd_log_sbt(1,ngroup,syr,nyr+1);
 	
 
+	// |---------------------------------------------------------------------------------|
+	// | delay difference model quantities
+	// |---------------------------------------------------------------------------------|
+	// | numbers -> numbers of fish in the delay difference model
+	// | biomass -> biomass in the delay difference model
+	// | surv -> //delaydiff only
+
+	matrix  numbers(1,n_ags,syr,nyr+1);
+	matrix biomass(1,n_ags,syr,nyr+1);
+
+	vector biomass(syr,nyr+1); //RF added biomass in the delay difference model - in the ASM this is set to spawning biomass
+	
+	///parei aqui o que é surv??
+	vector surv(syr,nyr);	     //delaydiff only
+	vector vbcom(syr,nyr); //RF added vulnerable biomass in gear 1 - commercial fishery
+	vector vncom(syr,nyr); //RF added vulnerable numbers in gear 1 - commercial fishery
+	vector annual_mean_wt(1,n_ags,syr,nyr);  //RF addition for P cod 
+	
+
 PRELIMINARY_CALCS_SECTION
 	// |---------------------------------------------------------------------------------|
 	// | Run the model with input parameters to simulate real data.
@@ -1537,6 +1560,11 @@ RUNTIME_SECTION
 
 
 PROCEDURE_SECTION
+	
+	if(!delaydiff){	
+		if(d_iscamCntrl(5)==2) cntrl(5)=0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
+	
+
 	initParameters();
 	calcSelectivities(isel_type);
  	calcTotalMortality();
@@ -1546,6 +1574,21 @@ PROCEDURE_SECTION
 	calcSurveyObservations();
 	calcStockRecruitment();
 	calcAnnualMeanWeight();
+	
+	}	
+
+	if(delaydiff){
+		d_iscamCntrl(14)=3; //If using the delay difference model, switch age comp likelihood type to 3 - i.e. set the likelihood of the age comps to zero in the objective function
+	
+		initParameters_deldiff();
+		calcTotalMortality();
+		calcNumbersBiomass_deldiff();
+		calcFisheryObservations_deldiff();
+		calcSurveyObservations_deldiff();
+		calc_stock_recruitment_deldiff();
+		calc_annual_mean_weight(); //RF added this for P cod - only gets added to objective function if cntrl(15)==1
+	}
+
 	calcObjectiveFunction();
 	if(sd_phase())
 	{
@@ -1932,7 +1975,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 						log_sel(kgear)(ig)(i)=cubic_spline( sel_par(k)(bpar), len );
 					}
 					break;
-					//parei aqui
+					
 				case 13:	// truncated age-specific selectivity coefficients
 
 					for(i=syr; i<=nyr; i++)
@@ -2804,6 +2847,51 @@ FUNCTION calcAnnualMeanWeight
     LOG<<"**** Ok after calcAnnualMeanWeight ****\n";
   }
   }
+
+  //========================================================
+  //Delay difference functions
+  
+  FUNCTION initParameters_deldiff
+  {
+	/*
+	This function is used to extract the specific parameter values
+	from the init_bounded_number_vector to the specific variables
+	used in the code.
+	
+	Note that you must call this routine before runnning the 
+	simulation model to generate fake data.
+	*/
+	ro   = mfexp(theta(1));
+	h = theta(2);
+	m  = mfexp(theta(3));
+	log_avgrec  = theta(4);
+	log_recinit = theta(5);
+	rho         = theta(6);
+	varphi      = sqrt(1.0/theta(7));
+	
+	sig         = sqrt(rho) * varphi;
+	tau         = sqrt(1-rho) * varphi;
+	
+	switch(int(d_iscamCntrl(2)))
+	{
+		case 1:
+			//Beverton-Holt model
+			kappa = elem_div(4.*steepness,(1.-steepness));
+			break;
+		case 2:
+			//Ricker model
+			kappa = pow((5.*steepness),1.25);
+		break;
+	}
+	
+	if(verbose){
+    LOG<<"**** Ok after initParameters ****\n";
+  }
+	
+	
+
+
+
 	
 FUNCTION calcObjectiveFunction
   {

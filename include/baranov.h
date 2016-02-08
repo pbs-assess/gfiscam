@@ -41,6 +41,8 @@ public:
 	~BaranovCatchEquation();
 
 	double get_ft(const double& ct, const double& m, const dvector& va, const dvector& ba);
+	double get_ftdd(const double& ct, const double& m, const double& b);
+		
 	dvector getFishingMortality(const dvector &ct, const double &m, const dmatrix &V, const dvector &na);
 	dvector getFishingMortality(const dvector &ct, const double &m, const dmatrix &V, const dvector &na, const dvector &wa);
 

@@ -416,6 +416,44 @@ double BaranovCatchEquation::get_ft(const double& ct, const double& m, const dve
 }
 
 
+double BaranovCatchEquation::get_ftdd(const double& ct, const double& m, const double& b)
+{
+	double ft;
+	//initial guess for ft
+	if(ct<b){
+		//initial guess for ft
+		ft=ct/(b*exp(-m/2.));
+
+	
+		for(int i=1;i<=50;i++)
+		{
+			double f = ft;
+			double z = m+f;
+			double s = exp(-z);
+			double o = (1.-s);
+			
+			double t1 = f/z;
+			double t2 = t1*o;
+			double t3 = o*b;
+			//predicted catch
+			double pct = t2*b;
+			
+			//derivative of catch wrt ft
+			double dct = (t3/z)  - (f*t3)/square(z) + (t1*s)*b;
+			//sum(
+			//	elem_div(t3,z) 
+			//	- elem_div(elem_prod(f,t3),square(z))
+			//	+ elem_prod(elem_prod(t1,s),ba));
+			
+			ft -= (pct-ct)/dct;  //newton step
+			//if(fabs(pct-ct)<1.e-9) break; //do not use for dvariables
+		}
+	} else	ft = 20.0;  //Set F very high if tac predicted greater than biomass  - prevents
+
+	
+	return(ft);
+}
+
 
 /** \brief Get conditional instantaneous fishing mortality rate when sex ratio of catch
            is unknown.

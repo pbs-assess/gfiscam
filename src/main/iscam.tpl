@@ -1563,7 +1563,7 @@ PARAMETER_SECTION
 
 	vector snat(1,n_gs); 	//natural survival
 	vector sfished(1,n_ags); 	//natural survival
-  	vector wbar(1,n_gs); // this needs to be tranferred and made a permanent variable
+  	vector wbar(1,n_gs); 
     	
 
 	matrix numbers(1,n_ags,syr,nyr+1);
@@ -3055,7 +3055,6 @@ FUNCTION calcNumbersBiomass_deldiff
   	numbers.initialize();
   	biomass.initialize();
   	
-
   	sfished.initialize();
   	snat.initialize();
   	wbar.initialize();
@@ -3210,7 +3209,6 @@ FUNCTION calcNumbersBiomass_deldiff
 		numbers(ig,nyr+1)=surv(ig,nyr)*numbers(ig,nyr)+rnplus(ih)/nsex;
 	  	
 	  	sbt(g,nyr+1) += biomass(ig,nyr+1); //set spawning biomass to biomass
-	 	//tbt = biomass; //total biomass - for testing pergunta-  testing what??
 	}
 	    
 	if(verbose){
@@ -3220,7 +3218,6 @@ FUNCTION calcNumbersBiomass_deldiff
 	//cout<<"**** Ok after calcNumbersBiomass_deldiff ****"<<endl;
 	// exit(1);
 			
-	
   	
   }
 
@@ -3382,7 +3379,6 @@ FUNCTION calcSurveyObservations_deldiff
 					dvariable z = ft(ig)(k)(i)+M_dd(ig,i);
 					dvariable Np = numbers(ig,i) * exp( -z * di);
 					dvariable Bp = biomass(ig,i) * exp( -z * di);
-
 
 
 					switch(n_survey_type(kk))
@@ -5377,9 +5373,20 @@ REPORT_SECTION
 	{
 		report<<1.0-exp(-ft(ig))<<'\n';
 	}
-	REPORT(M);
-	REPORT(F);
-	REPORT(Z);
+	if(!delaydiff){
+		REPORT(M);
+		REPORT(F);
+		REPORT(Z);
+	}else{
+		REPORT(M_dd);
+		REPORT(F_dd);
+		REPORT(Z_dd);
+		REPORT(numbers);
+		REPORT(biomass);
+		REPORT(annual_mean_wt);
+		REPORT(wbar)
+	}
+	
 
 	// |---------------------------------------------------------------------------------|
 	// | STOCK-RECRUITMENT

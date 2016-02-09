@@ -3012,9 +3012,6 @@ FUNCTION calcTotalMortality_deldiff
 		// TODO fix for reference point calculations
 		// m_bar = mean( M_tot.sub(pf_cntrl(1),pf_cntrl(2)) );	      
 	
-	  
-	
-	
 	
 		
 	}
@@ -3025,7 +3022,13 @@ FUNCTION calcTotalMortality_deldiff
     LOG<<"**** OK after  delay diff calcTotalMortality ****\n";
   }
 
+  //cout<<"M_dd is "<<M_dd<<endl;
+  //cout<<"F_dd is "<<F_dd<<endl;
+  //cout<<"Z_dd is "<<Z_dd<<endl;
+  //cout<<"surv is "<<surv<<endl;
+  
   //cout<<"**** OK after  delay diff calcTotalMortality"<<endl;
+  //exit(1);
   }
 	
 	
@@ -3215,8 +3218,13 @@ FUNCTION calcNumbersBiomass_deldiff
     LOG<<"**** Ok after calcNumbersBiomass_deldiff ****\n";
   	}
 
+
+  	//cout<<"biomass is "<<biomass<<endl;
+	//cout<<"numbers is "<<numbers<<endl;
+	//cout<<"sbt is "<<sbt<<endl;
+	//cout<<"log_rt is "<<log_rt<<endl;
 	//cout<<"**** Ok after calcNumbersBiomass_deldiff ****"<<endl;
-	// exit(1);
+	 //exit(1);
 			
   	
   }
@@ -3311,6 +3319,9 @@ FUNCTION calcFisheryObservations_deldiff
     	LOG<<"**** Ok after calcFisheryObservations_deldiff ****\n";
   	}
 
+  	//cout<<"ft is "<<ft<<endl;
+  	//cout<<"ct is "<<ct<<endl;
+	
 	//cout<<"**** Ok after calcFisheryObservations_deldiff ****"<<endl;
 	//exit(1);
 			
@@ -3430,6 +3441,10 @@ FUNCTION calcSurveyObservations_deldiff
     	LOG<<"**** Ok after calcSurveyObservations_deldiff ****\n";
   	}
 
+
+
+  	//cout<<"it_hat is "<<it_hat<<endl;
+  	
 	//cout<<"**** Ok after calcSurveyObservations_deldiff ****"<<endl;
 	//exit(1);
 
@@ -3530,6 +3545,9 @@ FUNCTION calcStockRecruitment_deldiff
     	LOG<<"**** Ok after calc_stock_recruitment_deldiff ****\n";
   		}
 
+		//cout<<"rt is "<<rt<<endl;
+		//cout<<"tmp_rt is "<<tmp_rt<<endl;
+  	
 		//cout<<"**** Ok after calc_stock_recruitment_deldiff ****"<<endl;
 		//exit(1);
 	}
@@ -3614,6 +3632,9 @@ FUNCTION calcAnnualMeanWeight_deldiff
     	LOG<<"**** Ok after calcAnnualMeanWeight_deldiff ****\n";
   		}
 
+  		//cout<<"annual_mean_weight is "<<annual_mean_weight<<endl;
+		//cout<<"obs_annual_mean_weight is "<<obs_annual_mean_weight<<endl;
+  	
 		//cout<<"**** Ok after calcAnnualMeanWeight_deldiff ****"<<endl;
 		//exit(1);
 	}
@@ -3658,6 +3679,7 @@ FUNCTION calcObjectiveFunction
 // 	double o=1.e-10;
 	
 	nlvec.initialize();
+	nlvec_dd.initialize();
 	
 	// |---------------------------------------------------------------------------------|
 	// | LIKELIHOOD FOR CATCH DATA
@@ -3674,8 +3696,11 @@ FUNCTION calcObjectiveFunction
 	}
 	if( active(log_ft_pars) )
 	{
-		nlvec(1) = dnorm(eta,0.0,sig_c);
-		nlvec_dd(1) = dnorm(eta,0.0,sig_c);
+		if(!delaydiff){
+			nlvec(1) = dnorm(eta,0.0,sig_c);
+		}else{
+			nlvec_dd(1) = dnorm(eta,0.0,sig_c);
+		}
 
 	}
 
@@ -3694,8 +3719,11 @@ FUNCTION calcObjectiveFunction
 			sig_it(i) = sig(ig(i))/it_wt(k,i);
 		}
 		
-		nlvec(2,k)=dnorm(epsilon(k),sig_it); 
-		nlvec_dd(2,k)=dnorm(epsilon(k),sig_it);  
+		if(!delaydiff){
+			nlvec(2,k)=dnorm(epsilon(k),sig_it); 
+		}else{
+			nlvec_dd(2,k)=dnorm(epsilon(k),sig_it);  
+		}
 	}
 			
 	// |---------------------------------------------------------------------------------|
@@ -3864,8 +3892,11 @@ FUNCTION calcObjectiveFunction
 	{
 		for(g=1;g<=ngroup;g++)
 		{
-			nlvec(4,g) = dnorm(delta(g),tau(g));
-			nlvec_dd(3,g) = dnorm(delta(g),tau(g));
+			if(!delaydiff){
+				nlvec(4,g) = dnorm(delta(g),tau(g));
+			}else{
+				nlvec_dd(3,g) = dnorm(delta(g),tau(g));		
+			}
 		}
 	}
 
@@ -3978,8 +4009,11 @@ FUNCTION calcObjectiveFunction
   if(fitMeanWt){
 	  for(k=1;k<=nMeanWt;k++){
 		  dvar_vector epsilon_wt = log(annual_mean_weight(k)) - log(obs_annual_mean_weight(k));
-		  nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
-		  nlvec_dd(4,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
+		  if(!delaydiff){
+		  	nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
+		  }else{
+		  	nlvec_dd(4,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
+		  }
 
 	  }
   }
@@ -4135,6 +4169,10 @@ FUNCTION calcObjectiveFunction
 					objfun += sum(pvec);
 					objfun += sum(qvec);
 
+					//cout<<"nlvec_dd"<<nlvec_dd<<endl;
+					//cout<<"priors"<<priors<<endl;
+					//cout<<"pvec"<<pvec<<endl;
+					//cout<<"qvec"<<qvec<<endl;
 
 				break;
 					
@@ -4589,11 +4627,14 @@ FUNCTION void calcReferencePoints()
 	/*RF added a test of ref point calcs - runs out the model for 100 y and calculates fmsy and bmsy conditional on model parameters and data
 	  Just run once in last MPD phase. Turn off after testing.*/
 	//if(!mceval_phase()) run_FRP();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
-	//if(delaydiff){
+	if(delaydiff){
 
+		cout<<"MSY quantitied not defined for Delay difference model"<<endl;
 		//if(!mceval_phase()) run_FRPdd();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
 		
-	//}
+
+
+	}
 
 	if(verbose){
     LOG<<"**** Ok after calcReferencePoints ****\n";
@@ -5455,7 +5496,7 @@ REPORT_SECTION
 		  for(ii=1;ii<=n_tac;ii++){
         //LOG<<ii<<" "<<tac(ii)<<'\n';
 		   	if (!delaydiff) projection_model(tac(ii));
-		   	if(delaydiff) 	projection_model_dd(tac(ii));
+		   	//if(delaydiff) 	projection_model_dd(tac(ii));
 		 	}
 		 }
 		 if(n_ags>1){
@@ -6152,15 +6193,15 @@ FUNCTION void projection_model_dd(const double& tac);
 	*/
 	static int runNo=0;
 	runNo ++;
-	int i,j,k;
+	int i;
 	int pyr = nyr+2;	//projection year. 
 
 	 BaranovCatchEquation cBaranov;
 	     
 	//get parameters - convert to data objects
-	double pbo   = value(bo(1));
-	double pso = value (so(1));
-	double pbeta =value(beta(1));
+	//double pbo   = value(bo(1));
+	//double pso = value (so(1));
+	//double pbeta =value(beta(1));
 		  
 	dvector p_bt(syr,pyr);
 	dvector p_ft(syr,pyr);
@@ -6230,9 +6271,9 @@ FUNCTION void projection_model_dd(const double& tac);
 		//question CW What's nf??
 		double xx = randn(nf+i)*p_tau;
 			
-		//volta pra ca
+		
 
-		double rt;
+		//double rt;
 		double et=p_bt(i-kage(1)); //delay diff
 
 		if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
@@ -6609,83 +6650,84 @@ FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, do
 	LOG<<bmsy<<'\n';
 
 
-FUNCTION void ddiff_msy(dvector& ftest, dmatrix& ye, dmatrix& be, dvector& msy, dvector& fmsy, dvector& bmsy )
+FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, double& fmsy, double& bmsy )
 	
-	int k,ig;
+
+
+
+	int k ;
 	int NF=size_count(ftest);
 	ye.initialize();
 	be.initialize();
 	
 	
-
-	dvector se(1,n_ags); //survival in equilibrium
-	dvector we(1,n_ags); //average weight in equilibrium
-	dvector rec_a(1,ngroup);
-	dvector rec_b(1,ngroup);
+	dvariable rec_a;
+	dvariable rec_b;
 	
-	dvector M(1,ngroup);
+	dvariable M;
 
 	//double M = value(m);
-	rec_a=value(so);
-	rec_b=value(beta);
+	rec_a=value(so(1));
+	rec_b=value(beta(1));
 
 	
-	int f,g,h,ih,gs;
+	//int f,g,h,ih,gs;
 
 	// Calculate equilibrium survivorship as function of FMSY
 	for(k=1; k<=NF; k++)
 	{
-		for(ig=1; ig<=n_ags; ig++)
-		{
-
-			f  = n_area(ig);
-			g  = n_group(ig);
-			h  = n_sex(ig);
-			ih = pntr_ag(f,g);
-			gs = pntr_gs(g,h);
+		double se; //survival in equilibrium
+		double we; //average weight in equilibrium
+				
+			se = exp(-value(M_dd(1)(nyr)) - ftest(k));
+			we = (se*alpha_g(1)+wk(1) *(1.-se))/(1.-rho_g(1)*se);
+			cout<<"se"<<se<<endl;
+			cout<<"we"<<we<<endl;
 			
-			se(ig) = exp(-value(M_dd(ig)(nyr)) - ftest(k));
-			we(ig) = (se(ig)*alpha_g(gs)+wk(gs) *(1.-se(ig)))/(1.-rho_g(gs)*se(ig));
-			be(g,k) += -1.0*((-we(ig) + se(ig) *alpha_g(gs) + se(ig)*rho_g(gs)*we(ig) +
-					 wk(gs)*rec_a(g)*we(ig))/(rec_b(g)*(-we(ig) + se(ig)*alpha_g(gs) + 
-					 se(ig)*rho_g(gs)*we(ig)))); //Martell
-			M(g) += value(M_dd(ig)(nyr));
+			//question: be(k) is consistently producing negative numbers
+			be(k) = value(-1.*((-we + se*alpha_g(1) + se*rho_g(1)*we + wk(1)*rec_a*we)/(rec_b*(-we + se*alpha_g(1) + se*rho_g(1)*we)))); //Martell
+			
+			cout<<"bek"<<be(k)<<endl;
+			M = value(M_dd(1)(nyr));
 			
 
-			ye(g,k)   = be(g,k)*(1.0-mfexp(-ftest(k)-M(g)))*(ftest(k)/(ftest(k)+M(g)));
-		  	if(ye(g,k)<0) ye(g,k)=0.;
-		  	if(be(g,k)<0) be(g,k)=0.;
+			ye(k)   = value(be(k)*(1.0-mfexp(-ftest(k)-M))*(ftest(k)/(ftest(k)+M)));
+		  	
 
-		}
-		 
+		  	if(ye(k)<0) ye(k)=0.;
+		  	if(be(k)<0) be(k)=0.;
+
 	}
+		 
+	cout<<"ye"<<ye<<endl;
+	cout<<"be"<<be<<endl;
+	cout<<"ftest"<<ftest<<endl;
+	exit(1);
 	
-	dvector mtest(1,ngroup);	
-	for(int gg=1; gg<=ngroup; g++)
-	{
-		msy(gg)=max(ye(gg));
+	double mtest;	
+	
+		msy=max(ye);
 			
 		for(k=1; k<=NF; k++)
 		{
-			mtest(gg)=ye(gg,k);
+			mtest=ye(k);
 				
-			if(mtest(gg)==msy(gg)){
-				fmsy(gg)=ftest(k);
-				} 
-			if(mtest(gg)==msy(gg)){
-				bmsy(gg)=be(gg,k);
+			if(mtest==msy){
+				fmsy=ftest(k);
+				bmsy=be(k);
 			} 
 		}
-	}  
+	  
+	
+	 
 	
 	
-	cout<<"Slow"<<endl;
+	cout<<"Slow msy calcs"<<endl;
 	cout<<msy<<endl;
 	cout<<fmsy<<endl;
 	cout<<bmsy<<endl; 
 	
-
-
+	
 	
 	
 	
@@ -6730,10 +6772,15 @@ FUNCTION void run_FRP()
 	ofsr<<"Be"<<'\n'<<Be<<'\n';	
 
 FUNCTION void run_FRPdd()
-	//pergunta pergunta
-	//Reference points
-	dvector ftest(1,1001);
-	ftest.fill_seqadd(0,0.001);
+	
+
+	
+	if(n_ags>1){
+		cout<<"MSY quantities not defined for n_ags>1"<<endl; 
+	}else{
+
+	dvector ftest(1,101);
+	ftest.fill_seqadd(0,0.01);
 
 	//cout<<"passa por aqui?"<<endl;
 	
@@ -6741,30 +6788,36 @@ FUNCTION void run_FRPdd()
 	Nf=size_count(ftest);
 	
 
-	dvector Fmsy(1,ngroup);
-	dvector MSY(1,ngroup);
-	dvector Bmsy(1,ngroup);
-	dvector fmsy(1,ngroup);
-	dvector msy(1,ngroup);
-	dvector bmsy(1,ngroup);
+	double Fmsy;
+	double MSY;
+	double Bmsy;
+		
 
 
-	dmatrix Ye(1,ngroup,1,Nf); // i think this should be a matrix by group and gear
-	//Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
-	dmatrix Be(1,ngroup,1,Nf); // i think this should be a matrix by group
-	//Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
+	//for(int g=1; g<=ngroup; g++)
+	//{
+		//dvector Ye(1,Nf); // i think this should be a matrix by group and gear
+		//Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
+		//dvector Be(1,Nf); // i think this should be a matrix by group
+		//Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
 	
-	dmatrix ye(1,ngroup,1,Nf); // i think this should be a matrix by group and gear
-	dmatrix be(1,ngroup,1,Nf);
+		dvector ye(1,Nf); // i think this should be a matrix by group and gear
+		dvector be(1,Nf);
 
+		double fmsy;
+		double msy;
+		double bmsy;
 
+		ddiff_msy(ftest, ye, be, msy, fmsy, bmsy);
+
+		Fmsy=fmsy;
+		MSY=msy;
+		Bmsy=bmsy;
+		//Ye(g)=ye(g);
+		//Be(g)=be(g);
+	}
 	
-	ddiff_msy(ftest, ye, be, MSY, fmsy, bmsy);
-	Fmsy=fmsy;
-	MSY=msy;
-	Bmsy=bmsy;
-	Ye=ye;
-	Be=be;
+	
 	
 	
 

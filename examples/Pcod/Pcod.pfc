@@ -1,0 +1,29 @@
+## _____________________________ ##
+## Projection file control (pfc) ##
+## _____________________________ ##
+##
+## n_tac  length of catch vector.
+13
+## tac vector (mt)
+ 0  0.2 0.4 0.6 0.8 1. 1.2 1.4 1.5 1.6 1.7 1.8 2. 
+##
+## _____________________________ ##
+## Control options               ##
+## _____________________________ ##
+8    ## Length of control options vector
+
+1956 ## - 1) Start year for mean natural mortality rate
+2013 ## - 2)  Last year for mean natural mortality rate
+
+1956 ## - 3) Start year for average fecundity/weight-at-age in projections
+2013 ## - 4)  Last year for average fecundity/weight-at-age in projections
+
+1956 ## - 5) Start year for average recruitment period in projections
+2013 ## - 6)   End year for average recruitment period in projections
+
+2004 ## - 7)Short time series: "historical" control points based on biomass and F reconstruction
+2012 ## - 8)Long time series:"historical" control points based on biomass and F reconstruction
+
+
+## eof
+-999

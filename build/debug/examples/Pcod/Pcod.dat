@@ -1,0 +1,257 @@
+## ------------------------------------------------------------------------- ##
+## TEMPLATE DATA FILE FOR iSCAM                                              ##
+## TIPS: -use '#' as comment character for the data file                     ##
+##       -use '#' on all blank lines (windows compatible)                    ##
+##       -sex: 0=asexual, 1=female, 2=male                                   ##
+##                                                                           ##
+##                                                                           ##
+## TEMPLATE is based on Arrowtooth Flounder              ##
+## ------------------------------------------------------------------------- ##
+##
+##
+##
+## Gears: Trawl Fishery, Triennial, WCVI Synoptic, 
+## ------------------------------------------------------------------------- ##
+## MODEL DIMENSIONS                                                          ##
+## ------------------------------------------------------------------------- ##
+1        # -number of areas            (narea)
+1        # -number of groups or stocks (ngroup)
+1        # -number of sexes            (nsex)
+1956    # -first year of data         (syr)
+2013     # -last year of data          (nyr)
+1        # -age of youngest age class  (sage)
+10       # -age of plus group          (nage)
+3        # -number of gears            (ngear)
+##
+## ------------------------------------------------------------------------- ##
+## Allocation for each gear in (ngear), use 0 for survey gears.              ##
+## One column for each gear:                                                 ##
+## ------------------------------------------------------------------------- ##
+1 0 0
+## If you want your gears to have names in the plots, follow the format below
+## ------------------------------------------------------------------------- ##
+## Age-schedule and population parameters                                    ##
+## ------------------------------------------------------------------------- ##
+## Need one value for each area and sex.
+89.48    # -asymptotic length (linf)
+0.307    # -brody growth coefficient (k)
+-0.116   # -theoretical age at zero length (tt0)
+7.38e-6  # -scalar in length-weight allometry (alpha)
+3.0963   # -power parameter in length-weight allometry (beta)
+1.5      # -age at 50% maturity
+0.0001   # -std at 50% maturity
+0        # N_Mat indicator of whether maturity parameters or vectors are implemented
+0        # maturity vector - use 0 if maturity based on age50 and sd
+##
+## ------------------------------------------------------------------------- ##
+## DELAY DIFFERENCE DATA                                                     ##
+## ------------------------------------------------------------------------- ##
+## these parameters are sex and group specific
+2        # kage
+1.4054   #alpha_g
+0.8376   #rho_g
+0.8278   #wk
+## ------------------------------------------------------------------------- ##
+## TIME SERIES DATA                                                          ##
+## ------------------------------------------------------------------------- ##
+## Observed catch from all gears, areas, and sex                             ##
+## sex: 1=female, 2=male, 0=asexual
+## Type of catch: legend                                                     ##
+##               1 = catch in weight                                         ##
+##               2 = catch in numbers                                        ##
+#
+## n_ct_obs
+   58
+## Year gear area group sex type value
+1956     1     1     1    0   1 2.0180
+1957     1     1     1    0   1 3.2580 
+1958     1     1     1    0   1 5.7020 
+1959     1     1     1    0   1 3.5150 
+1960     1     1     1    0   1 2.3910 
+1961     1     1     1    0   1 1.5280 
+1962     1     1     1    0   1 2.0590 
+1963     1     1     1    0   1 2.7560 
+1964     1     1     1    0   1 6.4100 
+1965     1     1     1    0   1 8.8700 
+1966     1     1     1    0   1 9.1560 
+1967     1     1     1    0   1 5.9160 
+1968     1     1     1    0   1 4.0530 
+1969     1     1     1    0   1 2.5780 
+1970     1     1     1    0   1 1.1880 
+1971     1     1     1    0   1 1.3330 
+1972     1     1     1    0   1 2.8940 
+1973     1     1     1    0   1 3.8330 
+1974     1     1     1    0   1 5.3730 
+1975     1     1     1    0   1 5.5090 
+1976     1     1     1    0   1 4.2120 
+1977     1     1     1    0   1 3.5880 
+1978     1     1     1    0   1 2.4000 
+1979     1     1     1    0   1 5.7360 
+1980     1     1     1    0   1 4.2820 
+1981     1     1     1    0   1 2.6800 
+1982     1     1     1    0   1 2.5260 
+1983     1     1     1    0   1 2.3620 
+1984     1     1     1    0   1 1.7250 
+1985     1     1     1    0   1 1.0530 
+1986     1     1     1    0   1 3.8180 
+1987     1     1     1    0   1 9.5420 
+1988     1     1     1    0   1 6.1770 
+1989     1     1     1    0   1 3.4620 
+1990     1     1     1    0   1 3.6010 
+1991     1     1     1    0   1 7.7470 
+1992     1     1     1    0   1 5.2580 
+1993     1     1     1    0   1 3.3810 
+1994     1     1     1    0   1 1.1690 
+1995     1     1     1    0   1 1.0140 
+1996     1     1     1    0   1 1.1450 
+1997     1     1     1    0   1 1.1940 
+1998     1     1     1    0   1 0.8760  
+1999     1     1     1    0   1 0.6160  
+2000     1     1     1    0   1 0.5140  
+2001     1     1     1    0   1 0.2140  
+2002     1     1     1    0   1 0.2710  
+2003     1     1     1    0   1 0.4580  
+2004     1     1     1    0   1 0.5570  
+2005     1     1     1    0   1 0.7390  
+2006     1     1     1    0   1 0.6840  
+2007     1     1     1    0   1 0.3020  
+2008     1     1     1    0   1 0.2780  
+2009     1     1     1    0   1 0.5510  
+2010     1     1     1    0   1 1.0040 
+2011     1     1     1    0   1 0.8690  
+2012     1     1     1    0   1 0.7010  
+2013     1     1     1    0   1 0.6188  
+#### -00.0------------------------------------------------------------------------ ##
+## ABUNDANCE INDICES - A RAGGED ARRAY: (1,nit,1,nit_nobs,1,5)                ##
+## ------------------------------------------------------------------------- ##
+2           # Number of abundance series         int(nit)
+11 5    # Number of observations in series   ivector(nit_nobs(1,nit))
+2 2      # Survey type (see key below)        ivector(survey_type(1,nit))
+## 1 = survey is proportional to vulnerable numbers
+## 2 = survey is proportional to vulnerable biomass
+## 3 = survey is proportional to spawning biomass (e.g., a spawn survey)
+## wt below is 1/relerr
+##                                        survey
+## iyr     index(it) gear area group sex  wt    timing
+# CPUE
+1984        1.1424     2   1     1     0  3.2997   0.0
+1987        3.8757     2   1     1     0  2.8592   0.0
+1989        4.1028     2   1     1     0  2.3506   0.0
+1991        1.0318     2   1     1     0  3.3594   0.0
+1993        1.2556     2   1     1     0  4.1732   0.0
+1995        1.4198     2   1     1     0  2.1698   0.0
+1996        1.1596     2   1     1     0  2.6744   0.0
+1998        4.2530     2   1     1     0  1.9629   0.0
+2000        0.4361     2   1     1     0  5.0221   0.0
+2002        2.0259     2   1     1     0  3.6988   0.0
+2003        1.2887     2   1     1     0  4.7903   0.0
+2005        1.941      3   1     1     0  4.2723   0.0
+2007        0.585      3   1     1     0  4.8179   0.0
+2009        2.498      3   1     1     0  2.2647   0.0
+2011        1.874      3   1     1     0  3.8353   0.0
+2013        2.351      3   1     1     0  4.1141   0.0
+##
+
+## ------------------------------------------------------------------------- ##
+## AGE COMPOSITION DATA (ROW YEAR, COL=AGE) Ragged object                    ##
+## ------------------------------------------------------------------------- ##
+2         # Number of gears with age-comps int(na_gears)
+5 2 	  # Number of rows in the matrix   ivector(na_gears)
+## ivector(na_gears) of youngest age-class
+   1 1
+## ivector(na_gears) of oldest age-class + group
+  10 10
+## Effective sample size, Calculated from the Pearson Residuals RMS
+   100 100
+## vector flag for age or length comps (1 = age, 0 = length)
+   1 1
+## year gear area group sex  1  2 3  4  5  6  7  8  9 10 
+# WCVI Synoptic
+2009  1  1  1  0  0.0466   0.1211   0.2917   0.2760   0.1431   0.0859   0.0233   0.0068   0.0013   0.0034
+2010  1  1  1  0  0.0249   0.1142   0.2524   0.2587   0.1582   0.0980   0.0527   0.0101   0.0047   0.0260
+2011  1  1  1  0  0.0216   0.1135   0.2628   0.2531   0.1612   0.0949   0.0633   0.0109   0.0045   0.0142
+2012  1  1  1  0  0.0693   0.0801   0.1914   0.2398   0.1766   0.1186   0.0866   0.0160   0.0046   0.0160
+2013  1  1  1  0  0.0333   0.0983   0.1500   0.2000   0.2233   0.1367   0.0917   0.0300   0.0167   0.0200
+2009  3  1  1  0  0.4130   0.1464   0.1865   0.1652   0.0501   0.0275   0.0063   0.0025   0.0000   0.0013
+2011  3  1  1  0  0.4370   0.1408   0.1922   0.1065   0.0661   0.0233   0.0086   0.0061   0.0012   0.002
+##
+## ------------------------------------------------------------------------- ##
+## EMPIRICAL WEIGHT-AT-AGE DATA                                              ##
+## ------------------------------------------------------------------------- ##
+## Number of weight-at-age tables (n_wt_tab). If none this MUST be 1.
+1
+## Number of years of weight-at-age data int(n_wt_obs), use 0 if NA and make sure you use 1 above.
+0
+## year gear area stock sex |age columns (sage, nage) of weight at age data |
+#   1979 1    1    1     1    0.75 1.46 1.98 1.90 2.25 2.30 2.70
+#   1979 1    1    1     2    0.90 1.47 1.79 2.28 1.75 2.44 2.36
+##
+## ------------------------------------------------------------------------- ##
+## ANNUAL MEAN WEIGHT DATA -A RAGGED ARRAY: d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7)    ## RF ADDED THIS FOR PACIFIC COD TESTING##
+## ------------------------------------------------------------------------- ##
+## Control parameters in control file should be correctly dimensioned
+1  # Number of annual mean weight series. If none this MUST be 1.
+57  # Number of observations in each series, use 0 if NA and make sure you use 1 above.
+## iyr	index(it) gear	area	group	sex	gear timing (should match the values used for surveys)
+ 1956    2.517    1     1     1     1     0     0
+ 1957    2.229    1     1     1     1     0     0 
+ 1958    2.469    1     1     1     1     0     0 
+ 1959    2.276    1     1     1     1     0     0 
+ 1960    2.361    1     1     1     1     0     0 
+ 1961    2.424    1     1     1     1     0     0 
+ 1962    2.224    1     1     1     1     0     0 
+ 1963    2.091    1     1     1     1     0     0 
+ 1964    2.013    1     1     1     1     0     0 
+ 1965    2.548    1     1     1     1     0     0 
+ 1966    2.61     1     1     1     1     0     0 
+ 1967    2.316    1     1     1     1     0     0 
+ 1968    2.637    1     1     1     1     0     0 
+ 1969    2.582    1     1     1     1     0     0 
+ 1970    2.687    1     1     1     1     0     0 
+ 1971    2.294    1     1     1     1     0     0 
+ 1972    1.773    1     1     1     1     0     0 
+ 1973    2.241    1     1     1     1     0     0 
+ 1974    2.008    1     1     1     1     0     0 
+ 1975    2.324    1     1     1     1     0     0 
+ 1976    2.163    1     1     1     1     0     0 
+ 1977    1.703    1     1     1     1     0     0 
+ 1978    2.389    1     1     1     1     0     0 
+ 1979    1.918    1     1     1     1     0     0 
+ 1980    2.059    1     1     1     1     0     0 
+ 1981    2.085    1     1     1     1     0     0 
+ 1982    2.43     1     1     1     1     0     0 
+ 1983    2.625    1     1     1     1     0     0 
+ 1984    2.24     1     1     1     1     0     0 
+ 1985    2.719    1     1     1     1     0     0 
+ 1986    2.222    1     1     1     1     0     0 
+ 1987    1.556    1     1     1     1     0     0 
+ 1988    2.329    1     1     1     1     0     0 
+ 1989    2.732    1     1     1     1     0     0 
+ 1990    2.191    1     1     1     1     0     0 
+ 1991    2.228    1     1     1     1     0     0 
+ 1992    2.667    1     1     1     1     0     0
+ 1993    2.844    1     1     1     1     0     0
+ 1994    3.172    1     1     1     1     0     0
+ 1995    3.004    1     1     1     1     0     0 
+ 1996    2.892    1     1     1     1     0     0 
+ 1997    2.802    1     1     1     1     0     0
+ 1998    2.498    1     1     1     1     0     0
+ 1999    1.826    1     1     1     1     0     0
+ 2000    2.645    1     1     1     1     0     0
+ 2001    3.602    1     1     1     1     0     0
+ 2002    1.278    1     1     1     1     0     0
+ 2003    1.618    1     1     1     1     0     0 
+ 2004    2.343    1     1     1     1     0     0
+ 2005    3.129    1     1     1     1     0     0
+ 2006    2.703    1     1     1     1     0     0
+ 2007    2.649    1     1     1     1     0     0
+ 2008    2.181    1     1     1     1     0     0
+ 2009    2.448    1     1     1     1     0     0
+ 2010    2.44     1     1     1     1     0     0 
+ 2011    3.208    1     1     1     1     0     0 
+ 2012    2.945    1     1     1     1     0     0
+#
+## ------------------------------------------------------------------------- ##
+## MARKER FOR END OF DATA FILE (eof)                                         ##
+## ------------------------------------------------------------------------- ##
+999

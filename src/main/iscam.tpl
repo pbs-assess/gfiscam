@@ -348,6 +348,7 @@ DATA_SECTION
 	//=======================================================================================
 	//Delay difference parameters-  all fixed??
 	//pergunta - discuss wit Robyn F the dimensions of these quanitites
+	// RFQ : same as growth pars d_vonbk etc so I guess (1,n_ags)
 	//=======================================================================================
 	
 	//age at knife-edge recruitment 
@@ -1564,15 +1565,11 @@ PARAMETER_SECTION
 	vector snat(1,n_gs); 	//natural survival
 	vector sfished(1,n_ags); 	//natural survival
   	vector wbar(1,n_gs); 
-    	
-
 	matrix numbers(1,n_ags,syr,nyr+1);
 	matrix biomass(1,n_ags,syr,nyr+1);//RF added biomass in the delay difference model - in the ASM this is set to spawning biomass
-	
 	matrix vbcom(1,n_ags,syr,nyr); 		//RF added vulnerable biomass in gear 1 - commercial fishery
 	matrix vncom(1,n_ags,syr,nyr); //RF added vulnerable numbers in gear 1 - commercial fishery
 	matrix annual_mean_wt(1,n_ags,syr,nyr);  //RF addition for P cod 
-	
 	matrix   F_dd(1,n_ags,syr,nyr);
 	matrix   M_dd(1,n_ags,syr,nyr);
 	matrix   Z_dd(1,n_ags,syr,nyr);
@@ -1623,7 +1620,6 @@ PROCEDURE_SECTION
 	}	
 
 	if(delaydiff){
-		
 		initParameters();
 		calcTotalMortality_deldiff();
 		calcNumbersBiomass_deldiff();
@@ -2929,12 +2925,11 @@ FUNCTION calcTotalMortality_deldiff
 
     for(ii=1;ii<=nCtNobs;ii++)
 	{
-		i  = dCatchData(ii)(1);	 //year
+		i  = dCatchData(ii)(1);	//year
 		k  = dCatchData(ii)(2);  //gear
 		f  = dCatchData(ii)(3);  //area
 		g  = dCatchData(ii)(4);  //group
 		h  = dCatchData(ii)(5);  //sex
-		
 
 		if( i < syr ) continue;
 		if( i > nyr ) continue;
@@ -2948,7 +2943,7 @@ FUNCTION calcTotalMortality_deldiff
 			ft(ig)(k,i) = ftmp;
 			F_dd(ig)(i) += ftmp;
 		}
-		else if( !h ) // h=0 case for asexual catch
+		else if( !h ) // h=0 case for asexual catch	       RFQ: are these loops backwards?
 		{
 			//sum over sex
 			for(h=1;h<=nsex;h++)
@@ -3022,11 +3017,12 @@ FUNCTION calcTotalMortality_deldiff
     LOG<<"**** OK after  delay diff calcTotalMortality ****\n";
   }
 
-  //cout<<"M_dd is "<<M_dd<<endl;
-  //cout<<"F_dd is "<<F_dd<<endl;
-  //cout<<"Z_dd is "<<Z_dd<<endl;
-  //cout<<"surv is "<<surv<<endl;
-  
+  /*
+  cout<<"M_dd is "<<M_dd<<endl;
+  cout<<"F_dd is "<<F_dd<<endl;
+  cout<<"Z_dd is "<<Z_dd<<endl;
+  cout<<"surv is "<<surv<<endl;
+  */
   //cout<<"**** OK after  delay diff calcTotalMortality"<<endl;
   //exit(1);
   }
@@ -3037,7 +3033,6 @@ FUNCTION calcTotalMortality_deldiff
 	
 FUNCTION calcNumbersBiomass_deldiff
     {
-
     	/**
   	Purpose: This function calculates  total biomass and total numbers according to the delay differnce 
   	model equations from Hilborn and Walters. Qualtities are calculated for each year and area*sex*group
@@ -3061,25 +3056,21 @@ FUNCTION calcNumbersBiomass_deldiff
   	sfished.initialize();
   	snat.initialize();
   	wbar.initialize();
-
+        
   	//DD initialization
-    //Equilibrium mean weight - obtained from weq = Beq/Neq and solving for weq
+        //Equilibrium mean weight - obtained from weq = Beq/Neq and solving for weq
 	//i.e. weq = [surv(alpha.Neq + rho.Beq + wk.R] / [surv.Neq + R]
 	// with substitutions Neq = Beq/weq and R = Neq(1 - surv)
 	//From SJDM, also used by Sinclair in 2005 p cod assessment
 	
-
 	//take the average of natural mortality for both sexes
-	
 	snat = mfexp(-m);
 	wbar= elem_div(elem_prod(snat,alpha_g)+elem_prod(wk,(1.-snat)),(1.-elem_prod(rho_g,snat)));	
-	
 
 	// need to change this by multiplying quantities by 0.5 instead of taking the mean
 	no.initialize();
 
 	// average sexes for unfished quantities
-
 	for(g=1; g<=ngroup; g++)
 	{
 		for(h=1; h<=nsex;h++)
@@ -3091,8 +3082,7 @@ FUNCTION calcNumbersBiomass_deldiff
 		}
 
 		so(g) 	  = kappa(g)*(ro(g)/bo(g));  
-	
-			
+
 		switch(int(d_iscamCntrl(2)))
 		{
 			case 1:  // | Beverton Holt model
@@ -3105,70 +3095,58 @@ FUNCTION calcNumbersBiomass_deldiff
 		}	
 	}
 		
-	//cout<< "snat"<<snat<<endl;
-	//cout<< "wbar"<<wbar<<endl;
-	//cout<< "ro"<<ro<<endl;
-	//cout<< "no"<<no<<endl;
-	//cout<< "bo"<<bo<<endl;
-
+	/*
+	cout<<"m snat wbar ro no bo"<<endl;
+        cout<<m<<endl;
+	cout<<snat<<endl;
+	cout<<wbar<<endl;
+	cout<<ro<<endl;
+	cout<<no<<endl;
+        cout<<bo<<endl; exit(1);  
+       */
+       
 	//recruitment for projection year
 	dvar_vector rnplus=mfexp(log_avgrec); //assume recruits nyr+1 average - same as for ASM
-	
-
+              
 	int ih,ig;	
 	for(ig=1;ig<=n_ags;ig++)
 	{
-		dvariable tr;
 		
 		f  = n_area(ig);
 		g  = n_group(ig);
 		h  = n_sex(ig);
 		ih = pntr_ag(f,g);
 		gs = pntr_gs(g,h);
-	
-
-		dvar_vector tmp_N(sage,nage);
-		tmp_N.initialize();
-
+	        dvar_vector tmp_N(sage,nage);
+	        tmp_N.initialize();
+						
 		switch(int(d_iscamCntrl(5)))
 		{
 			case 0: //Unfished and not at equilibrium - Initialise as for ASM
-				log_rt(ih,syr) = log_avgrec(ih)+log_rec_devs(ih,syr); 
-		
-				tmp_N(sage)=mfexp(log_rt(ih,syr));
+			        tmp_N(sage)  = mfexp( log_avgrec(ih)+log_rec_devs(ih)(syr));
 				for(int j=sage+1;j<=nage;j++)
 				{
 					tmp_N(j)=mfexp(log_recinit(ih)+init_log_rec_devs(ih)(j))*mfexp(-M_dd(ig)(syr)*(j-sage));
 				}
-				tmp_N(nage)/=(1.-mfexp(-M_dd(ig)(syr)));
-		
-				numbers(ig,syr) = sum(tmp_N)* 1./nsex;
-				biomass(ig,syr) = numbers(ig,syr)*wbar(gs); //total biomass
+		        	tmp_N(nage)/=(1.-mfexp(-M_dd(ig)(syr)));
+		        	numbers(ig,syr) = sum(tmp_N)* 1./nsex;
+		        	log_rt(ih,syr) = log_avgrec(ih)+log_rec_devs(ih,syr); 
+				//RF Correction: below biomass is the sum of weight at age x numbers at age not wbar
+				biomass(ig,syr) = sum(elem_prod(tmp_N,d3_wt_avg(ig)(syr))); 
 				annual_mean_wt(ig,syr) = wbar(gs);
 
 			break;
 		
-			case 1: //start at equlibrium unfished
-
-				log_rt(ih,syr) = log(ro(g));
-				
-
-				tmp_N(sage)=ro(g);
-				for(int j=sage+1;j<=nage;j++)
-				{
-					tmp_N(j)=ro(g)*mfexp(-M_dd(ig)(syr)*(j-sage));
-				}
-				tmp_N(nage)/=(1.-mfexp(-M_dd(ig)(syr)));
-
-		
-				numbers(ig,syr)= sum(tmp_N)* 1./nsex;
-				biomass(ig,syr) = numbers(ig,syr)*wbar(gs);
+			case 1: //start at equilibrium unfished  //check these two options are the same in the absence of fishing mortality
+                                //RF Correction: No need for age structure here
+				numbers(ig,syr)= no(g);
+				biomass(ig,syr) = bo(g);
 				annual_mean_wt(ig,syr) = wbar(gs);
-				
+		               	log_rt(ih,syr) = log(ro(g));
+			
 			break;	
  
-			case 2: //start at equlibrium with fishing mortality - different approach to ASM
-	  		  	
+			case 2: //start at equilibrium with fishing mortality - delay difference. CHECK THIS
 	  		  	sfished(ig) = surv(ig,syr); //equilibrium survivorship at initial fishing mortality (gear 1 commercial fishery)
 	   		  	annual_mean_wt(ig,syr) = (sfished(ig)*alpha_g(gs) + wk(gs)*(1.-sfished(ig)))/(1-rho_g(gs)*sfished(ig));
 	   		  								
@@ -3176,16 +3154,13 @@ FUNCTION calcNumbersBiomass_deldiff
 	   		  						rho_g(gs)* annual_mean_wt(ig,syr)))/
 	   		  						(beta(g)*(sfished(ig)*alpha_g(gs)+sfished(ig)*rho_g(gs)* annual_mean_wt(ig,syr)- 
 	   		  							annual_mean_wt(ig,syr)));
-
-
-
 	   		  	numbers(ig,syr) = biomass(ig,syr)/annual_mean_wt(ig,syr);
 	   		  	
 	   		  	//pergunta: where does the biomass eq comes from?
 	   		  	// log rt originally missing from this option
 	   		  	// chose log_avgrec as placeholder-- dangerous if fishing in first year and before was very high.
 	   		  	log_rt(ih,syr) = log_avgrec(ih);
-	//   	 	   	  		
+	   	 	   	  		
 			break;
 
 
@@ -3195,16 +3170,16 @@ FUNCTION calcNumbersBiomass_deldiff
 
 		for(i=syr+1;i<=nyr;i++){
 			
-	    	log_rt(ih,i)=log_avgrec(ih)+log_rec_devs(ih,i); 
-	  		
-		  	//Update biomass and numbers	
-		   	biomass(ig,i) =surv(ig,i-1)*(rho_g(gs)*biomass(ig,i-1)+alpha_g(gs)*numbers(ig,i-1))+
-		   					wk(gs)*mfexp(log_rt(ih,i))/nsex; // eq. 9.2.5 in HW
-	    	numbers(ig,i)=surv(ig,i-1)*numbers(ig,i-1)+mfexp(log_rt(ih,i))/nsex;
-	    	annual_mean_wt(ig,i)=biomass(ig,i)/numbers(ig,i);		//calculate predicted weight in dynamics - possible option to fit to it
-			sbt(g,i) += biomass(ig,i);
+			log_rt(ih,i)=log_avgrec(ih)+log_rec_devs(ih,i); 
 
-			
+			//Update biomass and numbers	
+			//RF Correction: don't divide both numbers and biomass by nsex
+			biomass(ig,i) =surv(ig,i-1)*(rho_g(gs)*biomass(ig,i-1)+alpha_g(gs)*numbers(ig,i-1))+
+								wk(gs)*mfexp(log_rt(ih,i)); // eq. 9.2.5 in HW
+			numbers(ig,i)=surv(ig,i-1)*numbers(ig,i-1)+mfexp(log_rt(ih,i)); 
+			numbers(ig,i)/=nsex;
+			annual_mean_wt(ig,i)=biomass(ig,i)/numbers(ig,i);		//calculate predicted weight in dynamics - possible option to fit to it
+				sbt(g,i) += biomass(ig,i);
 		}	
 	  	  //RF doesn't like this projection step - prefers to stick to projection in projection model - this one calculates recruitment inconsistently with projection model
 	  	
@@ -3218,15 +3193,16 @@ FUNCTION calcNumbersBiomass_deldiff
     LOG<<"**** Ok after calcNumbersBiomass_deldiff ****\n";
   	}
 
-
-  	//cout<<"biomass is "<<biomass<<endl;
-	//cout<<"numbers is "<<numbers<<endl;
-	//cout<<"sbt is "<<sbt<<endl;
-	//cout<<"log_rt is "<<log_rt<<endl;
-	//cout<<"**** Ok after calcNumbersBiomass_deldiff ****"<<endl;
-	 //exit(1);
-			
-  	
+  	/*
+  	cout<<"surv is "<<surv<<endl;
+  	cout<<"biomass is "<<biomass<<endl;
+	cout<<"numbers is "<<numbers<<endl;
+	cout<<"sbt is "<<sbt<<endl;
+	cout<<"log_rt is "<<log_rt<<endl;
+	cout<<"log_rec_devs is "<<log_rec_devs<<endl;
+	cout<<"**** Ok after calcNumbersBiomass_deldiff ****"<<endl;
+	exit(1);
+ 	*/
   }
 
 

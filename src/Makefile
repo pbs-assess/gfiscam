@@ -9,7 +9,7 @@ dist:
 	-rm -rf ../build/dist/examples
 	-cp -rf ../examples ../build/dist/examples
 	-mv ../build/dist/examples/*.* ../build/dist/bin
-	-cp ../build/dist/bin/iscam_arrowtooth.dat ../build/dist/bin/iscam.dat
+	-cp ../build/dist/bin/iscam.dat 
 
 debug:
 	$(MAKE) --directory=libs DEBUG=yes COMPILER=$(COMPILER)

@@ -10,14 +10,13 @@
 ## npar
 7
 ## ival        lb        ub     phz   prior   p1          p2        #parameter
-5.             1.0      15.00    1     0       1.1      14.9       #log_ro
-0.6            0.20      1.00    1     3       5.833        2.5      #h
-#-0.9162907    -2.302585  0.0     1     1      -0.9162907   0.05      #log_m g&b 0.2
--0.693         -2.302585  0.0     1     1      -0.693   0.1      #log_m g&b 0.2
-3.0            -1.0      12.0    1     0        -1.0         11.9      #log_avgrec
-3.0            -1.0      12.0    1     0        -1.0         11.9      #log_rinit
-0.2            0.01     0.999   -3     3       3.0         12.0      #rho 
-1.             0.01     150.    -2     4       7.49836     5.78354   #vartheta 
+6.	1.0	16.	1	0      1.0	20.    #log_ro  priors Fix h scenario estimated r0 to be 4853.23
+0.75	0.2	1.0	-2	0	.21	0.99      #steepness 
+-0.6931472	-2.302585	0.0	-1	1	-0.9162907	0.05   #log.m  #log.m  log(0.4)=-0.9162907  log(0.596)=-0.5175146
+6.	1.0	20.	1	0      1.0	20.      #log_avgrec
+6.	1.0	20.	1	0      1.0	20.     #log_recinit
+0.2	 0.01  	0.999  	-3       3       3.0    12.0    #rho
+1.	 0.01   	150.    	-2       4       7.49836 5.78354    #varphi (precision)  #FOR P COD, VARPHI AND RHO ARE FIXED TO GIVE SIG=0.2 AND TAU=0.4 - makes average ratio of sds from the two surveys approximately the same as 2005
 ## ------------------------------------------------------------------------- ##
 ##
 ## ------------------------------------------------------------------------- ##

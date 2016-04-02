@@ -348,7 +348,7 @@ DATA_SECTION
 	//=======================================================================================
 	//Delay difference parameters-  all fixed??
 	//pergunta - discuss wit Robyn F the dimensions of these quanitites
-	// RFQ : same as growth pars d_vonbk etc so I guess (1,n_ags)
+	// RFUpdate : same as growth pars d_vonbk etc so I guess (1,n_ags)
 	//=======================================================================================
 	
 	//age at knife-edge recruitment 
@@ -1607,15 +1607,15 @@ PROCEDURE_SECTION
 		if(d_iscamCntrl(5)==2) d_iscamCntrl(5)=0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
 	
 
-	initParameters();
-	calcSelectivities(isel_type);
- 	calcTotalMortality();
- 	calcNumbersAtAge();
-	calcTotalCatch();
-	calcComposition();
-	calcSurveyObservations();
-	calcStockRecruitment();
-	calcAnnualMeanWeight();
+		initParameters();
+		calcSelectivities(isel_type);
+		calcTotalMortality();
+		calcNumbersAtAge();
+		calcTotalCatch();
+		calcComposition();
+		calcSurveyObservations();
+		calcStockRecruitment();
+		calcAnnualMeanWeight();
 	
 	}	
 
@@ -2910,7 +2910,6 @@ FUNCTION calcTotalMortality_deldiff
   	TODO list:
   	
   	*/
-
   	
 	int ig,ii,i,k;
 	int ft_counter = 0;
@@ -2943,7 +2942,7 @@ FUNCTION calcTotalMortality_deldiff
 			ft(ig)(k,i) = ftmp;
 			F_dd(ig)(i) += ftmp;
 		}
-		else if( !h ) // h=0 case for asexual catch	       RFQ: are these loops backwards?
+		else if( !h ) // h=0 case for asexual catch	       RFUpdate: are these loops backwards?
 		{
 			//sum over sex
 			for(h=1;h<=nsex;h++)
@@ -2992,7 +2991,7 @@ FUNCTION calcTotalMortality_deldiff
 
 		for(int iyr=syr+1; iyr<=nyr; iyr++)
 		{
-			M_dd(igg)(iyr) = M_dd(igg)(iyr-1) * mfexp(log_m_devs(iyr));
+			M_dd(igg)(iyr) = M_dd(igg)(iyr-1); //* mfexp(log_m_devs(iyr)); RFUpdate: The delay difference model assumes constant M
 			Z_dd(igg)(iyr) = M_dd(igg)(iyr) + F_dd(igg)(iyr);
 			surv(igg,iyr) = mfexp(-Z_dd(igg,iyr));
 
@@ -3007,12 +3006,7 @@ FUNCTION calcTotalMortality_deldiff
 		// TODO fix for reference point calculations
 		// m_bar = mean( M_tot.sub(pf_cntrl(1),pf_cntrl(2)) );	      
 	
-	
-		
 	}
-
-	
-	 
 	if(verbose){
     LOG<<"**** OK after  delay diff calcTotalMortality ****\n";
   }
@@ -3027,16 +3021,12 @@ FUNCTION calcTotalMortality_deldiff
   //exit(1);
   }
 	
-	
-  	
-	
-	
 FUNCTION calcNumbersBiomass_deldiff
     {
     	/**
   	Purpose: This function calculates  total biomass and total numbers according to the delay differnce 
   	model equations from Hilborn and Walters. Qualtities are calculated for each year and area*sex*group
-  	Author: Catarina Wor - Adapted from Steven Martell and Robyn Forrest work.
+  	Author: Catarina Wor - Adapted from Robyn Forrest work.
   	
   	Arguments:
   		None
@@ -3047,11 +3037,11 @@ FUNCTION calcNumbersBiomass_deldiff
   	
   	*/
 
-
   	int g,h, gs;
   	//int j;
   	numbers.initialize();
   	biomass.initialize();
+  	sbt.initialize();      //RFUpdate added this -- was adding to previous iteration of sbt each time
   	
   	sfished.initialize();
   	snat.initialize();
@@ -3069,6 +3059,7 @@ FUNCTION calcNumbersBiomass_deldiff
 
 	// need to change this by multiplying quantities by 0.5 instead of taking the mean
 	no.initialize();
+	bo.initialize();  //RFUpdate added this
 
 	// average sexes for unfished quantities
 	for(g=1; g<=ngroup; g++)
@@ -3111,7 +3102,6 @@ FUNCTION calcNumbersBiomass_deldiff
 	int ih,ig;	
 	for(ig=1;ig<=n_ags;ig++)
 	{
-		
 		f  = n_area(ig);
 		g  = n_group(ig);
 		h  = n_sex(ig);
@@ -3131,14 +3121,14 @@ FUNCTION calcNumbersBiomass_deldiff
 		        	tmp_N(nage)/=(1.-mfexp(-M_dd(ig)(syr)));
 		        	numbers(ig,syr) = sum(tmp_N)* 1./nsex;
 		        	log_rt(ih,syr) = log_avgrec(ih)+log_rec_devs(ih,syr); 
-				//RF Correction: below biomass is the sum of weight at age x numbers at age not wbar
+				//RFUpdate Correction: below biomass is the sum of weight at age x numbers at age not wbar
 				biomass(ig,syr) = sum(elem_prod(tmp_N,d3_wt_avg(ig)(syr))); 
-				annual_mean_wt(ig,syr) = wbar(gs);
+				annual_mean_wt(ig,syr) = biomass(ig,syr)/numbers(ig,syr); //wbar(gs);
 
 			break;
 		
 			case 1: //start at equilibrium unfished  //check these two options are the same in the absence of fishing mortality
-                                //RF Correction: No need for age structure here
+                                //RFUpdate Correction: No need for age structure here
 				numbers(ig,syr)= no(g);
 				biomass(ig,syr) = bo(g);
 				annual_mean_wt(ig,syr) = wbar(gs);
@@ -3163,7 +3153,6 @@ FUNCTION calcNumbersBiomass_deldiff
 	   	 	   	  		
 			break;
 
-
 		}
 
 		sbt(g,syr) += biomass(ig,syr);
@@ -3173,7 +3162,7 @@ FUNCTION calcNumbersBiomass_deldiff
 			log_rt(ih,i)=log_avgrec(ih)+log_rec_devs(ih,i); 
 
 			//Update biomass and numbers	
-			//RF Correction: don't divide both numbers and biomass by nsex
+			//RFUpdate Correction: don't divide both numbers and biomass by nsex
 			biomass(ig,i) =surv(ig,i-1)*(rho_g(gs)*biomass(ig,i-1)+alpha_g(gs)*numbers(ig,i-1))+
 								wk(gs)*mfexp(log_rt(ih,i)); // eq. 9.2.5 in HW
 			numbers(ig,i)=surv(ig,i-1)*numbers(ig,i-1)+mfexp(log_rt(ih,i)); 
@@ -3188,12 +3177,15 @@ FUNCTION calcNumbersBiomass_deldiff
 	  	
 	  	sbt(g,nyr+1) += biomass(ig,nyr+1); //set spawning biomass to biomass
 	}
-	    
+	
+	//RFUpdate - added sbo for delay diff model
+	 sbo(g)=bo(g);
+	
 	if(verbose){
     LOG<<"**** Ok after calcNumbersBiomass_deldiff ****\n";
   	}
 
-  	/*
+  	    /*
   	cout<<"surv is "<<surv<<endl;
   	cout<<"biomass is "<<biomass<<endl;
 	cout<<"numbers is "<<numbers<<endl;
@@ -3201,8 +3193,9 @@ FUNCTION calcNumbersBiomass_deldiff
 	cout<<"log_rt is "<<log_rt<<endl;
 	cout<<"log_rec_devs is "<<log_rec_devs<<endl;
 	cout<<"**** Ok after calcNumbersBiomass_deldiff ****"<<endl;
-	exit(1);
- 	*/
+	//exit(1);
+	*/
+ 	
   }
 
 
@@ -3287,22 +3280,23 @@ FUNCTION calcFisheryObservations_deldiff
 
 		// | catch residual
 		eta(ii) = log(d_ct+TINY) - log(ct(ii)+TINY);
+		//eta(ii) = log(d_ct) - log(ct(ii));
 	}
-
-
 
 	if(verbose){
     	LOG<<"**** Ok after calcFisheryObservations_deldiff ****\n";
   	}
-
-  	//cout<<"ft is "<<ft<<endl;
-  	//cout<<"ct is "<<ct<<endl;
-	
-	//cout<<"**** Ok after calcFisheryObservations_deldiff ****"<<endl;
-	//exit(1);
+        
+        /*
+        cout<<"eta is "<<eta<<endl;
+  	cout<<"ft is "<<ft<<endl;
+  	cout<<"ct is "<<ct<<endl;
+  	cout<<"TINY is "<<TINY<<endl;
+	cout<<"**** Ok after calcFisheryObservations_deldiff ****"<<endl;
+	exit(1);
+	*/
 			
 	}
-
 
 FUNCTION calcSurveyObservations_deldiff
 	{
@@ -3386,12 +3380,13 @@ FUNCTION calcSurveyObservations_deldiff
 
 			dvector     it 	= trans(d3_survey_data(kk))(2)(iz,nz);
 			dvector     wt 	= trans(d3_survey_data(kk))(7)(iz,nz);
-		            	wt 	= wt/sum(wt);
+		         wt 	= wt/sum(wt);
 			
 			dvar_vector zt 	= log(it) - log(V(iz,nz));
-			dvariable 	zbar = sum(elem_prod(zt,wt));
+			//dvariable 	zbar = sum(elem_prod(zt,wt));
+			dvariable 	zbar = mean(zt);
 			q(kk) = mfexp(zbar);
-	
+			
 
 		// | survey residuals
 		epsilon(kk).sub(iz,nz) = zt - zbar;
@@ -3412,20 +3407,18 @@ FUNCTION calcSurveyObservations_deldiff
 			it_hat(kk).sub(iz,nz) = elem_prod(qt(kk)(iz,nz),V(iz,nz));
 		}
 	}
-
-	if(verbose){
-    	LOG<<"**** Ok after calcSurveyObservations_deldiff ****\n";
+  
+        /*
+  	cout<<"q is  "<<q<<endl;
+  	cout<<"epsilon is  "<<epsilon<<endl;
+  	cout<<"it_hat is  "<<it_hat<<endl;
+  	exit(1);
+        */
+        if(verbose){
+    		LOG<<"**** Ok after calcSurveyObservations_deldiff ****\n";
   	}
 
-
-
-  	//cout<<"it_hat is "<<it_hat<<endl;
-  	
-	//cout<<"**** Ok after calcSurveyObservations_deldiff ****"<<endl;
-	//exit(1);
-
-	
-	}
+     }
 		
 FUNCTION calcStockRecruitment_deldiff
 	{
@@ -3442,8 +3435,6 @@ FUNCTION calcStockRecruitment_deldiff
   	TODO list:
   	
   	*/
-
-	
 		//for the delay difference model so and beta are calculated in the function calcNumbersBiomass_deldiff
 	
 		int i,ig,f,g,h,ih,gs;
@@ -3456,19 +3447,14 @@ FUNCTION calcStockRecruitment_deldiff
 		rt.initialize();
 		delta.initialize();
 
-		
-
 		for(ig=1;ig<=n_ags;ig++)
 		{
-					
 			f  = n_area(ig);
 			g  = n_group(ig);
 			h  = n_sex(ig);
 			ih = pntr_ag(f,g);
 			gs = pntr_gs(g,h);
 	
-
-
 			tau(g) = sqrt(1.-rho(g))*varphi(g);
 
 			//cout<<"tau is "<<tau<<endl;
@@ -3477,7 +3463,6 @@ FUNCTION calcStockRecruitment_deldiff
 			{
 				iicount++;
 				
-			
 				switch(int(d_iscamCntrl(2)))
 				{
 					case 1:  // | Beverton Holt model
@@ -3488,13 +3473,7 @@ FUNCTION calcStockRecruitment_deldiff
 							tmp_rt(g)(i) = so(g)*sbt(g)(i-kage(g))/(1.+beta(g)*sbt(g)(i-kage(g)));
 						}
 
-						//cout<<"tmp_rt "<<so(g)*sbt(g)(syr)/(1.+beta(g)*sbt(g)(syr))<<endl;
-						//cout<<"so"<<so(g)<<endl;
-						//cout<<"sbt(g)("<<i<<")"<<sbt(g)(i)<<endl;
-						//cout<<"beta(g) "<<beta(g)<<endl;
-						
-
-					break;
+				break;
 
 						case 2:  // | Ricker model
 					
@@ -3509,14 +3488,20 @@ FUNCTION calcStockRecruitment_deldiff
 			
 			}
 				
-			rt(g)    += mfexp(log_rt(ih)(syr+sage,nyr));
-			//cout<<"log_rt(ih)(syr+sage,nyr) "<<log_rt(ih)(syr+sage,nyr)<<endl;
-			//cout<<"tmp_rt is "<<tmp_rt<<endl;
-
+			rt(g)    += mfexp(log_rt(ih)(syr+sage,nyr));	 //
+			
+			  /*
+			cout<<"so"<<so<<endl;
+			cout<<"sbt "<<sbt<<endl;
+			cout<<"beta "<<beta<<endl;
+			cout<<"rt "<<rt<<endl;
+			cout<<"tmp_rt is "<<tmp_rt<<endl;
+			 */
 			delta(g) = log(rt(g))-log(tmp_rt(g)(syr+sage,nyr))+0.5*tau*tau;
 	
 		}	
 		//cout<<"delta is "<<delta<<endl;
+		//exit(1); 
 		if(verbose){
     	LOG<<"**** Ok after calc_stock_recruitment_deldiff ****\n";
   		}
@@ -3535,7 +3520,7 @@ FUNCTION calcAnnualMeanWeight_deldiff
 			/**
   	Purpose: This function calculates the mean weight of the catch for each year, gear by dividing the total
   	biomass by the total numbers .
-  	Author: Catarina Wor - Adapted from Steven Martell and Robyn Forrest work
+  	Author: Catarina Wor - Adapted from Robyn Forrest work  RFUpdate -- Steve's versions don't have this
   	
   	Arguments:
   		None
@@ -3610,8 +3595,7 @@ FUNCTION calcAnnualMeanWeight_deldiff
 
   		//cout<<"annual_mean_weight is "<<annual_mean_weight<<endl;
 		//cout<<"obs_annual_mean_weight is "<<obs_annual_mean_weight<<endl;
-  	
-		//cout<<"**** Ok after calcAnnualMeanWeight_deldiff ****"<<endl;
+  	//	cout<<"**** Ok after calcAnnualMeanWeight_deldiff ****"<<endl;
 		//exit(1);
 	}
 
@@ -3679,7 +3663,7 @@ FUNCTION calcObjectiveFunction
 		}
 
 	}
-
+   
 	// |---------------------------------------------------------------------------------|
 	// | LIKELIHOOD FOR RELATIVE ABUNDANCE INDICES
 	// |---------------------------------------------------------------------------------|
@@ -3990,7 +3974,6 @@ FUNCTION calcObjectiveFunction
 		  }else{
 		  	nlvec_dd(4,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
 		  }
-
 	  }
   }
   	//cout<<"nlvec "<<nlvec<<endl;
@@ -4145,18 +4128,18 @@ FUNCTION calcObjectiveFunction
 					objfun += sum(pvec);
 					objfun += sum(qvec);
 
-					//cout<<"nlvec_dd"<<nlvec_dd<<endl;
-					//cout<<"priors"<<priors<<endl;
-					//cout<<"pvec"<<pvec<<endl;
-					//cout<<"qvec"<<qvec<<endl;
-
+					/*
+					cout<<"nlvec_dd  "<<endl<<nlvec_dd<<endl;
+					cout<<"priors  "<<priors<<endl;
+					cout<<"pvec  "<<pvec<<endl;
+					cout<<"qvec  "<<qvec<<endl;
+					cout<<"objfun  "<<objfun<<endl;
+					 */
 				break;
 					
 				}
 		
-	
 	nf++;
-
 
 	if(verbose){
     LOG<<"**** Ok after calcObjectiveFunction ****\n";
@@ -5211,7 +5194,8 @@ REPORT_SECTION
 	report<<ControlFile<<'\n';
 	report<<ProjectFileControl<<'\n';
 	REPORT(objfun);
-	REPORT(nlvec);
+	if(!delaydiff) REPORT(nlvec);
+	if(delaydiff) REPORT(nlvec_dd);
 	REPORT(ro);
 	dvector rbar=value(exp(log_avgrec));
 	REPORT(rbar);

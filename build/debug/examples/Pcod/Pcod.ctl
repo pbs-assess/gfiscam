@@ -11,7 +11,7 @@
 7
 ## ival        lb        ub     phz   prior   p1          p2        #parameter
 6.	1.0	16.	1	0      1.0	20.    #log_ro  priors Fix h scenario estimated r0 to be 4853.23
-0.75	0.2	1.0	2	0	.21	0.99      #steepness 
+0.75	0.2	1.0	-2	0	.21	0.99      #steepness 
 -0.6931472	-2.302585	0.0	-1	1	-0.9162907	0.05   #log.m  #log.m  log(0.4)=-0.9162907  log(0.596)=-0.5175146
 6.	1.0	20.	1	0      1.0	20.      #log_avgrec
 6.	1.0	20.	1	0      1.0	20.     #log_recinit

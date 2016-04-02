@@ -3383,8 +3383,8 @@ FUNCTION calcSurveyObservations_deldiff
 		         wt 	= wt/sum(wt);
 			
 			dvar_vector zt 	= log(it) - log(V(iz,nz));
-			//dvariable 	zbar = sum(elem_prod(zt,wt));
-			dvariable 	zbar = mean(zt);
+			dvariable 	zbar = sum(elem_prod(zt,wt));
+			//dvariable 	zbar = mean(zt); RFUpdate: this old weighting may have been incorrect but check above line with CW
 			q(kk) = mfexp(zbar);
 			
 

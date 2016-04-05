@@ -6612,9 +6612,6 @@ FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, do
 
 FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, double& fmsy, double& bmsy )
 	
-
-
-
 	int k ;
 	int NF=size_count(ftest);
 	ye.initialize();

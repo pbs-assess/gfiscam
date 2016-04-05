@@ -3,6 +3,9 @@
 ## **Make sure to set up the ADMB_HOME and ADMB_HOME_DEBUG
 ##  environment variables for debug and dist builds of ADMB on your system
 
+ADMB_HOME=/Users/catarinawor/admb-trunk/build/dist
+ADMB_HOME_DEBUG= /Users/catarinawor/admb-trunk/build/dist
+
 dist:
 	$(MAKE) --directory=libs DEBUG=no COMPILER=$(COMPILER)
 	$(MAKE) --directory=main DEBUG=no COMPILER=$(COMPILER)

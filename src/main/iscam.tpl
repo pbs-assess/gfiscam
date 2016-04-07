@@ -3025,7 +3025,7 @@ FUNCTION calcNumbersBiomass_deldiff
     {
     	/**
   	Purpose: This function calculates  total biomass and total numbers according to the delay differnce 
-  	model equations from Hilborn and Walters. Qualtities are calculated for each year and area*sex*group
+  	model equations from Hilborn and Walters. Quantities are calculated for each year and area*sex*group
   	Author: Catarina Wor - Adapted from Robyn Forrest work.
   	
   	Arguments:
@@ -3130,9 +3130,13 @@ FUNCTION calcNumbersBiomass_deldiff
 			case 1: //start at equilibrium unfished  //check these two options are the same in the absence of fishing mortality
                                 //RFUpdate Correction: No need for age structure here
 				numbers(ig,syr)= no(g);
+				numbers(ig,i)/=nsex;
 				biomass(ig,syr) = bo(g);
-				annual_mean_wt(ig,syr) = wbar(gs);
-		               	log_rt(ih,syr) = log(ro(g));
+				//annual_mean_wt(ig,syr) = wbar(gs);
+				// corrected this to follow RF correction for case
+				annual_mean_wt(ig,syr) = biomass(ig,syr)/numbers(ig,syr);
+
+		        log_rt(ih,syr) = log(ro(g));
 			
 			break;	
  
@@ -3145,6 +3149,7 @@ FUNCTION calcNumbersBiomass_deldiff
 	   		  						(beta(g)*(sfished(ig)*alpha_g(gs)+sfished(ig)*rho_g(gs)* annual_mean_wt(ig,syr)- 
 	   		  							annual_mean_wt(ig,syr)));
 	   		  	numbers(ig,syr) = biomass(ig,syr)/annual_mean_wt(ig,syr);
+	   		  	numbers(ig,i)/=nsex;
 	   		  	
 	   		  	//pergunta: where does the biomass eq comes from?
 	   		  	// log rt originally missing from this option
@@ -4588,16 +4593,15 @@ FUNCTION void calcReferencePoints()
 	//if(!mceval_phase()) run_FRP();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
 	if(delaydiff){
 
+
 		cout<<"MSY quantitied not defined for Delay difference model"<<endl;
-		//if(!mceval_phase()) run_FRPdd();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
+		if(!mceval_phase()) run_FRPdd();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
 		
-
-
 	}
 
 	if(verbose){
-    LOG<<"**** Ok after calcReferencePoints ****\n";
-  }
+    	LOG<<"**** Ok after calcReferencePoints ****\n";
+  	}
   }
 
   /**
@@ -5445,6 +5449,10 @@ REPORT_SECTION
 		LOG<<"Finished calcReferencePoints\n";
 		//exit(1);
 		REPORT(bo);
+		//REPORT(fmsy);
+		//REPORT(msy);
+		//REPORT(bmsy);
+		//AQUI
 		REPORT(fmsy);
 		REPORT(msy);
 		REPORT(bmsy);
@@ -6612,9 +6620,6 @@ FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, do
 
 FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, double& fmsy, double& bmsy )
 	
-
-
-
 	int k ;
 	int NF=size_count(ftest);
 	ye.initialize();
@@ -6641,13 +6646,10 @@ FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, d
 				
 			se = exp(-value(M_dd(1)(nyr)) - ftest(k));
 			we = (se*alpha_g(1)+wk(1) *(1.-se))/(1.-rho_g(1)*se);
-			cout<<"se"<<se<<endl;
-			cout<<"we"<<we<<endl;
 			
-			//question: be(k) is consistently producing negative numbers
+			
 			be(k) = value(-1.*((-we + se*alpha_g(1) + se*rho_g(1)*we + wk(1)*rec_a*we)/(rec_b*(-we + se*alpha_g(1) + se*rho_g(1)*we)))); //Martell
 			
-			cout<<"bek"<<be(k)<<endl;
 			M = value(M_dd(1)(nyr));
 			
 
@@ -6659,10 +6661,10 @@ FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, d
 
 	}
 		 
-	cout<<"ye"<<ye<<endl;
-	cout<<"be"<<be<<endl;
-	cout<<"ftest"<<ftest<<endl;
-	exit(1);
+	//cout<<"ye"<<ye<<endl;
+	//cout<<"be"<<be<<endl;
+	//cout<<"ftest"<<ftest<<endl;
+	//exit(1);
 	
 	double mtest;	
 	
@@ -6677,15 +6679,12 @@ FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, d
 				bmsy=be(k);
 			} 
 		}
-	  
-	
-	 
-	
+	  	
 	
 	cout<<"Slow msy calcs"<<endl;
-	cout<<msy<<endl;
-	cout<<fmsy<<endl;
-	cout<<bmsy<<endl; 
+	cout<<"msy"<<msy<<endl;
+	cout<<"fmsy"<<fmsy<<endl;
+	cout<<"bmsy"<<bmsy<<endl; 
 	
 	
 	
@@ -6741,21 +6740,15 @@ FUNCTION void run_FRPdd()
 
 	dvector ftest(1,101);
 	ftest.fill_seqadd(0,0.01);
-
-	//cout<<"passa por aqui?"<<endl;
 	
 	int Nf;
 	Nf=size_count(ftest);
 	
 
-	double Fmsy;
-	double MSY;
-	double Bmsy;
 		
 
-
-	//for(int g=1; g<=ngroup; g++)
-	//{
+	for(int g=1; g<=ngroup; g++)
+	{
 		//dvector Ye(1,Nf); // i think this should be a matrix by group and gear
 		//Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
 		//dvector Be(1,Nf); // i think this should be a matrix by group
@@ -6764,17 +6757,20 @@ FUNCTION void run_FRPdd()
 		dvector ye(1,Nf); // i think this should be a matrix by group and gear
 		dvector be(1,Nf);
 
-		double fmsy;
-		double msy;
-		double bmsy;
+		//double fmsy;
+		//double msy;
+		//double bmsy;
 
-		ddiff_msy(ftest, ye, be, msy, fmsy, bmsy);
+		ddiff_msy(ftest, ye, be, msy(g,1), fmsy(g,1), bmsy(g));
 
-		Fmsy=fmsy;
-		MSY=msy;
-		Bmsy=bmsy;
+		//Fmsy=fmsy;
+		//MSY=msy;
+		//Bmsy=bmsy;
 		//Ye(g)=ye(g);
 		//Be(g)=be(g);
+	}
+
+
 	}
 	
 	

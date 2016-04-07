@@ -1,16 +1,4 @@
-## ------------------------------------------------------------------------- ##
-## TEMPLATE DATA FILE FOR iSCAM                                              ##
-## TIPS: -use '#' as comment character for the data file                     ##
-##       -use '#' on all blank lines (windows compatible)                    ##
-##       -sex: 0=asexual, 1=female, 2=male                                   ##
-##                                                                           ##
-##                                                                           ##
-## TEMPLATE is based on Arrowtooth Flounder              ##
-## ------------------------------------------------------------------------- ##
-##
-##
-##
-## Gears: Trawl Fishery, Triennial, WCVI Synoptic, 
+## Gears: Trawl Fishery, Triennial, WCVI Synoptic
 ## ------------------------------------------------------------------------- ##
 ## MODEL DIMENSIONS                                                          ##
 ## ------------------------------------------------------------------------- ##
@@ -33,16 +21,23 @@
 ## Age-schedule and population parameters                                    ##
 ## ------------------------------------------------------------------------- ##
 ## Need one value for each area and sex.
-41.23	56.93     # -asymptotic length (linf)
- 0.302	0.161   # -brody growth coefficient (k)
--0.12	-0.79    # -theoretical age at zero length (tt0)
- 0.0107 0.0043   # -scalar in length-weight allometry (alpha)
- 3.01	3.28   	# -power parameter in length-weight allometry (beta)
- 7.06	6.56   # -age at 50% maturity
- 2.03	1.36  # -std at 50% maturity
+41.23	  56.93   # -asymptotic length (linf)
+ 0.302	 0.161  # -brody growth coefficient (k)
+-0.12	  -0.79   # -theoretical age at zero length (tt0)
+ 0.0107  0.0043 # -scalar in length-weight allometry (alpha)
+ 3.01	   3.28   # -power parameter in length-weight allometry (beta)
+ 7.06	   6.56   # -age at 50% maturity
+ 2.03	   1.36   # -std at 50% maturity
 0
 0
-##
+## ------------------------------------------------------------------------- ##
+## DELAY DIFFERENCE DATA                                                     ##
+## ------------------------------------------------------------------------- ##
+## these parameters are sex and group specific
+0   # kage
+0   #alpha_g
+0   #rho_g
+0   #wk
 ## ------------------------------------------------------------------------- ##
 ## TIME SERIES DATA                                                          ##
 ## ------------------------------------------------------------------------- ##

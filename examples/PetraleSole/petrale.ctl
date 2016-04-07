@@ -114,6 +114,7 @@
  0.00       # 13 -fraction of total mortality that takes place prior to spawning
  0          # 14 -number of prospective years to start estimation from syr
  0          # 15 -switch for IFD distribution in selectivity simulations
+ 0          # 16 1= fit to annual mean weights for commercial catch; 0=do not do this
 ##
 ## ------------------------------------------------------------------------- ##
 ## MARKER FOR END OF CONTROL FILE (eofc)

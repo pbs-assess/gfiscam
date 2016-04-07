@@ -1,15 +1,3 @@
-## ------------------------------------------------------------------------- ##
-## TEMPLATE DATA FILE FOR iSCAM                                              ##
-## TIPS: -use '#' as comment character for the data file                     ##
-##       -use '#' on all blank lines (windows compatible)                    ##
-##       -sex: 0=asexual, 1=female, 2=male                                   ##
-##                                                                           ##
-##                                                                           ##
-## TEMPLATE is based on Flack Lake Trout (ADMB catage example)               ##
-## ------------------------------------------------------------------------- ##
-##
-##
-##
 ## Gears: Trawl Fishery, QCS Synoptic, HS Multispecies Assemblage, Hecate Strait Synoptic, WCVI Synoptic
 ## AgeGears: Trawl Fishery, QCS Synoptic, Hecate Strait Synoptic, WCVI Synoptic
 ## IndexGears: QCS Synoptic, Hecate Strait Multispecies Assemblage, Hecate Strait Synoptic, WCVI Synoptic
@@ -43,7 +31,14 @@
  1.2651   # -std at 50% maturity
 0
 0
-##
+## ------------------------------------------------------------------------- ##
+## DELAY DIFFERENCE DATA                                                     ##
+## ------------------------------------------------------------------------- ##
+## these parameters are sex and group specific
+0   # kage
+0   #alpha_g
+0   #rho_g
+0   #wk
 ## ------------------------------------------------------------------------- ##
 ## TIME SERIES DATA                                                          ##
 ## ------------------------------------------------------------------------- ##

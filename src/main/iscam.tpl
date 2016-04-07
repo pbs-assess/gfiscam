@@ -123,9 +123,9 @@ DATA_SECTION
 		if((on=option_match(ad_comm::argc,ad_comm::argv,"-delaydiff",opt))>-1)
 		{
 			delaydiff=1;
-			cout<<"______________________________________________________\n"<<endl;
-			cout<<"    **Implementing Delay Difference model** "<<endl;
-			cout<<"______________________________________________________"<<endl;
+			LOG<<"______________________________________________________\n"<<'\n';
+			LOG<<"    **Implementing Delay Difference model** "<<'\n';
+			LOG<<"______________________________________________________"<<'\n';
 		}
 
 
@@ -890,10 +890,10 @@ DATA_SECTION
 	init_ivector nPhz_df(1,nAgears);
 	init_int check;
 	LOC_CALCS
-		cout<<"check is "<<check<<endl;
+		LOG<<"check is "<<check<<'\n';
 		if(check != -12345) 
 		{
-			cout<<"check is "<<check<<endl;
+			LOG<<"check is "<<check<<'\n';
 			LOG<<"Check integer for EOF, should be -12345.. = "<<check<<'\n';
       		LOG<<"Error reading composition controls\n";
       		exit(1);
@@ -3012,12 +3012,12 @@ FUNCTION calcTotalMortality_deldiff
   }
 
   /*
-  cout<<"M_dd is "<<M_dd<<endl;
-  cout<<"F_dd is "<<F_dd<<endl;
-  cout<<"Z_dd is "<<Z_dd<<endl;
-  cout<<"surv is "<<surv<<endl;
+  LOG<<"M_dd is "<<M_dd<<'\n';
+  LOG<<"F_dd is "<<F_dd<<'\n';
+  LOG<<"Z_dd is "<<Z_dd<<'\n';
+  LOG<<"surv is "<<surv<<'\n';
   */
-  //cout<<"**** OK after  delay diff calcTotalMortality"<<endl;
+  //LOG<<"**** OK after  delay diff calcTotalMortality"<<'\n';
   //exit(1);
   }
 	
@@ -3087,13 +3087,13 @@ FUNCTION calcNumbersBiomass_deldiff
 	}
 		
 	/*
-	cout<<"m snat wbar ro no bo"<<endl;
-        cout<<m<<endl;
-	cout<<snat<<endl;
-	cout<<wbar<<endl;
-	cout<<ro<<endl;
-	cout<<no<<endl;
-        cout<<bo<<endl; exit(1);  
+	LOG<<"m snat wbar ro no bo"<<'\n';
+        LOG<<m<<'\n';
+	LOG<<snat<<'\n';
+	LOG<<wbar<<'\n';
+	LOG<<ro<<'\n';
+	LOG<<no<<'\n';
+        LOG<<bo<<'\n'; exit(1);  
        */
        
 	//recruitment for projection year
@@ -3191,13 +3191,13 @@ FUNCTION calcNumbersBiomass_deldiff
   	}
 
   	    /*
-  	cout<<"surv is "<<surv<<endl;
-  	cout<<"biomass is "<<biomass<<endl;
-	cout<<"numbers is "<<numbers<<endl;
-	cout<<"sbt is "<<sbt<<endl;
-	cout<<"log_rt is "<<log_rt<<endl;
-	cout<<"log_rec_devs is "<<log_rec_devs<<endl;
-	cout<<"**** Ok after calcNumbersBiomass_deldiff ****"<<endl;
+  	LOG<<"surv is "<<surv<<'\n';
+  	LOG<<"biomass is "<<biomass<<'\n';
+	LOG<<"numbers is "<<numbers<<'\n';
+	LOG<<"sbt is "<<sbt<<'\n';
+	LOG<<"log_rt is "<<log_rt<<'\n';
+	LOG<<"log_rec_devs is "<<log_rec_devs<<'\n';
+	LOG<<"**** Ok after calcNumbersBiomass_deldiff ****"<<'\n';
 	//exit(1);
 	*/
  	
@@ -3277,8 +3277,8 @@ FUNCTION calcFisheryObservations_deldiff
 			break;
 			
 			case 3:	//roe - NOT IMPLEMENTED FOR DELAY DIFFERENCE MODEL
-						cout<<"WARNING: CATCH TYPE 3 (ROE FISHERY) NOT IMPLEMENTED FOR DELAY DIFFERENCE MODEL:"<<endl;
-						cout<<"USE THE AGE-STRUCTURED MODEL - TERMINATING PROGRAM"<<endl; exit(1);
+						LOG<<"WARNING: CATCH TYPE 3 (ROE FISHERY) NOT IMPLEMENTED FOR DELAY DIFFERENCE MODEL:"<<'\n';
+						LOG<<"USE THE AGE-STRUCTURED MODEL - TERMINATING PROGRAM"<<'\n'; exit(1);
 			break;
 			
 		}
@@ -3293,11 +3293,11 @@ FUNCTION calcFisheryObservations_deldiff
   	}
         
         /*
-        cout<<"eta is "<<eta<<endl;
-  	cout<<"ft is "<<ft<<endl;
-  	cout<<"ct is "<<ct<<endl;
-  	cout<<"TINY is "<<TINY<<endl;
-	cout<<"**** Ok after calcFisheryObservations_deldiff ****"<<endl;
+        LOG<<"eta is "<<eta<<'\n';
+  	LOG<<"ft is "<<ft<<'\n';
+  	LOG<<"ct is "<<ct<<'\n';
+  	LOG<<"TINY is "<<TINY<<'\n';
+	LOG<<"**** Ok after calcFisheryObservations_deldiff ****"<<'\n';
 	exit(1);
 	*/
 			
@@ -3414,9 +3414,9 @@ FUNCTION calcSurveyObservations_deldiff
 	}
   
         /*
-  	cout<<"q is  "<<q<<endl;
-  	cout<<"epsilon is  "<<epsilon<<endl;
-  	cout<<"it_hat is  "<<it_hat<<endl;
+  	LOG<<"q is  "<<q<<'\n';
+  	LOG<<"epsilon is  "<<epsilon<<'\n';
+  	LOG<<"it_hat is  "<<it_hat<<'\n';
   	exit(1);
         */
         if(verbose){
@@ -3442,7 +3442,7 @@ FUNCTION calcStockRecruitment_deldiff
   	*/
 		//for the delay difference model so and beta are calculated in the function calcNumbersBiomass_deldiff
 	
-		int i,ig,f,g,h,ih,gs;
+		int i,ig,f,g,ih; // ,h,gs; // h and gs aren't used yet
 
 		dvar_vector tau(1,ngroup);
 		dvar_matrix tmp_rt(1,ngroup,syr,nyr);	  //need to calc recruits in all years, then offset by kage yrs
@@ -3458,11 +3458,11 @@ FUNCTION calcStockRecruitment_deldiff
 			g  = n_group(ig);
 			h  = n_sex(ig);
 			ih = pntr_ag(f,g);
-			gs = pntr_gs(g,h);
+			// gs = pntr_gs(g,h); // This isn't used yet
 	
 			tau(g) = sqrt(1.-rho(g))*varphi(g);
 
-			//cout<<"tau is "<<tau<<endl;
+			//LOG<<"tau is "<<tau<<'\n';
 			
 			for(i=syr; i<=nyr; i++)
 			{
@@ -3496,25 +3496,25 @@ FUNCTION calcStockRecruitment_deldiff
 			rt(g)    += mfexp(log_rt(ih)(syr+sage,nyr));	 //
 			
 			  /*
-			cout<<"so"<<so<<endl;
-			cout<<"sbt "<<sbt<<endl;
-			cout<<"beta "<<beta<<endl;
-			cout<<"rt "<<rt<<endl;
-			cout<<"tmp_rt is "<<tmp_rt<<endl;
+			LOG<<"so"<<so<<'\n';
+			LOG<<"sbt "<<sbt<<'\n';
+			LOG<<"beta "<<beta<<'\n';
+			LOG<<"rt "<<rt<<'\n';
+			LOG<<"tmp_rt is "<<tmp_rt<<'\n';
 			 */
 			delta(g) = log(rt(g))-log(tmp_rt(g)(syr+sage,nyr))+0.5*tau*tau;
 	
 		}	
-		//cout<<"delta is "<<delta<<endl;
+		//LOG<<"delta is "<<delta<<'\n';
 		//exit(1); 
 		if(verbose){
     	LOG<<"**** Ok after calc_stock_recruitment_deldiff ****\n";
   		}
 
-		//cout<<"rt is "<<rt<<endl;
-		//cout<<"tmp_rt is "<<tmp_rt<<endl;
+		//LOG<<"rt is "<<rt<<'\n';
+		//LOG<<"tmp_rt is "<<tmp_rt<<'\n';
   	
-		//cout<<"**** Ok after calc_stock_recruitment_deldiff ****"<<endl;
+		//LOG<<"**** Ok after calc_stock_recruitment_deldiff ****"<<'\n';
 		//exit(1);
 	}
 
@@ -3598,9 +3598,9 @@ FUNCTION calcAnnualMeanWeight_deldiff
     	LOG<<"**** Ok after calcAnnualMeanWeight_deldiff ****\n";
   		}
 
-  		//cout<<"annual_mean_weight is "<<annual_mean_weight<<endl;
-		//cout<<"obs_annual_mean_weight is "<<obs_annual_mean_weight<<endl;
-  	//	cout<<"**** Ok after calcAnnualMeanWeight_deldiff ****"<<endl;
+  		//LOG<<"annual_mean_weight is "<<annual_mean_weight<<'\n';
+		//LOG<<"obs_annual_mean_weight is "<<obs_annual_mean_weight<<'\n';
+  	//	LOG<<"**** Ok after calcAnnualMeanWeight_deldiff ****"<<'\n';
 		//exit(1);
 	}
 
@@ -3981,8 +3981,8 @@ FUNCTION calcObjectiveFunction
 		  }
 	  }
   }
-  	//cout<<"nlvec "<<nlvec<<endl;
-  	//cout<<"end of nlvec "<<endl;
+  	//LOG<<"nlvec "<<nlvec<<'\n';
+  	//LOG<<"end of nlvec "<<'\n';
 
 	// |---------------------------------------------------------------------------------|
 	// | PRIORS FOR LEADING PARAMETERS p(theta)
@@ -4134,11 +4134,11 @@ FUNCTION calcObjectiveFunction
 					objfun += sum(qvec);
 
 					/*
-					cout<<"nlvec_dd  "<<endl<<nlvec_dd<<endl;
-					cout<<"priors  "<<priors<<endl;
-					cout<<"pvec  "<<pvec<<endl;
-					cout<<"qvec  "<<qvec<<endl;
-					cout<<"objfun  "<<objfun<<endl;
+					LOG<<"nlvec_dd  "<<'\n'<<nlvec_dd<<'\n';
+					LOG<<"priors  "<<priors<<'\n';
+					LOG<<"pvec  "<<pvec<<'\n';
+					LOG<<"qvec  "<<qvec<<'\n';
+					LOG<<"objfun  "<<objfun<<'\n';
 					 */
 				break;
 					
@@ -4150,7 +4150,7 @@ FUNCTION calcObjectiveFunction
     LOG<<"**** Ok after calcObjectiveFunction ****\n";
   }
 	//LOG<<"nlvec3 is "<<nlvec(3)<<'\n';
-	 //cout<<"**** Ok after calcObjectiveFunction ****"<<endl;
+	 //LOG<<"**** Ok after calcObjectiveFunction ****"<<'\n';
   	
 	// if(last_phase()){
 	// 	ad_exit(1); //para!
@@ -4379,7 +4379,7 @@ FUNCTION calcObjectiveFunction
 // 	ye=fe*re*phiq;
 // 	be=re*phif;	//spawning biomass
 	
-// 	//LOG<<"Equilibrium\n"<<ro<<"\n"<<re<<"\n"<<ye<<'\n';
+// 	//LOG<<"Equilibrium\n"<<ro<<'\n'<<re<<'\n'<<ye<<'\n';
 	
 //   }
 	
@@ -4594,7 +4594,7 @@ FUNCTION void calcReferencePoints()
 	if(delaydiff){
 
 
-		cout<<"MSY quantitied not defined for Delay difference model"<<endl;
+		LOG<<"MSY quantitied not defined for Delay difference model"<<'\n';
 		if(!mceval_phase()) run_FRPdd();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
 		
 	}
@@ -6251,7 +6251,7 @@ FUNCTION void projection_model_dd(const double& tac);
 		//Update biomass and numbers	
 		p_bt(i) =(p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
 		p_N(i)=p_S(i-1)*p_N(i-1)+p_rt(i);
-               	//cout<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<endl;
+               	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
 
 		//get_ft is defined in the Baranov.cpp file
 		p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i));	    //hardwiring the catch to gear 1 for this assessment       m_bar is same as constant M
@@ -6260,7 +6260,7 @@ FUNCTION void projection_model_dd(const double& tac);
 		//test get_ftdd with Baranov equation
 		double testf =p_ft(i);
 		double testc = p_bt(i)*(1-mfexp(-value(m)-testf))*(testf/(value(m) + testf));
-		cout<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<endl<<endl;
+		LOG<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<'\n'<<'\n';
 		*/
 		
 		//Calculate mortality for next projection year
@@ -6301,8 +6301,8 @@ FUNCTION void projection_model_dd(const double& tac);
 			ofsP<<"FAvg_L" <<setw(6)     <<   "\t";
 			ofsP<<"F_"<<nyr+1<<"FAvg_L\n";		   //want probability F2014>F2013 - this will be > 1 if true
 		      
-			cout<<"Running MCMC evaluations"<<endl;
-			cout<<"Bo when nf==1 \t"<<bo<<endl;
+			LOG<<"Running MCMC evaluations"<<'\n';
+			LOG<<"Bo when nf==1 \t"<<bo<<'\n';
 		}
 
 		ofstream ofsP("iscammcmc.proj",ios::app);
@@ -6332,7 +6332,7 @@ FUNCTION void projection_model_dd(const double& tac);
 		<<p_bt(pyr)/meanblong <<setw(6)     <<   "\t"		   
 		<<meanflong <<setw(6)     <<   "\t"
 		<<p_ft(pyr-1)/meanflong<<   "\t"		   	   		   
-		 <<endl;
+		 <<'\n';
 	   }
 
 	   //S= Short (1956-2004) 
@@ -6340,7 +6340,7 @@ FUNCTION void projection_model_dd(const double& tac);
 	   if(last_phase() && !mceval_phase()){
 	   		if(runNo==1)
 	   		{
-	   			cout<<"Running MPD projections"<<endl;
+	   			LOG<<"Running MPD projections"<<'\n';
 	   			
 	   			ofstream ofsP("iscammpd.proj");
 	   			ofsP<<"tac" <<setw(6)     <<   "\t";
@@ -6372,7 +6372,7 @@ FUNCTION void projection_model_dd(const double& tac);
 				
 	   		}
 	   
-	   		cout<<"tac = "<<tac<<endl;
+	   		LOG<<"tac = "<<tac<<'\n';
 	   		ofstream ofsP("iscammpd.proj",ios::app);
 	   		ofsP 
 	   		  <<tac <<setw(6)                            <<"\t"
@@ -6401,7 +6401,7 @@ FUNCTION void projection_model_dd(const double& tac);
 			<<p_bt(pyr)/meanblong <<setw(6)     <<   "\t"		   
 			<<meanflong <<setw(6)     <<   "\t"
 			<<p_ft(pyr-1)/meanflong<<   "\t"		   	   		   
-			<<endl;
+			<<'\n';
 	   }
 	}
 
@@ -6484,7 +6484,7 @@ GLOBALS_SECTION
 	Prints name and value of \a object on ADMB report %ofstream file.
 	*/
 	#undef REPORT
-	#define REPORT(object) report << #object "\n" << object << '\n';
+	#define REPORT(object) report << #object "\n" << object << "\n";
 
 	#undef TINY
 	#define TINY 1.e-08
@@ -6661,9 +6661,9 @@ FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, d
 
 	}
 		 
-	//cout<<"ye"<<ye<<endl;
-	//cout<<"be"<<be<<endl;
-	//cout<<"ftest"<<ftest<<endl;
+	//LOG<<"ye"<<ye<<'\n';
+	//LOG<<"be"<<be<<'\n';
+	//LOG<<"ftest"<<ftest<<'\n';
 	//exit(1);
 	
 	double mtest;	
@@ -6681,10 +6681,10 @@ FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, d
 		}
 	  	
 	
-	cout<<"Slow msy calcs"<<endl;
-	cout<<"msy"<<msy<<endl;
-	cout<<"fmsy"<<fmsy<<endl;
-	cout<<"bmsy"<<bmsy<<endl; 
+	LOG<<"Slow msy calcs"<<'\n';
+	LOG<<"msy"<<msy<<'\n';
+	LOG<<"fmsy"<<fmsy<<'\n';
+	LOG<<"bmsy"<<bmsy<<'\n'; 
 	
 	
 	
@@ -6735,7 +6735,7 @@ FUNCTION void run_FRPdd()
 
 	
 	if(n_ags>1){
-		cout<<"MSY quantities not defined for n_ags>1"<<endl; 
+		LOG<<"MSY quantities not defined for n_ags>1"<<'\n'; 
 	}else{
 
 	dvector ftest(1,101);

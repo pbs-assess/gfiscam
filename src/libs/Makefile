@@ -24,7 +24,9 @@ OBJS := $(SRCS:.cpp=.o)
 OBJECTS := $(addprefix $(OBJDIR), $(OBJS))
 
 all: $(OBJECTS)
-	@echo iscam libraries build completed, DEBUG = $(DEBUG)
+	@echo
+	@echo iSCAM libraries built successfully, DEBUG = $(DEBUG)
+	@echo
 
 $(OBJDIR)%.o: %.cpp
 	@if [ ! -d "$(DESTDIR)" ]; then mkdir -p $(DESTDIR); fi

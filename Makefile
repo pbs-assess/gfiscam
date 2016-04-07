@@ -24,10 +24,6 @@
 ## The iscam.dat file is just a copy of the iscam_arrowtooth.dat file,
 ## so that iscam can be tested immediately after building.
 
-## ADMB_HOME=/Users/catarinawor/admb-trunk/build/dist
-## ADMB_HOME_DEBUG= /Users/catarinawor/admb-trunk/build/dist
-
-
 COMPILER := g++
 
 .PHONY: clean clean-debug rules testcompiler

@@ -15,6 +15,7 @@
 variance
 dist/
 *.BAT
+build/
 
 # iSCAM output
 *.psv

@@ -9,8 +9,8 @@
 ## ADMB source code during a debug session. You will however, still be able to
 ## debug the iscam.cpp file as it will be compiled with debug symbols.
 ##
-## make-dist will make build/dist only (make sure ADMB_HOME is set)
-## make-debug will make build/debug only (make sure ADMB_HOME_DEBUG is set)
+## make dist will make build/dist only (make sure ADMB_HOME is set)
+## make debug will make build/debug only (make sure ADMB_HOME_DEBUG is set)
 ## make will make both build/dist and build/debug (make sure both ADMB_HOME and ADMB_HOME_DEBUG are set)
 ##
 ## make clean-dist will clean up and remove build/dist

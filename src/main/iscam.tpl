@@ -385,15 +385,15 @@ DATA_SECTION
 		
 		if(!mseFlag){
      	  LOG<<"| ----------------------- |\n";
-		  LOG<<"| HEAD(dCatchData)        |\n";
-		  LOG<<"| ----------------------- |\n";
-		  LOG<<dCatchData.sub(1,3)<<'\n';
-		  LOG<<"| ----------------------- |\n\n";
-		  LOG<<"| ----------------------- |\n";
-		  LOG<<"| TAIL(dCatchData)        |\n";
-		  LOG<<"| ----------------------- |\n";
-		  LOG<<dCatchData.sub(nCtNobs-3,nCtNobs)<<'\n';
-		  LOG<<"| ----------------------- |\n";
+		    LOG<<"| HEAD(dCatchData)        |\n";
+		    LOG<<"| ----------------------- |\n";
+        LOG<<dCatchData.sub(1,3)<<'\n';
+		    LOG<<"| ----------------------- |\n\n";
+		    LOG<<"| ----------------------- |\n";
+		    LOG<<"| TAIL(dCatchData)        |\n";
+		    LOG<<"| ----------------------- |\n";
+		    LOG<<dCatchData.sub(nCtNobs-3,nCtNobs)<<'\n';
+		    LOG<<"| ----------------------- |\n";
 		}
 
 		

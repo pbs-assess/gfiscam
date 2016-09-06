@@ -5923,16 +5923,16 @@ FUNCTION mcmc_output
 
  //RF:: March 17 2015. RF re-instated projection_model for Arrowtooth Flounder assessment. NOT IMPLEMENTED FOR MULTIPLE AREA/GROUPS
  // CW: Took this out while testing  the mltiple area delaydiff
- //if(n_ags==1) {
- //  int ii;
- //  for(ii=1;ii<=n_tac;ii++){
- //    //LOG<<ii<<" "<<tac(ii)<<'\n';
- //    projection_model(tac(ii));
- //  }
- //}
- //if(n_ags>1){
- //  if(nf==1) LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
- //}
+ if(n_ags==1) {
+  int ii;
+  for(ii=1;ii<=n_tac;ii++){
+    LOG<<ii<<" "<<tac(ii)<<'\n';
+    projection_model(tac(ii));
+  }
+ }
+ if(n_ags>1){
+  if(nf==1) LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
+ }
 
 // FUNCTION dvector age3_recruitment(const dvector& rt, const double& wt,const double& M)
 //   {

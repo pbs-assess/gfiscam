@@ -30,7 +30,7 @@
 ## _____________________________ ##
 ## Control options               ##
 ## _____________________________ ##
-8    ## Length of control options vector
+9    ## Length of control options vector
 
 1956 ## - 1) Start year for mean natural mortality rate
 2013 ## - 2)  Last year for mean natural mortality rate
@@ -42,8 +42,9 @@
 2013 ## - 6)   End year for average recruitment period in projections
 
 2004 ## - 7)Short time series: "historical" control points based on biomass and F reconstruction
-2012 ## - 8)Long time series:"historical" control points based on biomass and F reconstruction
+2012 ## - 8) Long time series:"historical" control points based on biomass and F reconstruction
 
+1971 ## 9) bmin for "minimum biomass from which the stock recovered to above average" for "historical" control points based on biomass and F reconstruction
 
 ## eof
 -999

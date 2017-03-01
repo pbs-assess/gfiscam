@@ -5922,16 +5922,16 @@ FUNCTION mcmc_output
   of6.flush();
 
  //RF:: March 17 2015. RF re-instated projection_model for Arrowtooth Flounder assessment. NOT IMPLEMENTED FOR MULTIPLE AREA/GROUPS
- // CW: Took this out while testing  the mltiple area delaydiff
- /*
+ // CW: Took this out while testing  the multiple area delaydiff
+ 
  if(n_ags==1) {
   int ii;
   for(ii=1;ii<=n_tac;ii++){
     LOG<<ii<<" "<<tac(ii)<<'\n';
-    projection_model(tac(ii));
+    if(!delaydiff) projection_model(tac(ii)); //TO DO: Add historical ref points
+    if(delaydiff) projection_model_dd(tac(ii)); //TO DO: Check and fix reference points
   }
  }
- */
   
  if(n_ags>1){
   if(nf==1) LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
@@ -6137,8 +6137,6 @@ FUNCTION void projection_model(const double& tac);
    LOG<<"Finished projection model for TAC = "<<tac<<'\n';
   }
 
-
-
 FUNCTION void projection_model_dd(const double& tac);	
   {
 	/*
@@ -6191,10 +6189,6 @@ FUNCTION void projection_model_dd(const double& tac);
 	p_S(syr,nyr)   = value(surv(1)(syr,nyr));
 	p_rt(syr+sage,nyr)   = value(rt(1)(syr+sage,nyr));
 		
-	//control points    - these are "historical" control points based on biomass and F reconstruction
-	// Question!! I am not sure if these numbers should be fixed, maybe read from the pfc file?
-
-
 	int nshort=pf_cntrl(7)-syr+1;
 	int nlong=pf_cntrl(8)-syr+1;
 	double meanfshort;	  // average F between 1956 and 2004
@@ -6210,8 +6204,6 @@ FUNCTION void projection_model_dd(const double& tac);
     hist_ftshort.initialize();  hist_ftlong.initialize();
 	hist_btshort.initialize();  hist_btlong.initialize();
 
-		
-
 	hist_ftshort=value(ft(1)(1)(syr,pf_cntrl(7)));
 	hist_btshort=value(biomass(1)(syr,pf_cntrl(7)));
 	
@@ -6221,15 +6213,13 @@ FUNCTION void projection_model_dd(const double& tac);
 		hist_btlong=value(biomass(1)(syr,pf_cntrl(8)));
 	}
 
-
 	meanfshort=sum(hist_ftshort)/nshort;
 	if(nyr>=pf_cntrl(8)) meanflong=sum(hist_ftlong)/nlong;
 	meanbshort=sum(hist_btshort)/nshort;
 	if(nyr>=pf_cntrl(8)) meanblong=sum(hist_btlong)/nlong;
 	
-
-	// Question CW - Where does 1985 comes from, it it the minimum biomass observed or is it a set number?
-	minb=hist_btshort(1985);
+	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
+	minb=pf_cntrl(9); 
 
 	/* Simulate population into the future under constant tac policy. */
 	
@@ -6238,12 +6228,8 @@ FUNCTION void projection_model_dd(const double& tac);
 		//recruits
 		//double p_tau = value(sqrt(1-rho)/varphi);
 		double p_tau = value(tau(1)); 
-
-		//question CW What's nf??
 		double xx = randn(nf+i)*p_tau;
 			
-		
-
 		//double rt;
 		double et=p_bt(i-kage(1)); //delay diff
 

@@ -5923,6 +5923,7 @@ FUNCTION mcmc_output
 
  //RF:: March 17 2015. RF re-instated projection_model for Arrowtooth Flounder assessment. NOT IMPLEMENTED FOR MULTIPLE AREA/GROUPS
  // CW: Took this out while testing  the mltiple area delaydiff
+ /*
  if(n_ags==1) {
   int ii;
   for(ii=1;ii<=n_tac;ii++){
@@ -5930,6 +5931,8 @@ FUNCTION mcmc_output
     projection_model(tac(ii));
   }
  }
+ */
+  
  if(n_ags>1){
   if(nf==1) LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
  }
@@ -6473,7 +6476,7 @@ FUNCTION void runMSE()
 TOP_OF_MAIN_SECTION
 	time(&start);
 	arrmblsize = 50000000;
-	gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e7);
+	gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e8);
 	gradient_structure::set_CMPDIF_BUFFER_SIZE(1.e7);
 	gradient_structure::set_MAX_NVAR_OFFSET(5000);
 	gradient_structure::set_NUM_DEPENDENT_VARIABLES(5000);

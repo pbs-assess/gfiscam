@@ -9,14 +9,14 @@
 ## ------------------------------------------------------------------------- ##
 ## npar
 7
-## ival        lb        ub      phz   prior   p1          p2             #parameter
-6.	           1.0	     16.	     1	     0      1.0	        20.         #log_ro  priors Fix h scenario estimated r0 to be 4853.23
-0.75	         0.2	      1.0	     2	     0	     .21	       0.99       #steepness 
--0.6931472	  -2.302585  	0.0	    -1	     1	   -0.9162907	   0.05       #log.m  #log.m  log(0.4)=-0.9162907  log(0.596)=-0.5175146
-6.	           1.0	     20.	     1	     0      1.0	        20.         #log_avgrec
-6.	           1.0	     20.	     1	     0      1.0	        20.         #log_recinit
-0.2	           0.01  	    0.999  	-3       3      3.0         12.0        #rho
-1.	           0.01   	150.    	-2       4      7.49836      5.78354    #varphi (precision)  #FOR P COD, VARPHI AND RHO ARE FIXED TO GIVE SIG=0.2 AND TAU=0.4 - makes average ratio of sds from the two surveys approximately the same as 2005
+## ival        lb        ub      phz   prior   p1          p2                                                 #parameter
+8.48741	1.0	12.	1	0      1.0	15.                                                                  #log_ro  priors Fix h scenario estimated r0 to be 4853.23
+0.75        0.2     1.0      1       3       5.83333       2.5                                             #steepness  a and b parameters giving mean 0.7 sd 0.15 - see Betadist_test.r
+-0.6931472	-2.302585	0.0	1	1	-0.6931472	0.1                          #log.m  #log.m  log(0.4)=-0.9162907  log(0.596)=-0.5175146      log(0.3) = -1.203973 log(0.5) = -0.6931472
+8.9	1.0	12.	1	0      1.0	12.                                                                          #log_avgrec
+9.54	1.0	12.	1	0      1.0	12.                                                                  #log_recinit
+0.088968	 0.01  	0.999  	-3       3       3.0    12.0                                    #rho#P cod: rho and varphi fixed to give sig=1 and tau=0.8. 
+1.423488	 0.01   	150.    	-2       4       7.49836 5.78354                       #kappa (precision)  #FOR P COD, VARPHI AND RHO ARE FIXED TO make average ratio of sds from the two surveys the same as 2005
 ## ------------------------------------------------------------------------- ##
 ##
 ## ------------------------------------------------------------------------- ##
@@ -84,24 +84,24 @@
 ## Need one column for each survey.                                          ##
 ## ------------------------------------------------------------------------- ##
 3                     # -number of surveys (nits)
-1    1     1           # -prior type (see legend above)
--5.847191  -3.626844 -3.626844  # -prior log(mean)
-0.2 0.2 0.2              # -prior sd
+1    1     0           # -prior type (see legend above)
+0.  0. 0.  # -prior log(mean)
+0.5 0.5 1.0              # -prior sd
 ## ------------------------------------------------------------------------- ##
 ##
 ## CONTROLS FOR FITTING TO MEAN WEIGHT DATA
 ## ------------------------------------------------------------------------- ##
 1      # 1 = fit to annual mean weights, 0 = do not fit to annual mean weights
 1      # Number of annual mean weight series
-0.25  # SD for likelihood for fitting to annual mean weight (one for each series)
+0.2  # SD for likelihood for fitting to annual mean weight (one for each series)
 ## ------------------------------------------------------------------------- ##
 ## ------------------------------------------------------------------------- ##
 ## OTHER MISCELANEOUS CONTROLS                                               ##
 ## ------------------------------------------------------------------------- ##
  0          # 1  -verbose ADMB output (0=off, 1=on)
  1          # 2  -recruitment model (1=beverton-holt, 2=ricker)
- 0.05       # 3  -std in observed catches in first phase.
- 0.025      # 4  -std in observed catches in last phase.
+ 0.2       # 3  -std in observed catches in first phase.
+ 0.05      # 4  -std in observed catches in last phase.
  0          # 5  -Assume unfished equilibrium in first year (0=FALSE, 1=TRUE, 2 = AT EQUILIBRIUM WITH FISHING MORTALITY IN SYR - IMPLEMENTED ONLY IN DELAY DIFF MODEL)
  1.00       # 6  -Maternal effects multiplier
  0.20       # 7  -Mean fishing mortality for regularizing the estimates of Ft
@@ -110,7 +110,7 @@
 -1          # 10 -phase for estimating m_deviations (use -1 to turn off mdevs)
  0.1        # 11 -std in deviations for natural mortality
 12          # 12 -number of estimated nodes for deviations in natural mortality
- 0.00       # 13 -fraction of total mortality that takes place prior to spawning
+ 0.      # 13 -fraction of total mortality that takes place prior to spawning  - NOT IMPLEMENTED IN DELAY DIFFERENCE MODEL
  0          # 14 -number of prospective years to start estimation from syr
  0          # 15 -switch for IFD distribution in selectivity simulations
  1          # 16 1= fit to annual mean weights for commercial catch; 0=do not do this

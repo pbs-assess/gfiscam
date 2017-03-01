@@ -5929,7 +5929,7 @@ FUNCTION mcmc_output
   for(ii=1;ii<=n_tac;ii++){
     LOG<<ii<<" "<<tac(ii)<<'\n';
     if(!delaydiff) projection_model(tac(ii)); //TO DO: Add historical ref points
-    if(delaydiff) projection_model_dd(tac(ii)); //TO DO: Check and fix reference points
+    if(delaydiff) projection_model_dd(tac(ii)); 
   }
  }
   
@@ -6158,6 +6158,8 @@ FUNCTION void projection_model_dd(const double& tac);
 	
 	** NOTES **
 	* Projections are based on estimated constant natural mortality 
+	* Currently, reference points are historical only, based average historical biomass and ft, and minimum biomass, based on years provided in the pfc file
+	* TO DO: implement fmsy and bo-based reference points
 	
 	*/
 	static int runNo=0;
@@ -6188,7 +6190,9 @@ FUNCTION void projection_model_dd(const double& tac);
 	p_bt(syr,nyr)   = value(biomass(1)(syr,nyr)); //sbt and vul biomass all the same for delay diff
 	p_S(syr,nyr)   = value(surv(1)(syr,nyr));
 	p_rt(syr+sage,nyr)   = value(rt(1)(syr+sage,nyr));
-		
+	
+	// *** HISTORICAL REFERENCE POINTS *** //
+	//Values needed for calculating historical reference points
 	int nshort=pf_cntrl(7)-syr+1;
 	int nlong=pf_cntrl(8)-syr+1;
 	double meanfshort;	  // average F between 1956 and 2004
@@ -6201,7 +6205,7 @@ FUNCTION void projection_model_dd(const double& tac);
 	dvector hist_ftlong(syr,pf_cntrl(8));
 	dvector hist_btshort(syr,pf_cntrl(7));
 	dvector hist_btlong(syr,pf_cntrl(8));
-    hist_ftshort.initialize();  hist_ftlong.initialize();
+        hist_ftshort.initialize();  hist_ftlong.initialize();
 	hist_btshort.initialize();  hist_btlong.initialize();
 
 	hist_ftshort=value(ft(1)(1)(syr,pf_cntrl(7)));
@@ -6221,8 +6225,8 @@ FUNCTION void projection_model_dd(const double& tac);
 	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
 	minb=pf_cntrl(9); 
 
-	/* Simulate population into the future under constant tac policy. */
 	
+	/* Simulate population into the future under constant tac policy. */
 	for(i = nyr+1; i<=pyr; i++)
 	{
 		//recruits
@@ -6242,7 +6246,7 @@ FUNCTION void projection_model_dd(const double& tac);
 		p_N(i)=p_S(i-1)*p_N(i-1)+p_rt(i);
                	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
 
-		//get_ft is defined in the Baranov.cpp file
+		//get_ftdd is defined in the Baranov.cpp file
 		p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i));	    //hardwiring the catch to gear 1 for this assessment       m_bar is same as constant M
 
 		/*
@@ -6257,8 +6261,12 @@ FUNCTION void projection_model_dd(const double& tac);
 				
 	} 
 	
-	  //S= Short (1956-2004) 
-	   //L-Long(1956-2012)
+	
+	//_S= Short: Start and end year in pfc file (for P. cod 1956-2004) 
+	//_L=Long: Start and end year in pfc file (for P. cod 1956-2012)
+	
+	//QUANTITIES NEEDED FOR DECISION TABLE
+	//TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE (LRP=0.2B0; USR=0.4B0 -- could add these to control file)
 	if(mceval_phase()){
 		if(nf==1 && runNo==1)
 		{
@@ -6266,29 +6274,29 @@ FUNCTION void projection_model_dd(const double& tac);
 			ofsP<<"tac" <<setw(6)     <<   "\t";
 			ofsP<<"B_"<<nyr+1 <<setw(6)     <<   "\t";
 			ofsP<<"B_"<<nyr+2<<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"B_"<<nyr+1 <<setw(6)     <<   "\t";		   //want probability B2015<B2014 - this will be < 1 if true
+			ofsP<<"B_"<<nyr+2<<"B_"<<nyr+1 <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bnyr+1 - this will be < 1 if true
 			ofsP<<"F_"<<nyr <<setw(6)     <<   "\t";
 			ofsP<<"F_"<<nyr+1 <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1<<"F_"<<nyr <<setw(6)     <<   "\t";		   //want probability F2014>F2013     - this will be > 1 if true
+			ofsP<<"F_"<<nyr+1<<"F_"<<nyr <<setw(6)     <<   "\t";		   //want probability Fnyr+1>Fnyr     - this will be > 1 if true
 			//MSY based ref points
 			ofsP<<"BMSY" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"BMSY" <<setw(6)     <<   "\t";		   //want probability B2015<BMSY - this will be < 1 if true
-			ofsP<<"B_"<<nyr+2<<"0.8BMSY" <<setw(6)     <<   "\t";		   //want probability B2015<0.8BMSY - this will be< 1 if true
-			ofsP<<"B_"<<nyr+2<<"0.4BMSY" <<setw(6)     <<   "\t";		   //want probability B2015<0.4BMSY - this will be < 1 if true
+			ofsP<<"B_"<<nyr+2<<"BMSY" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<BMSY - this will be < 1 if true
+			ofsP<<"B_"<<nyr+2<<"0.8BMSY" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<0.8BMSY - this will be< 1 if true
+			ofsP<<"B_"<<nyr+2<<"0.4BMSY" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<0.4BMSY - this will be < 1 if true
 			ofsP<<"FMSY" <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1<<"FMSY"<<setw(6)     <<   "\t";		   //want probability F2014>F2013 - this will be > 1 if true
-			//Historical ref points "short"	 1956-2004
+			ofsP<<"F_"<<nyr+1<<"FMSY"<<setw(6)     <<   "\t";		   //want probability Fnyr+1>Fnyr - this will be > 1 if true
+			//Historical ref points "short"	 
 			ofsP<<"Bmin" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"Bmin" <<setw(6)     <<   "\t";		   //want probability B2015<Bmin 
+			ofsP<<"B_"<<nyr+2<<"Bmin" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bmin 
 			ofsP<<"BAvg_S" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"BAvg_S" <<setw(6)     <<   "\t";		   //want probability B2015<Bavg 
+			ofsP<<"B_"<<nyr+2<<"BAvg_S" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bavg 
 			ofsP<<"FAvg_S" <<setw(6)     <<   "\t";
 			ofsP<<"F_"<<nyr+1<<"FAvg_S"<<setw(6)     <<   "\t";	
-			//Historical ref points "long"	 1956-2012
+			//Historical ref points "long"	 
 			ofsP<<"BAvg_L" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"BAvg_L" <<setw(6)     <<   "\t";		   //want probability B2015<Bavg - this will be < 1 if true
+			ofsP<<"B_"<<nyr+2<<"BAvg_L" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bavg - this will be < 1 if true
 			ofsP<<"FAvg_L" <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1<<"FAvg_L\n";		   //want probability F2014>F2013 - this will be > 1 if true
+			ofsP<<"F_"<<nyr+1<<"FAvg_L\n";		   //want probability Fnyr+1>FAvg - this will be > 1 if true
 		      
 			LOG<<"Running MCMC evaluations"<<'\n';
 			LOG<<"Bo when nf==1 \t"<<bo<<'\n';
@@ -6309,14 +6317,14 @@ FUNCTION void projection_model_dd(const double& tac);
 		<<p_bt(pyr)/(0.4*bmsy) <<setw(6)     <<   "\t"		   
 		<<fmsy <<setw(6)     <<   "\t"
 		<<p_ft(pyr-1)/fmsy <<setw(6)     <<   "\t"		   
-		//Historical ref points "short"	 1956-2004
+		//Historical ref points "short"	 
 		<<minb <<setw(6)     <<   "\t"
 		<<p_bt(pyr)/minb <<setw(6)     <<   "\t"		   
 		<<meanbshort <<setw(6)     <<   "\t"
 		<<p_bt(pyr)/meanbshort <<setw(6)     <<   "\t"		   
 		<<meanfshort <<setw(6)     <<   "\t"
 		<<p_ft(pyr-1)/meanfshort<<setw(6)     <<   "\t"		  
-		 //Historical ref points "long"	 1956-2012
+		 //Historical ref points "long"	 
 		<<meanblong <<setw(6)     <<   "\t"
 		<<p_bt(pyr)/meanblong <<setw(6)     <<   "\t"		   
 		<<meanflong <<setw(6)     <<   "\t"
@@ -6324,9 +6332,9 @@ FUNCTION void projection_model_dd(const double& tac);
 		 <<'\n';
 	   }
 
-	   //S= Short (1956-2004) 
-	   //L-Long(1956-2012)
-	   if(last_phase() && !mceval_phase()){
+	 //MPD projections
+ 	//TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE (LRP=0.2B0; USR=0.4B0 -- could add proportions to control file)
+       if(last_phase() && !mceval_phase()){
 	   		if(runNo==1)
 	   		{
 	   			LOG<<"Running MPD projections"<<'\n';
@@ -6335,29 +6343,29 @@ FUNCTION void projection_model_dd(const double& tac);
 	   			ofsP<<"tac" <<setw(6)     <<   "\t";
 				ofsP<<"B_"<<nyr+1 <<setw(6)     <<   "\t";
 				ofsP<<"B_"<<nyr+2 <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"B_"<<nyr+1 <<setw(6)     <<   "\t";		   //want probability B2015<B2014 - this will be < 1 if true
+				ofsP<<"B_"<<nyr+2<<"B_"<<nyr+1 <<setw(6)     <<   "\t";		   
 				ofsP<<"F_"<<nyr <<setw(6)     <<   "\t";
 				ofsP<<"F_"<<nyr+1 <<setw(6)     <<   "\t";
-				ofsP<<"F_" <<nyr+1<<"F_"<<nyr <<setw(6)     <<   "\t";		   //want probability F2014>F2013     - this will be > 1 if true
+				ofsP<<"F_" <<nyr+1<<"F_"<<nyr <<setw(6)     <<   "\t";		   
 				//MSY based ref points
 				ofsP<<"BMSY" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"BMSY" <<setw(6)     <<   "\t";		   //want probability B2015<BMSY - this will be < 1 if true
-				ofsP<<"B_"<<nyr+2<<"0.8BMSY" <<setw(6)     <<   "\t";		   //want probability B2015<0.8BMSY - this will be< 1 if true
-				ofsP<<"B_"<<nyr+2<<"0.4BMSY" <<setw(6)     <<   "\t";		   //want probability B2015<0.4BMSY - this will be < 1 if true
+				ofsP<<"B_"<<nyr+2<<"BMSY" <<setw(6)     <<   "\t";		   
+				ofsP<<"B_"<<nyr+2<<"0.8BMSY" <<setw(6)     <<   "\t";		 
+				ofsP<<"B_"<<nyr+2<<"0.4BMSY" <<setw(6)     <<   "\t";		   
 				ofsP<<"FMSY" <<setw(6)     <<   "\t";
-				ofsP<<"F_"<<nyr+1<<"FMSY"<<setw(6)     <<   "\t";		   //want probability F2014>F2013 - this will be > 1 if true
-				//Historical ref points "short"	 1956-2004
+				ofsP<<"F_"<<nyr+1<<"FMSY"<<setw(6)     <<   "\t";		   
+				//Historical ref points "short"	 
 				ofsP<<"Bmin" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"Bmin" <<setw(6)     <<   "\t";		   //want probability B2015<Bmin 
+				ofsP<<"B_"<<nyr+2<<"Bmin" <<setw(6)     <<   "\t";		  
 				ofsP<<"BAvg_S" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"BAvg_S" <<setw(6)     <<   "\t";		   //want probability B2015<Bavg  
+				ofsP<<"B_"<<nyr+2<<"BAvg_S" <<setw(6)     <<   "\t";		
 				ofsP<<"FAvg_S" <<setw(6)     <<   "\t";
 				ofsP<<"F_"<<nyr+1<<"FAvg_S"<<setw(6)     <<   "\t";
-				//Historical ref points "long"	 1956-2012
+				//Historical ref points "long"	 
 				ofsP<<"BAvg_L" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"BAvg_L" <<setw(6)     <<   "\t";		   //want probability B2015<Bavg - this will be < 1 if true
+				ofsP<<"B_"<<nyr+2<<"BAvg_L" <<setw(6)     <<   "\t";		
 				ofsP<<"FAvg_L" <<setw(6)     <<   "\t";
-				ofsP<<"F_"<<nyr+ 1<< "FAvg_L\n";		   //want probability F2014>F2013 - this will be > 1 if true
+				ofsP<<"F_"<<nyr+ 1<< "FAvg_L\n";	
 				
 	   		}
 	   
@@ -6378,14 +6386,14 @@ FUNCTION void projection_model_dd(const double& tac);
 			<<p_bt(pyr)/(0.4*bmsy) <<setw(6)     <<   "\t"		   
 			<<fmsy <<setw(6)     <<   "\t"
 			<<p_ft(pyr-1)/fmsy <<setw(6)     <<   "\t"		   
-			//Historical ref points "short"	 1956-2004
+			//Historical ref points "short"	 
 			<<minb <<setw(6)     <<   "\t"
 			<<p_bt(pyr)/minb <<setw(6)     <<   "\t"		   
 			<<meanbshort <<setw(6)     <<   "\t"
 			<<p_bt(pyr)/meanbshort <<setw(6)     <<   "\t"		   
 			<<meanfshort <<setw(6)     <<   "\t"
 			<<p_ft(pyr-1)/meanfshort<<setw(6)     <<   "\t"		  
-			 //Historical ref points "long"	 1956-2012
+			 //Historical ref points "long"	 
 			<<meanblong <<setw(6)     <<   "\t"
 			<<p_bt(pyr)/meanblong <<setw(6)     <<   "\t"		   
 			<<meanflong <<setw(6)     <<   "\t"

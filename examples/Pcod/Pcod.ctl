@@ -30,14 +30,14 @@
 ##     -5 : logistic_normal, AR2
 ## ------------------------------------------------------------------------- ##
 ## Number of columns == na_gears. One column for each gear with age data
-   1  3      ## Gear Index
-   1  1     ## Likelihood type
-   0.0 0.0   ## Minimum proportion for aggregation & tail compression
-   0.0 0.0  ## Small constant to add to comps & renormalize
-   -1  -1      ## phase for log_age_tau2 estimation.
-   -3  -3    ## phase for phi1 estimation: bounded (-1,1) AR1
-  -2  -2    ## phase for phi2 estimation: bounded (0,1)  AR2
-  -2  -2   ## phase for degrees of freedom for student T.
+   1       ## Gear Index  #If no age comp data, one number needs to be here
+   1       ## Likelihood type #If no age comp data, one number needs to be here
+   0.0   ## Minimum proportion for aggregation & tail compression  #If no age comp data, one number needs to be here
+   0.0   ## Small constant to add to comps & renormalize #If no age comp data, one number needs to be here
+   -1        ## phase for log_age_tau2 estimation. #If no age comp data, one number needs to be here
+   -3     ## phase for phi1 estimation: bounded (-1,1) AR1 #If no age comp data, one number needs to be here
+  -2     ## phase for phi2 estimation: bounded (0,1)  AR2 #If no age comp data, one number needs to be here
+  -2     ## phase for degrees of freedom for student T. #If no age comp data, one number needs to be here
   -12345                 ## int check (-12345), one value only, not one for each gear
 ## ------------------------------------------------------------------------- ##
 ##
@@ -58,18 +58,19 @@
 ##      sig=0.05 0.10 0.15 0.20 0.30 0.40 0.50                               ##
 ##      wt =200. 50.0 22.2 12.5 5.56 3.12 2.00                               ##
 ## ------------------------------------------------------------------------- ##
-  6   6   6    # 1  -selectivity type ivector(isel_type) for gear
-  1.5 1.5 1.5     # 2  -Age/length at 50% selectivity (logistic)
-  0.0001 0.0001 0.0001     # 3  -STD at 50% selectivity (logistic)
-   0   0   0    # 4  -No. of age nodes for each gear (0=ignore)
-   0   0   0    # 5  -No. of year nodes for 2d spline(0=ignore)
-  -1   -1   -1    # 6  -Phase of estimation (-1 for fixed) If neg number, it reflects a mirroring of another gear's selectivity.
-  150.0 200.0 200.0  # 7  -Penalty wt for 2nd differences w=1/(2*sig^2)
-  50.0  200.0 200.0  # 8  -Penalty wt for dome-shaped w=1/(2*sig^2)
-  12.5 12.5 12.5  # 9  -Penalty wt for time-varying selectivity
- 1    1    1    #10  -n_sel_blocks (number of selex blocks)
+  6   6   6    6 # 1  -selectivity type ivector(isel_type) for gear
+  1.5 1.5 1.5   1.5   # 2  -Age/length at 50% selectivity (logistic)
+  0.0001 0.0001 0.0001  0.0001     # 3  -STD at 50% selectivity (logistic)
+   0   0   0 0   # 4  -No. of age nodes for each gear (0=ignore)
+   0   0   0  0  # 5  -No. of year nodes for 2d spline(0=ignore)
+  -1   -1   -1  -1  # 6  -Phase of estimation (-1 for fixed) If neg number, it reflects a mirroring of another gear's selectivity.
+  150.0 200.0 200.0 200.0  # 7  -Penalty wt for 2nd differences w=1/(2*sig^2)
+  50.0  200.0 200.0 200.0  # 8  -Penalty wt for dome-shaped w=1/(2*sig^2)
+  12.5 12.5 12.5 12.5  # 9  -Penalty wt for time-varying selectivity
+ 1    1    1  1  #10  -n_sel_blocks (number of selex blocks)
 ## ------------------------------------------------------------------------- ##
 ## Start year of each time block: 1 row for each gear
+1956
 1956
 1956
 1956
@@ -82,10 +83,10 @@
 ##       2 - random walk in q                                                ##
 ## Need one column for each survey.                                          ##
 ## ------------------------------------------------------------------------- ##
-2                     # -number of surveys (nits)
-1    1                # -prior type (see legend above)
--5.847191  -3.626844  # -prior log(mean)
-0.2 0.2               # -prior sd
+3                     # -number of surveys (nits)
+1    1     1           # -prior type (see legend above)
+-5.847191  -3.626844 -3.626844  # -prior log(mean)
+0.2 0.2 0.2              # -prior sd
 ## ------------------------------------------------------------------------- ##
 ##
 ## CONTROLS FOR FITTING TO MEAN WEIGHT DATA

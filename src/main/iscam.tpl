@@ -563,7 +563,7 @@ DATA_SECTION
 	// | nMeanWtNobs - vector :: number of annual mean weight observations in each series
   	init_int nMeanWt;
 	init_ivector nMeanWtNobs(1,nMeanWt);
-	init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,8);
+	init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7);
 
 	LOC_CALCS
 		/*
@@ -4594,7 +4594,7 @@ FUNCTION void calcReferencePoints()
 	if(delaydiff){
 
 
-		LOG<<"MSY quantitied not defined for Delay difference model"<<'\n';
+		LOG<<"MSY quantities not defined for Delay difference model"<<'\n';
 		if(!mceval_phase()) run_FRPdd();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
 		
 	}

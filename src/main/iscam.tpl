@@ -6106,7 +6106,8 @@ FUNCTION void projection_model(const double& tac);
   FOR THE ARROWTOOTH ASSESSMENT ONLY WRITE OUT THE FIRST GEAR
   */
 
-//write_proj_headers and write_proj_output are in utilities.h 
+//write_proj_headers and write_proj_output are in include/utilities.h 
+//ofsmcmc object is in libs/utilities.cpp
   if(mceval_phase()){
    if(nf==1 && runNo==1){
     LOG<<"Running MCMC projections\n";

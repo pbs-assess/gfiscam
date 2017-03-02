@@ -124,7 +124,7 @@
 #### -00.0------------------------------------------------------------------------ ##
 ## ABUNDANCE INDICES - A RAGGED ARRAY: (1,nit,1,nit_nobs,1,5)                ##
 ## ------------------------------------------------------------------------- ##
-3           # Number of abundance series         int(nit)  #2=Hecate Strait Multispecies Assemblage Survey; 3=Hecate Strait Synoptic Trawl Survey; 4=Commercial CPUE
+3           # Number of abundance series         int(nit)
 11 5 40    # Number of observations in series   ivector(nit_nobs(1,nit))
 2 2 2     # Survey type (see key below)        ivector(survey_type(1,nit))
 ## 1 = survey is proportional to vulnerable numbers
@@ -133,6 +133,7 @@
 ## wt below is 1/relerr
 ##                                        survey
 ## iyr     index(it) gear area group sex  wt    timing
+# CPUE
 1984	1142.4	2	1	1	0	3.2997	0											
 1987	3875.7	2	1	1	0	2.8592	0											
 1989	4102.8	2	1	1	0	2.3506	0											

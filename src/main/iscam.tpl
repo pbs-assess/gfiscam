@@ -3600,7 +3600,7 @@ FUNCTION calcAnnualMeanWeight_deldiff
 
   		//LOG<<"annual_mean_weight is "<<annual_mean_weight<<'\n';
 		//LOG<<"obs_annual_mean_weight is "<<obs_annual_mean_weight<<'\n';
-  	//	LOG<<"**** Ok after calcAnnualMeanWeight_deldiff ****"<<'\n';
+  	        //LOG<<"**** Ok after calcAnnualMeanWeight_deldiff ****"<<'\n';
 		//exit(1);
 	}
 
@@ -4557,7 +4557,7 @@ FUNCTION void calcReferencePoints()
 	}
  	// Data-type version of MSY-based reference points.
 	for( ig = 1; ig <= n_ags; ig++ ) {
-    fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
+                fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
 		M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
 		M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
 	}
@@ -4587,16 +4587,17 @@ FUNCTION void calcReferencePoints()
 		//LOG<<"Old Msy class\n;
     //LOG<<c_msy<<'\n';
 	}
-	}
+	} //end if !delaydiff
+	
 	/*RF added a test of ref point calcs - runs out the model for 100 y and calculates fmsy and bmsy conditional on model parameters and data
 	  Just run once in last MPD phase. Turn off after testing.*/
 	//if(!mceval_phase()) run_FRP();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
+	
 	if(delaydiff){
 
-
-		LOG<<"MSY quantities not defined for Delay difference model"<<'\n';
-		if(!mceval_phase()) run_FRPdd();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
-		
+		//LOG<<"MSY quantities not defined for Delay difference model"<<'\n';
+		//if(!mceval_phase()) run_FRPdd();
+		run_FRPdd();
 	}
 
 	if(verbose){
@@ -5449,10 +5450,6 @@ REPORT_SECTION
 		LOG<<"Finished calcReferencePoints\n";
 		//exit(1);
 		REPORT(bo);
-		//REPORT(fmsy);
-		//REPORT(msy);
-		//REPORT(bmsy);
-		//AQUI
 		REPORT(fmsy);
 		REPORT(msy);
 		REPORT(bmsy);
@@ -5929,7 +5926,7 @@ FUNCTION mcmc_output
   for(ii=1;ii<=n_tac;ii++){
     LOG<<ii<<" "<<tac(ii)<<'\n';
     if(!delaydiff) projection_model(tac(ii)); //TO DO: Add historical ref points
-    if(delaydiff) projection_model_dd(tac(ii)); 
+    if(delaydiff) projection_model_dd(tac(ii)); //TO DO: update with msy and b0-based reference points
   }
  }
   
@@ -6622,7 +6619,6 @@ FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, d
 	ye.initialize();
 	be.initialize();
 	
-	
 	dvariable rec_a;
 	dvariable rec_b;
 	
@@ -6676,22 +6672,15 @@ FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, d
 				bmsy=be(k);
 			} 
 		}
-	  	
 	
 	LOG<<"Slow msy calcs"<<'\n';
-	LOG<<"msy"<<msy<<'\n';
-	LOG<<"fmsy"<<fmsy<<'\n';
-	LOG<<"bmsy"<<bmsy<<'\n'; 
+	LOG<<"msy="<<msy<<'\n';
+	LOG<<"fmsy="<<fmsy<<'\n';
+	LOG<<"bmsy="<<bmsy<<'\n'; 
 	
 	
-	
-	
-	
-
-
-
-
 //RF's function for calling slow msy routine to test ref points
+//Called by calcReferencePoints if turned on
 FUNCTION void run_FRP()
 	//Reference points
 	if(last_phase()){
@@ -6727,13 +6716,18 @@ FUNCTION void run_FRP()
 	ofsr<<"Ye"<<'\n'<<Ye<<'\n';	
 	ofsr<<"Be"<<'\n'<<Be<<'\n';	
 
+//RF's function for calling slow msy routine to test ref points -- currently the only ref points implemented for delay difference model
+//Called by calcReferencePoints
 FUNCTION void run_FRPdd()
-	
-
 	
 	if(n_ags>1){
 		LOG<<"MSY quantities not defined for n_ags>1"<<'\n'; 
 	}else{
+	
+	if(last_phase()){
+		  LOG<<"\n*********Getting reference points the slow way for delay difference model************\n";
+		  LOG<<"*******************************************\n\n";
+	}
 
 	dvector ftest(1,101);
 	ftest.fill_seqadd(0,0.01);
@@ -6741,9 +6735,6 @@ FUNCTION void run_FRPdd()
 	int Nf;
 	Nf=size_count(ftest);
 	
-
-		
-
 	for(int g=1; g<=ngroup; g++)
 	{
 		//dvector Ye(1,Nf); // i think this should be a matrix by group and gear
@@ -6754,31 +6745,12 @@ FUNCTION void run_FRPdd()
 		dvector ye(1,Nf); // i think this should be a matrix by group and gear
 		dvector be(1,Nf);
 
-		//double fmsy;
-		//double msy;
-		//double bmsy;
-
 		ddiff_msy(ftest, ye, be, msy(g,1), fmsy(g,1), bmsy(g));
-
-		//Fmsy=fmsy;
-		//MSY=msy;
-		//Bmsy=bmsy;
-		//Ye(g)=ye(g);
-		//Be(g)=be(g);
+		
 	}
 
-
-	}
+   }
 	
-	
-	
-	
-
-
-	
-	
-
-
 FINAL_SECTION
 	LOG<<"\n\nNumber of function evaluations: "<<nf<<'\n';
 

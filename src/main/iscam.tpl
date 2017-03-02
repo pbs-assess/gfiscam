@@ -4479,114 +4479,112 @@ FUNCTION void calcReferencePoints()
   	*/
   	if(!delaydiff){
 
-	int kk,ig;
-	
-	
+		int kk,ig;
 
-	// | (1) : Matrix of selectivities for directed fisheries.
-	// |     : log_sel(gear)(n_ags)(year)(age)
-	// |     : ensure dAllocation sums to 1.
-	dvector d_ak(1,nfleet);
-	d3_array  d_V(1,n_ags,1,nfleet,sage,nage);
-	dvar3_array  dvar_V(1,n_ags,1,nfleet,sage,nage);
-	for(k=1;k<=nfleet;k++)
-	{
-		kk      = nFleetIndex(k);
-		d_ak(k) = dAllocation(kk);
+		// | (1) : Matrix of selectivities for directed fisheries.
+		// |     : log_sel(gear)(n_ags)(year)(age)
+		// |     : ensure dAllocation sums to 1.
+		dvector d_ak(1,nfleet);
+		d3_array  d_V(1,n_ags,1,nfleet,sage,nage);
+		dvar3_array  dvar_V(1,n_ags,1,nfleet,sage,nage);
+		for(k=1;k<=nfleet;k++)
+		{
+			kk      = nFleetIndex(k);
+			d_ak(k) = dAllocation(kk);
+			for(ig=1;ig<=n_ags;ig++)
+			{
+				d_V(ig)(k) = value( exp(log_sel(kk)(ig)(nyr)) );
+				dvar_V(ig)(k) =( exp(log_sel(kk)(ig)(nyr)) );
+
+			}
+		}
+		d_ak /= sum(d_ak);
+
+		// | (2) : Average weight and mature spawning biomass for reference years
+		// |     : dWt_bar(1,n_ags,sage,nage)
+		dmatrix fa_bar(1,n_ags,sage,nage);
+		dmatrix  M_bar(1,n_ags,sage,nage);
 		for(ig=1;ig<=n_ags;ig++)
 		{
-			d_V(ig)(k) = value( exp(log_sel(kk)(ig)(nyr)) );
-			dvar_V(ig)(k) =( exp(log_sel(kk)(ig)(nyr)) );
+			fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
+			M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
+			M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
+		}
+
+		// | (3) : Initial guess for fmsy for each fleet
+		// |     : set fmsy = 2/3 of M divided by the number of fleets
+		fmsy.initialize();
+		fall.initialize();
+		msy.initialize();
+		bmsy.initialize();
+
+		dvar_vector dftry(1,nfleet);
+		dftry  = 0.6/nfleet * mean(M_bar);
+
+		// | (4) : Instantiate msy class for each stock
+		for(g=1;g<=ngroup;g++)
+		{
+			double d_rho = d_iscamCntrl(13);
+
+			dvector d_mbar = M_bar(g);
+			dvector   d_wa = dWt_bar(g);
+			dvector   d_fa = fa_bar(g);
+
+			//Pointer to the base class
+			//rfp::referencePoints<dvariable,dvar_vector,dvar_matrix> * pMSY; 
+			//pMSY = new rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array>
+			//(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
+			//dvar_vector dfmsy = pMSY->getFmsy(dftry);
+			//delete pMSY;
+
+
+			//LOG<<"Initial Fe "<<dftry<<'\n';
+			rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
+			c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
+
+			dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak);
+			bo  = c_MSY.getBo();
+			dvariable dbmsy = c_MSY.getBmsy();
+			dvar_vector dmsy = c_MSY.getMsy();
+			bmsy(g) = value(dbmsy);
+			msy(g)  = value(dmsy);
+			fmsy(g) = value(dfmsy);
+			//c_MSY.print();	    //RF turned this off
+
 
 		}
-	}
-	d_ak /= sum(d_ak);
+		// Data-type version of MSY-based reference points.
+		for( ig = 1; ig <= n_ags; ig++ ) {
+			fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
+			M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
+			M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
+		}
+		for( g = 1; g <= ngroup; g++ ) {
+			double d_ro  = value(ro(g));
+			double d_h   = value(steepness(g));
+			double d_rho = d_iscamCntrl(13);
+			rfp::msy<double,dvector,dmatrix,d3_array>
+			c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
+			fmsy(g) = c_dMSY.getFmsy(value(dftry));
+			bo = c_dMSY.getBo();
+			bmsy(g) = c_dMSY.getBmsy();
+			msy(g)  = c_dMSY.getMsy();
+			//c_dMSY.print();    RF turned this off
+			dvector finit(1,nfleet);
+			finit=fmsy(g);
+			c_dMSY.checkDerivatives(finit);
+			//LOG<<"group \t"<<g<<'\n';
+			//exit(1);
 
-	// | (2) : Average weight and mature spawning biomass for reference years
-	// |     : dWt_bar(1,n_ags,sage,nage)
-	dmatrix fa_bar(1,n_ags,sage,nage);
-	dmatrix  M_bar(1,n_ags,sage,nage);
-	for(ig=1;ig<=n_ags;ig++)
-	{
-		fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
-		M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
-		M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
-	}
-	
-	// | (3) : Initial guess for fmsy for each fleet
-	// |     : set fmsy = 2/3 of M divided by the number of fleets
-	fmsy.initialize();
-	fall.initialize();
-	msy.initialize();
-	bmsy.initialize();
-
-	dvar_vector dftry(1,nfleet);
-	dftry  = 0.6/nfleet * mean(M_bar);
-	
-	// | (4) : Instantiate msy class for each stock
-	for(g=1;g<=ngroup;g++)
-	{
-		double d_rho = d_iscamCntrl(13);
-
-		dvector d_mbar = M_bar(g);
-		dvector   d_wa = dWt_bar(g);
-		dvector   d_fa = fa_bar(g);
-
-		//Pointer to the base class
-		//rfp::referencePoints<dvariable,dvar_vector,dvar_matrix> * pMSY; 
-		//pMSY = new rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array>
-		//(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
-		//dvar_vector dfmsy = pMSY->getFmsy(dftry);
-		//delete pMSY;
-		
-
-		//LOG<<"Initial Fe "<<dftry<<'\n';
-		rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
-		c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
-
-		dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak);
-		bo  = c_MSY.getBo();
-		dvariable dbmsy = c_MSY.getBmsy();
-		dvar_vector dmsy = c_MSY.getMsy();
-		bmsy(g) = value(dbmsy);
-		msy(g)  = value(dmsy);
-		fmsy(g) = value(dfmsy);
-		//c_MSY.print();	    //RF turned this off
-
-		
-	}
- 	// Data-type version of MSY-based reference points.
-	for( ig = 1; ig <= n_ags; ig++ ) {
-                fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
-		M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
-		M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
-	}
-	for( g = 1; g <= ngroup; g++ ) {
-		double d_ro  = value(ro(g));
-		double d_h   = value(steepness(g));
-		double d_rho = d_iscamCntrl(13);
-		rfp::msy<double,dvector,dmatrix,d3_array>
-		c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
-		fmsy(g) = c_dMSY.getFmsy(value(dftry));
-		bo = c_dMSY.getBo();
-		bmsy(g) = c_dMSY.getBmsy();
-		msy(g)  = c_dMSY.getMsy();
-		//c_dMSY.print();    RF turned this off
-		dvector finit(1,nfleet);
-		finit=fmsy(g);
-		c_dMSY.checkDerivatives(finit);
-		//LOG<<"group \t"<<g<<'\n';
-		//exit(1);
-
-		Msy c_msy(d_ro,d_h,M_bar,d_rho,dWt_bar,fa_bar,&d_V);
-		fmsy(g) = 0.1;
-		c_msy.get_fmsy(fmsy(g));
-		bo = c_msy.getBo();
-		bmsy(g) = c_msy.getBmsy();
-		msy(g) = c_msy.getMsy();
-		//LOG<<"Old Msy class\n;
-    //LOG<<c_msy<<'\n';
-	}
+			Msy c_msy(d_ro,d_h,M_bar,d_rho,dWt_bar,fa_bar,&d_V);
+			fmsy(g) = 0.1;
+			c_msy.get_fmsy(fmsy(g));
+			bo = c_msy.getBo();
+			bmsy(g) = c_msy.getBmsy();
+			msy(g) = c_msy.getMsy();
+			//LOG<<"Old Msy class\n;
+	    //LOG<<c_msy<<'\n';
+		}
 	} //end if !delaydiff
 	
 	/*RF added a test of ref point calcs - runs out the model for 100 y and calculates fmsy and bmsy conditional on model parameters and data
@@ -4595,8 +4593,6 @@ FUNCTION void calcReferencePoints()
 	
 	if(delaydiff){
 
-		//LOG<<"MSY quantities not defined for Delay difference model"<<'\n';
-		//if(!mceval_phase()) run_FRPdd();
 		run_FRPdd();
 	}
 
@@ -5461,7 +5457,7 @@ REPORT_SECTION
 		  for(ii=1;ii<=n_tac;ii++){
         //LOG<<ii<<" "<<tac(ii)<<'\n';
 		   	if (!delaydiff) projection_model(tac(ii));
-		   	//if(delaydiff) 	projection_model_dd(tac(ii));
+		   	if(delaydiff) 	projection_model_dd(tac(ii));
 		 	}
 		 }
 		 if(n_ags>1){
@@ -5764,6 +5760,7 @@ FUNCTION mcmc_output
   }
 
   // Leading parameters & reference points
+  //Delay difference/Age-structured switch is in calcReferencePoints
   calcReferencePoints();
 
   // Append the values to the files

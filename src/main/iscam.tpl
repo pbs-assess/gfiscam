@@ -1564,7 +1564,7 @@ PARAMETER_SECTION
 
 	vector snat(1,n_gs); 	//natural survival
 	vector sfished(1,n_ags); 	//natural survival
-  	vector wbar(1,n_gs); 
+  vector wbar(1,n_gs); 
 	matrix numbers(1,n_ags,syr,nyr+1);
 	matrix biomass(1,n_ags,syr,nyr+1);//RF added biomass in the delay difference model - in the ASM this is set to spawning biomass
 	matrix vbcom(1,n_ags,syr,nyr); 		//RF added vulnerable biomass in gear 1 - commercial fishery
@@ -1897,7 +1897,8 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 						// log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(bpar)) );
 						p1 = mfexp(sel_par(k,bpar,1));
 						p2 = mfexp(sel_par(k,bpar,2));
-						log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny );
+						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny );
+						log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2)+tiny );
 					}
 					break;
 				
@@ -1906,7 +1907,8 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 					p2 = mfexp(sel_par(k,1,2));
 					for(i=syr; i<=nyr; i++)
 					{
-						log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2) );
+						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2) );
+						log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2) );
 						// log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(1)) );
 					}
 					break;
@@ -1980,7 +1982,8 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 					for(i=syr; i<=nyr; i++)
 					{
 						tmp2(i) = p3*d3_wt_dev(ig)(i);
-						log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny ) + tmp2(i);
+						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny ) + tmp2(i);
+						log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2)+tiny ) + tmp2(i);
 					}
 					break;
 					
@@ -1997,8 +2000,8 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 
 						dvector len = pow(d3_wt_avg(ig)(i)/d_a(ig),1./d_b(ig));
 
-						log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(len,p1,p2) );
-						//log_sel(kgear)(ig)(i) = log( plogis(len,p1,p2) );
+						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(len,p1,p2) );
+						log_sel(kgear)(ig)(i) = log( plogis(len,p1,p2) );
 					}	
 					break;
 					
@@ -6495,6 +6498,8 @@ GLOBALS_SECTION
 	#include "../../include/multinomial.h"
   #include "../../include/utilities.h"
   #include "../../include/Logger.h"
+  //#include "../../include/statsLib.h"
+
 
 	time_t start,finish;
 	long hour,minute,second;
@@ -6507,6 +6512,45 @@ GLOBALS_SECTION
 	// Variables to store results from DIC calculations.
 	double dicNoPar = 0;
 	double dicValue = 0;
+
+
+
+	// Function templates for Plogis, that was driving martell nuts.
+
+	// Plogis distribution
+	// #include <plogis.cpp>
+	/*
+			template <typename T1>
+			T1 plogis(T1 *x, T1 *location, T1 *scale)
+			{
+			  T1 y = 1./(1.+mfexp((*location - *x) / *scale));
+			  return (y);
+			}  
+
+			template <typename T1, typename T2>
+			T1 plogis(T1 *x, T2 *location, T2 *scale)
+			{
+			  T1 y = 1./(1.+mfexp((*location - *x) / *scale));
+			  return (y);
+			}  
+
+			template <typename T1, typename T2>
+			T1 plogis(T1 x, T2 location, T2 scale)
+			{
+			  T1 y = 1./(1.+mfexp((location - x) / scale));
+			  return (y);
+			} 
+
+			template <typename T1, typename T2, typename T3>
+			T1 plogis(T2 x, T3 location, T3 scale)
+			{
+			  T1 y = 1./(1.+mfexp((location - x) / scale));
+			  //cout<<typeid(y)<<endl;
+			  return (y);
+			} 
+	*/
+
+
 
  //Extra test functions by RF to test ref points
  //Called by run_FRP() in calcReferencePoints

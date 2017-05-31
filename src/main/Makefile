@@ -42,7 +42,9 @@ $(EXEC): $(OBJECTS)
 	$(LINKER) $(LINKERFLAGS) -o $@ $^ $(LIBOBJS) -L$(ADMB)/lib $(LINKERLIBS)
 	@if [ ! -d "$(BINDIR)" ]; then mkdir -p $(BINDIR); fi
 	-cp $(EXEC) $(BINDIR)
-	-cp $(EXEC).exe $(BINDIR)
+	-mv $(EXEC).exe $(BINDIR)
+	-mv $(EXEC).cpp $(BINDIR)
+	-mv $(EXEC).htp $(BINDIR)
 
 $(EXEC).cpp:
 	$(ADMB)/bin/tpl2cpp $(EXEC)

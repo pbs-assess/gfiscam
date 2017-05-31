@@ -6467,35 +6467,35 @@ FUNCTION void runMSE()
 	// LOG<<"DONE\n";
 
 TOP_OF_MAIN_SECTION
-	time(&start);
-	arrmblsize = 50000000;
-	gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e8);
-	gradient_structure::set_CMPDIF_BUFFER_SIZE(1.e7);
-	gradient_structure::set_MAX_NVAR_OFFSET(5000);
-	gradient_structure::set_NUM_DEPENDENT_VARIABLES(5000);
+  time(&start);
+  arrmblsize = 50000000;
+  gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e8);
+  gradient_structure::set_CMPDIF_BUFFER_SIZE(1.e7);
+  gradient_structure::set_MAX_NVAR_OFFSET(5000);
+  gradient_structure::set_NUM_DEPENDENT_VARIABLES(5000);
 
 GLOBALS_SECTION
-	/**
-	\def REPORT(object)
-	Prints name and value of \a object on ADMB report %ofstream file.
-	*/
-	#undef REPORT
-	#define REPORT(object) report << #object "\n" << object << "\n";
+  /**
+  \def REPORT(object)
+  Prints name and value of \a object on ADMB report %ofstream file.
+  */
+  #undef REPORT
+  #define REPORT(object) report << #object "\n" << object << "\n";
 
-	#undef TINY
-	#define TINY 1.e-08
+  #undef TINY
+  #define TINY 1.e-08
 
-	#undef NA
-	#define NA -99.0
+  #undef NA
+  #define NA -99.0
 
-	#include <time.h>
-	#include <string.h>
+  #include <time.h>
+  #include <string.h>
   #include "../../include/baranov.h"
   #include "../../include/LogisticNormal.h"
   #include "../../include/LogisticStudentT.h"
-	#include "../../include/msy.h"
+  #include "../../include/msy.h"
   #include "../../include/msy.hpp"
-	#include "../../include/multinomial.h"
+  #include "../../include/multinomial.h"
   #include "../../include/utilities.h"
   #include "../../include/Logger.h"
 
@@ -6511,248 +6511,246 @@ GLOBALS_SECTION
   double dicNoPar = 0;
   double dicValue = 0;
 
-  //Extra test functions by RF to test ref points
-  //Called by run_FRP() in calcReferencePoints
-FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, double& fmsy, double& bmsy )
-	//THIS CODE VERIFIES THAT THE EQM CODE IS RETURNING CORRECT REF POINTS
-	int i;
-	int j;
-	int k;
-	int t;
-	int NF=size_count(ftest);
-	int Nyr=100; //number of years to run out the model
-	ye.initialize();
-	be.initialize();
-	
-	double sa;
-	dvector za(sage,nage); za.initialize();
-	dvector saf(sage,nage); saf.initialize();
-	dvector lx(sage,nage); lx.initialize();
-	dvector vd(sage,nage); vd.initialize();
-	dvector avg_wt(sage,nage); avg_wt.initialize(); 
-	dvector avg_fec(sage,nage);
-	dvector  M_bar(sage,nage);
+//Extra test functions by RF to test ref points
+//Called by run_FRP() in calcReferencePoints
+FUNCTION void slow_msy(dvector& ftest,
+                       dvector& ye,
+                       dvector& be,
+                       double& msy,
+                       double& fmsy,
+                       double& bmsy)
+  //THIS CODE VERIFIES THAT THE EQM CODE IS RETURNING CORRECT REF POINTS
+  int i;
+  int j;
+  int k;
+  int t;
+  int NF = size_count(ftest);
+  int Nyr = 100; //number of years to run out the model
+  ye.initialize();
+  be.initialize();
+  double sa;
+  dvector za(sage, nage);
+  za.initialize();
+  dvector saf(sage, nage);
+  saf.initialize();
+  dvector lx(sage, nage);
+  lx.initialize();
+  dvector vd(sage, nage);
+  vd.initialize();
+  dvector avg_wt(sage, nage);
+  avg_wt.initialize();
+  dvector avg_fec(sage, nage);
+  dvector M_bar(sage, nage);
 
-        avg_wt = dWt_bar(1);
-	avg_fec = elem_prod(dWt_bar(1),ma(1));
-	vd = exp(value(log_sel(1)(1)(nyr)));
-	
-	double Ro=value(ro(1));
-	//double CR=value(kappa(1));
-	double Mbar;
-	M_bar  = colsum(value(M(1).sub(pf_cntrl(3),pf_cntrl(4)))); //mean across years
-	M_bar /= pf_cntrl(4)-pf_cntrl(3)+1;
-	Mbar = mean(M_bar); //mean across ages
-	
-	dmatrix Nn(1,Nyr+1,sage,nage);			//Numbers at age
-	dmatrix Ff(1,Nyr+1,sage,nage);			//Age-specific fishing mortality
-	dmatrix Zz(1,Nyr+1,sage,nage);
-	dvector Ss(sage,nage);
-	dmatrix Cc(1,Nyr,sage,nage);
-	dvector Ssb (1,Nyr+1);
-	dvector Bb(1,Nyr+1);
-	dvector Y(1,Nyr);				//predicted catch biomass
-	
-	//dvector finaly(1,NF);
-	//dvector finalb(1,NF);
-	
-	//unfished
-	sa=mfexp(-Mbar);
-	lx(sage)=1.0;
-	for(i=(sage+1); i<=nage; i++)
-		lx(i)=lx(i-1)*sa;
-	lx(nage)/=(1.-sa); 
-		
-	//Initialize model - same for all F scenarios
-	for(j=sage;j<=nage;j++) Nn(1,j)=Ro*lx(j);
-	Ssb(1)= sum(elem_prod(Nn(1),avg_fec));
-	     
-	for(k=1;k<=NF;k++){ 
-		
-		za=(Mbar+ftest(k)*vd);
-		Ss=mfexp(-za);
-		
-		/*
-		LOG<<"Nn "<<'\n'<<Nn(1)<<'\n';
-		LOG<<"SS "<<'\n'<<Ss<<'\n';
-		LOG<<"SSb "<<'\n'<<Ssb(1)<<'\n';
-		LOG<<"wt "<<avg_wt<<'\n';
-		*/
-			
-		for(t=1;t<=Nyr;t++){
-			
-			Nn(t+1)(sage+1,nage)=++elem_prod(Nn(t)(sage,nage-1),Ss(sage,nage-1));
-			Nn(t+1,nage)+=Nn(t,nage)*Ss(nage);
-			if(t==1) Nn(t+1)(sage)=Ro;
-			if(t>1) Nn(t+1)(sage)=value(so(1))*Ssb(t-1)/(1.+value(beta(1))*Ssb(t-1));
-			Ssb(t+1)= sum(elem_prod(Nn(t+1),avg_fec));
-			
-			//catch
-			for(j=sage;j<=nage;j++) Cc(t,j) = ((ftest(k)*vd(j))/za(j))*(1.-exp(-(za(j))))*Nn(t,j)*avg_wt(j);
-			Y(t)=sum(Cc(t));
-		}//end t
-		
-	 ye(k)=Y(Nyr);
-	 be(k)=Ssb(Nyr);
-	} //end k
-	
-	//ye =  finaly;
-	//be = finalb;
-	
-	//get MSY and Fmsy
-	msy=max(ye);
-	double mtest;
-	for(k=1; k<=NF; k++)
-	{
-		mtest=ye(k);
-		if(mtest==msy) fmsy=ftest(k);
-		if(mtest==msy) bmsy=be(k);
-	}
-	LOG<<"Ref points from running out model\n";;
-	LOG<<msy<<'\n';
-	LOG<<fmsy<<'\n';
-	LOG<<bmsy<<'\n';
+  avg_wt = dWt_bar(1);
+  avg_fec = elem_prod(dWt_bar(1), ma(1));
+  vd = exp(value(log_sel(1)(1)(nyr)));
 
+  double Ro = value(ro(1));
+  //double CR = value(kappa(1));
+  double Mbar;
+  M_bar = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4)))); //mean across years
+  M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
+  Mbar = mean(M_bar); //mean across ages
 
-FUNCTION void ddiff_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, double& fmsy, double& bmsy )
-	
-	int k ;
-	int NF=size_count(ftest);
-	ye.initialize();
-	be.initialize();
-	
-	dvariable rec_a;
-	dvariable rec_b;
-	
-	dvariable M;
+  dmatrix Nn(1, Nyr + 1, sage, nage); //Numbers at age
+  dmatrix Ff(1, Nyr + 1, sage, nage); //Age-specific fishing mortality
+  dmatrix Zz(1, Nyr + 1, sage, nage);
+  dvector Ss(sage, nage);
+  dmatrix Cc(1, Nyr, sage, nage);
+  dvector Ssb(1, Nyr + 1);
+  dvector Bb(1, Nyr + 1);
+  dvector Y(1, Nyr); //predicted catch biomass
 
-	//double M = value(m);
-	rec_a=value(so(1));
-	rec_b=value(beta(1));
+  //dvector finaly(1,NF);
+  //dvector finalb(1,NF);
 
-	
-	//int f,g,h,ih,gs;
+  //unfished
+  sa = mfexp(-Mbar);
+  lx(sage) = 1.0;
+  for(i = (sage + 1); i <= nage; i++){
+    lx(i)=lx(i-1)*sa;
+  }
+  lx(nage) /= (1 - sa);
 
-	// Calculate equilibrium survivorship as function of FMSY
-	for(k=1; k<=NF; k++)
-	{
-		double se; //survival in equilibrium
-		double we; //average weight in equilibrium
-				
-			se = exp(-value(M_dd(1)(nyr)) - ftest(k));
-			we = (se*alpha_g(1)+wk(1) *(1.-se))/(1.-rho_g(1)*se);
-			
-			
-			be(k) = value(-1.*((-we + se*alpha_g(1) + se*rho_g(1)*we + wk(1)*rec_a*we)/(rec_b*(-we + se*alpha_g(1) + se*rho_g(1)*we)))); //Martell
-			
-			M = value(M_dd(1)(nyr));
-			
+  //Initialize model - same for all F scenarios
+  for(j = sage; j <= nage; j++){
+    Nn(1, j) = Ro * lx(j);
+  }
+  Ssb(1) = sum(elem_prod(Nn(1), avg_fec));
+  for(k = 1; k <= NF; k++){
+    za = (Mbar + ftest(k) * vd);
+    Ss = mfexp(-za);
+    /*
+    LOG<<"Nn "<<'\n'<<Nn(1)<<'\n';
+    LOG<<"SS "<<'\n'<<Ss<<'\n';
+    LOG<<"SSb "<<'\n'<<Ssb(1)<<'\n';
+    LOG<<"wt "<<avg_wt<<'\n';
+    */
+    for(t = 1; t <= Nyr; t++){
+      Nn(t + 1)(sage + 1, nage) = ++elem_prod(Nn(t)(sage,nage-1),
+       Ss(sage, nage - 1));
+      Nn(t + 1, nage) += Nn(t, nage) * Ss(nage);
+      if(t == 1){
+        Nn(t + 1)(sage) = Ro;
+      }
+      if(t > 1){
+        Nn(t + 1)(sage) = value(so(1)) * Ssb(t - 1) /
+          (1 + value(beta(1)) * Ssb(t - 1));
+      }
+      Ssb(t + 1) = sum(elem_prod(Nn(t + 1), avg_fec));
+      //catch
+      for(j = sage; j <= nage; j++){
+        Cc(t, j) = ((ftest(k) * vd(j)) / za(j)) * (1.-exp(-(za(j)))) *
+          Nn(t, j) * avg_wt(j);
+      }
+      Y(t) = sum(Cc(t));
+    }
+    ye(k) = Y(Nyr);
+    be(k) = Ssb(Nyr);
+  }
+  //ye = finaly;
+  //be = finalb;
+  //get MSY and Fmsy
+  msy = max(ye);
+  double mtest;
+  for(k = 1; k <= NF; k++){
+    mtest = ye(k);
+    if(mtest == msy){
+      fmsy = ftest(k);
+    }
+    if(mtest == msy){
+      bmsy = be(k);
+    }
+  }
+  LOG<<"Ref points from running out model\n";;
+  LOG<<msy<<'\n';
+  LOG<<fmsy<<'\n';
+  LOG<<bmsy<<'\n';
 
-			ye(k)   = value(be(k)*(1.0-mfexp(-ftest(k)-M))*(ftest(k)/(ftest(k)+M)));
-		  	
+FUNCTION void ddiff_msy(dvector& ftest,
+                        dvector& ye,
+                        dvector& be,
+                        double& msy,
+                        double& fmsy,
+                        double& bmsy)
+  int k;
+  int NF = size_count(ftest);
+  ye.initialize();
+  be.initialize();
+  dvariable rec_a;
+  dvariable rec_b;
+  dvariable M;
 
-		  	if(ye(k)<0) ye(k)=0.;
-		  	if(be(k)<0) be(k)=0.;
+  //double M = value(m);
+  rec_a=value(so(1));
+  rec_b=value(beta(1));
+  //int f,g,h,ih,gs;
 
-	}
-		 
-	//LOG<<"ye"<<ye<<'\n';
-	//LOG<<"be"<<be<<'\n';
-	//LOG<<"ftest"<<ftest<<'\n';
-	//exit(1);
-	
-	double mtest;	
-	
-		msy=max(ye);
-			
-		for(k=1; k<=NF; k++)
-		{
-			mtest=ye(k);
-				
-			if(mtest==msy){
-				fmsy=ftest(k);
-				bmsy=be(k);
-			} 
-		}
-	
-	LOG<<"Slow msy calcs"<<'\n';
-	LOG<<"msy="<<msy<<'\n';
-	LOG<<"fmsy="<<fmsy<<'\n';
-	LOG<<"bmsy="<<bmsy<<'\n'; 
-	
-	
+  // Calculate equilibrium survivorship as function of FMSY
+  for(k = 1; k <= NF; k++){
+    double se; //survival in equilibrium
+    double we; //average weight in equilibrium
+    se = exp(-value(M_dd(1)(nyr)) - ftest(k));
+    we = (se*alpha_g(1)+wk(1) *(1.-se))/(1.-rho_g(1)*se);
+    be(k) = value(-1 * ((-we + se * alpha_g(1) + se * rho_g(1) * we +
+      wk(1) * rec_a * we)/(rec_b * (-we + se * alpha_g(1) + se *
+      rho_g(1) * we))));
+    M = value(M_dd(1)(nyr));
+    ye(k) = value(be(k) * (1.0 - mfexp(-ftest(k) - M)) * (ftest(k) /
+      (ftest(k) + M)));
+    if(ye(k) < 0){
+      ye(k) = 0;
+    }
+    if(be(k) < 0){
+      be(k) = 0;
+    }
+  }
+
+  //LOG<<"ye"<<ye<<'\n';
+  //LOG<<"be"<<be<<'\n';
+  //LOG<<"ftest"<<ftest<<'\n';
+  //exit(1);
+  double mtest;
+  msy = max(ye);
+  for(k = 1; k <= NF; k++){
+    mtest = ye(k);
+    if(mtest == msy){
+      fmsy = ftest(k);
+      bmsy = be(k);
+    }
+  }
+  LOG<<"Slow msy calcs"<<'\n';
+  LOG<<"msy = "<<msy<<'\n';
+  LOG<<"fmsy = "<<fmsy<<'\n';
+  LOG<<"bmsy = "<<bmsy<<'\n';
+
 //RF's function for calling slow msy routine to test ref points
 //Called by calcReferencePoints if turned on
 FUNCTION void run_FRP()
-	//Reference points
-	if(last_phase()){
-	  LOG<<"\n*********Getting reference points the slow way************\n";
-	  LOG<<"*******************************************\n\n";
-	}
-	dvector ftest(1,4001);
-	ftest.fill_seqadd(0,0.01);
-	ftest(1) =  21.7117; //option to put in a test value
-	int Nf;
-	Nf=size_count(ftest);
-	double Fmsy;
-	double MSY;
-	double Bmsy;
-	dvector Ye(1,Nf); //Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
-	dvector Be(1,Nf); //Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
-	double fmsy,msy,bmsy;
-	dvector ye(1,Nf);
-	dvector be(1,Nf);
+  //Reference points
+  if(last_phase()){
+    LOG<<"\n*********Getting reference points the slow way************\n";
+    LOG<<"*******************************************\n\n";
+  }
+  dvector ftest(1, 4001);
+  ftest.fill_seqadd(0, 0.01);
+  ftest(1) =  21.7117; //option to put in a test value
+  int Nf = size_count(ftest);
+  double Fmsy;
+  double MSY;
+  double Bmsy;
+  //Matrix for putting numerically derived equilibrium catches for
+  // calculating MSY and FMSY (in R)
+  dvector Ye(1,Nf);
+  //Matrix for putting numerically derived equilibrium catches for
+  // calculating MSY and FMSY (in R)
+  dvector Be(1,Nf);
+  double fmsy,msy,bmsy;
+  dvector ye(1, Nf);
+  dvector be(1, Nf);
 
-	slow_msy(ftest, ye, be, msy, fmsy, bmsy);
-	Fmsy=fmsy;
-	MSY=msy;
-	Bmsy=bmsy;
-	Ye=ye;
-	Be=be;
+  slow_msy(ftest, ye, be, msy, fmsy, bmsy);
+  Fmsy = fmsy;
+  MSY = msy;
+  Bmsy = bmsy;
+  Ye = ye;
+  Be = be;
 
-	ofstream ofsr("TEST_frp.rep");
-	ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
-	ofsr<<"MSY"<<'\n'<<MSY<<'\n';
-	ofsr<<"Bmsy"<<'\n'<<Bmsy<<'\n';
-	ofsr<<"ftest"<<'\n'<<ftest<<'\n';
-	ofsr<<"Ye"<<'\n'<<Ye<<'\n';	
-	ofsr<<"Be"<<'\n'<<Be<<'\n';	
+  ofstream ofsr("TEST_frp.rep");
+  ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
+  ofsr<<"MSY"<<'\n'<<MSY<<'\n';
+  ofsr<<"Bmsy"<<'\n'<<Bmsy<<'\n';
+  ofsr<<"ftest"<<'\n'<<ftest<<'\n';
+  ofsr<<"Ye"<<'\n'<<Ye<<'\n';
+  ofsr<<"Be"<<'\n'<<Be<<'\n';
 
-//RF's function for calling slow msy routine to test ref points -- currently the only ref points implemented for delay difference model
+//RF's function for calling slow msy routine to test ref points -- currently
+// the only ref points implemented for delay difference model
 //Called by calcReferencePoints
 FUNCTION void run_FRPdd()
-	
-	if(n_ags>1){
-		LOG<<"MSY quantities not defined for n_ags>1"<<'\n'; 
-	}else{
-	
-	if(last_phase()){
-		  LOG<<"\n*********Getting reference points the slow way for delay difference model************\n";
-		  LOG<<"*******************************************\n\n";
-	}
+  if(n_ags > 1){
+    LOG<<"MSY quantities not defined for n_ags > 1"<<'\n';
+  }else{
+    if(last_phase()){
+      LOG<<"\nGetting ref points the slow way for delay difference model\n";
+      LOG<<"*******************************************\n\n";
+    }
+    dvector ftest(1, 101);
+    ftest.fill_seqadd(0, 0.01);
 
-	dvector ftest(1,101);
-	ftest.fill_seqadd(0,0.01);
-	
-	int Nf;
-	Nf=size_count(ftest);
-	
-	for(int g=1; g<=ngroup; g++)
-	{
-		//dvector Ye(1,Nf); // i think this should be a matrix by group and gear
-		//Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
-		//dvector Be(1,Nf); // i think this should be a matrix by group
-		//Matrix for putting numerically derived equilibrium catches for calculating MSY and FMSY (in R)
-	
-		dvector ye(1,Nf); // i think this should be a matrix by group and gear
-		dvector be(1,Nf);
+    int Nf = size_count(ftest);
 
-		ddiff_msy(ftest, ye, be, msy(g,1), fmsy(g,1), bmsy(g));
-		
-	}
+    for(int g = 1; g <= ngroup; g++){
+      //dvector Ye(1, Nf); // Should be a matrix by group and gear?
+      //Matrix for putting numerically derived equilibrium catches for
+      // calculating MSY and FMSY (in R)
+      //dvector Be(1, Nf); // Should be a matrix by group?
+      dvector ye(1, Nf); // i think this should be a matrix by group and gear
+      dvector be(1, Nf);
+      ddiff_msy(ftest, ye, be, msy(g, 1), fmsy(g, 1), bmsy(g));
+    }
+  }
 
-   }
-	
 FINAL_SECTION
-	LOG<<"\n\nNumber of function evaluations: "<<nf<<'\n';
-
+  LOG<<"\n\nNumber of function evaluations: "<<nf<<'\n';

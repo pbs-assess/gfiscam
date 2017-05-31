@@ -6410,62 +6410,6 @@ FUNCTION void projection_model_dd(const double& tac);
 
 //end of projection model dd
 
-
-FUNCTION void runMSE()
-	LOG<<"Start of runMSE"<<'\n';
-
-	// STRUCT FOR MODEL VARIABLES
-	// ModelVariables s_mv;
-	// s_mv.log_ro    = value( theta(1) );
-	// s_mv.steepness = value( theta(2) );
-	// s_mv.m         = value( theta(3) );
-	// s_mv.log_rbar  = value( theta(4) );
-	// s_mv.log_rinit = value( theta(5) );
-	// s_mv.rho       = value( theta(6) );
-	// s_mv.varphi    = value( theta(7) );
-
-	// // Selectivity parameters
-	// d3_array log_sel_par(1,ngear,1,jsel_npar,1,isel_npar);
-	// d4_array d4_log_sel(1,ngear,1,n_ags,syr,nyr,sage,nage);
-	// for(int k = 1; k <= ngear; k++ )
-	// {
-	// 	log_sel_par(k) = value(sel_par(k));
-	// 	d4_log_sel(k)  = value(log_sel(k));
-	// }
-	
-	// s_mv.d3_log_sel_par = &log_sel_par;
-	// s_mv.d4_logSel      = &d4_log_sel;
-
-	// d3_array d3_M(1,n_ags,syr,nyr,sage,nage);
-	// d3_array d3_F(1,n_ags,syr,nyr,sage,nage);
-	// for(int ig = 1; ig <= n_ags; ig++ )
-	// {
-	// 	d3_M(ig) = value(M(ig));
-	// 	d3_F(ig) = value(F(ig));
-	// }
-
-	// s_mv.d3_M = &d3_M;
-	// s_mv.d3_F = &d3_F;
-	// s_mv.log_rec_devs = value(log_rec_devs);
-	// s_mv.init_log_rec_devs = value(init_log_rec_devs);
-
-	// s_mv.q = value(q);
-	// s_mv.sbt = value(sbt);
-	// d3_array tmp_ft=value(ft);
-	// s_mv.d3_ft = &tmp_ft;
-
-	// s_mv.sbo = value(sbo);
-	// s_mv.so = value(so);
-
-
-	// // |-----------------------------------|
-	// // | Instantiate Operating Model Class |
-	// // |-----------------------------------|
-	// OperatingModel om(s_mv,argc,argv);
-	// om.runScenario(rseed);
-
-	// LOG<<"DONE\n";
-
 TOP_OF_MAIN_SECTION
   time(&start);
   arrmblsize = 50000000;

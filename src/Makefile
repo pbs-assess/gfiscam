@@ -6,14 +6,12 @@ dist:
 	$(MAKE) --directory=main DEBUG=no COMPILER=$(COMPILER)
 	-rm -rf ../build/dist/examples
 	-cp -rf ../examples ../build/dist/examples
-	-mv ../build/dist/examples/*.* ../build/dist/bin
 
 debug:
 	$(MAKE) --directory=libs DEBUG=yes COMPILER=$(COMPILER)
 	$(MAKE) --directory=main DEBUG=yes COMPILER=$(COMPILER)
 	-rm -rf ../build/debug/examples
 	-cp -rf ../examples ../build/debug/examples
-	-mv ../build/debug/examples/*.dat ../build/debug/bin
 
 clean-dist:
 ifneq ("$(wildcard main/iscam.cpp)","")

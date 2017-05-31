@@ -1816,7 +1816,7 @@ FUNCTION dvector cubic_spline(const dvector& spline_coffs, const dvector& la)
   	Author: Steven Martell
   	
   	Arguments:
-  		isel_type -> an ivector with integers that determine what selectivity model to use.
+  		isel_type -> an ivector with integers that determine what selectivity model to use.
   	
   	NOTES:
   		- The following is a list of the current selectivity models that are implemented:
@@ -6498,62 +6498,21 @@ GLOBALS_SECTION
 	#include "../../include/multinomial.h"
   #include "../../include/utilities.h"
   #include "../../include/Logger.h"
-  //#include "../../include/statsLib.h"
 
+  time_t start,finish;
+  long hour,minute,second;
+  double elapsed_time;
+  bool mcmcPhase = 0;
+  bool mcmcEvalPhase = 0;
+  adstring BaseFileName;
+  adstring ReportFileName;
+  adstring NewFileName;
+  // Variables to store results from DIC calculations.
+  double dicNoPar = 0;
+  double dicValue = 0;
 
-	time_t start,finish;
-	long hour,minute,second;
-	double elapsed_time;
-	bool mcmcPhase = 0;
-	bool mcmcEvalPhase = 0;
-	adstring BaseFileName;
-	adstring ReportFileName;
-	adstring NewFileName;
-	// Variables to store results from DIC calculations.
-	double dicNoPar = 0;
-	double dicValue = 0;
-
-
-
-	// Function templates for Plogis, that was driving martell nuts.
-
-	// Plogis distribution
-	// #include <plogis.cpp>
-	/*
-			template <typename T1>
-			T1 plogis(T1 *x, T1 *location, T1 *scale)
-			{
-			  T1 y = 1./(1.+mfexp((*location - *x) / *scale));
-			  return (y);
-			}  
-
-			template <typename T1, typename T2>
-			T1 plogis(T1 *x, T2 *location, T2 *scale)
-			{
-			  T1 y = 1./(1.+mfexp((*location - *x) / *scale));
-			  return (y);
-			}  
-
-			template <typename T1, typename T2>
-			T1 plogis(T1 x, T2 location, T2 scale)
-			{
-			  T1 y = 1./(1.+mfexp((location - x) / scale));
-			  return (y);
-			} 
-
-			template <typename T1, typename T2, typename T3>
-			T1 plogis(T2 x, T3 location, T3 scale)
-			{
-			  T1 y = 1./(1.+mfexp((location - x) / scale));
-			  //cout<<typeid(y)<<endl;
-			  return (y);
-			} 
-	*/
-
-
-
- //Extra test functions by RF to test ref points
- //Called by run_FRP() in calcReferencePoints
+  //Extra test functions by RF to test ref points
+  //Called by run_FRP() in calcReferencePoints
 FUNCTION void slow_msy(dvector& ftest, dvector& ye, dvector& be, double& msy, double& fmsy, double& bmsy )
 	//THIS CODE VERIFIES THAT THE EQM CODE IS RETURNING CORRECT REF POINTS
 	int i;

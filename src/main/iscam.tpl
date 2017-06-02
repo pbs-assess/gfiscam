@@ -548,7 +548,7 @@ DATA_SECTION
 
 	init_int nWtTab;
 	init_ivector nWtNobs(1,nWtTab);
-	init_3darray d3_inp_wt_avg(1,nWtTab,1,nWtNobs,sage-5,nage);
+	init_3darray d3_inp_wt_avg(1,nWtTab,1,nWtNobs,sage,nage);
 	vector tmp_nWtNobs(1,nWtTab);
 	int sum_tmp_nWtNobs; 
 	vector projwt(1,nWtTab);

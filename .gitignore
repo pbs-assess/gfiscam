@@ -121,3 +121,10 @@ Thumbs.db
 
 .RData
 .RHistory
+
+#Herring data
+SOGnew.dat
+SOGnew.ctl
+SOGnew.pfc
+
+*.mcargv 

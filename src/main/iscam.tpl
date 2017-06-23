@@ -548,7 +548,7 @@ DATA_SECTION
 
 	init_int nWtTab;
 	init_ivector nWtNobs(1,nWtTab);
-	init_3darray d3_inp_wt_avg(1,nWtTab,1,nWtNobs,sage,nage);
+	init_3darray d3_inp_wt_avg(1,nWtTab,1,nWtNobs,sage-5,nage);
 	vector tmp_nWtNobs(1,nWtTab);
 	int sum_tmp_nWtNobs; 
 	vector projwt(1,nWtTab);
@@ -1816,7 +1816,8 @@ FUNCTION dvector cubic_spline(const dvector& spline_coffs, const dvector& la)
   	Author: Steven Martell
   	
   	Arguments:
-  		isel_type -> an ivector with integers that determine what selectivity model to use.
+  		isel_type -> an ivector with integers that determine what selectivity model to use.
+
   	
   	NOTES:
   		- The following is a list of the current selectivity models that are implemented:

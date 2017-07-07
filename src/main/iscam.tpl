@@ -505,25 +505,6 @@ DATA_SECTION
 					LOG<<"| ----------------------- |\n\n";
 				  }
 			}
-			for(k=1;k<=nAgears;k++)
-			{
-				dmatrix tmp = trans(trans(d3_A(k)).sub(n_A_sage(k),n_A_nage(k)));
-				if(inp_nscaler(k) > 0)
-				{
-					for(i = 1; i <= n_A_nobs(k); i++ )
-					{
-            // nCompLikelihood(k) == 2 is the check for multinomial
-            if(nCompLikelihood(k) == 2)
-            {
-              tmp(i) = tmp(i)/sum(tmp(i)) * inp_nscaler(k);
-            }else{
-              tmp(i) = tmp(i)/sum(tmp(i));
-            }
-					}
-				}
-				d3_A_obs(k) = tmp;
-				//d3_A_obs(k) = trans(trans(d3_A(k)).sub(n_A_sage(k),n_A_nage(k)));
-			}
 		}
 		else if(!mseFlag)
 		{
@@ -896,13 +877,31 @@ DATA_SECTION
 	init_ivector nPhz_df(1,nAgears);
 	init_int check;
 	LOC_CALCS
+    // Apply effective sample size if multinomial likelihood
+    for(k=1;k<=nAgears;k++)
+	  {
+		  dmatrix tmp = trans(trans(d3_A(k)).sub(n_A_sage(k),n_A_nage(k)));
+		  if(inp_nscaler(k) > 0)
+		  {
+			  for(i = 1; i <= n_A_nobs(k); i++ )
+			  {
+          if(nCompLikelihood(k) == 2)
+          {
+            tmp(i) = tmp(i)/sum(tmp(i)) * inp_nscaler(k);
+          }else{
+            tmp(i) = tmp(i)/sum(tmp(i));
+          }
+				  d3_A_obs(k) = tmp;
+			  }
+      }
+    }
 		LOG<<"check is "<<check<<'\n';
-		if(check != -12345) 
+		if(check != -12345)
 		{
 			LOG<<"check is "<<check<<'\n';
 			LOG<<"Check integer for EOF, should be -12345.. = "<<check<<'\n';
-      		LOG<<"Error reading composition controls\n";
-      		exit(1);
+      LOG<<"Error reading composition controls\n";
+      exit(1);
 		}
 	END_CALCS
 

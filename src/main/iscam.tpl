@@ -512,7 +512,13 @@ DATA_SECTION
 				{
 					for(i = 1; i <= n_A_nobs(k); i++ )
 					{
-						 tmp(i) = tmp(i)/sum(tmp(i)) * inp_nscaler(k);
+            // nCompLikelihood(k) == 2 is the check for multinomial
+            if(nCompLikelihood(k) == 2)
+            {
+              tmp(i) = tmp(i)/sum(tmp(i)) * inp_nscaler(k);
+            }else{
+              tmp(i) = tmp(i)/sum(tmp(i));
+            }
 					}
 				}
 				d3_A_obs(k) = tmp;

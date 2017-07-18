@@ -1102,7 +1102,10 @@ DATA_SECTION
 	// | 13-> fraction of total mortality that takes place prior to spawning
 	// | 14-> number of prospective years to start estimation from syr.
 	// | 15-> switch for generating selex based on IFD and cohort biomass
-	init_vector d_iscamCntrl(1,16);
+  // | 16-> toggle to fit to annual mean weights for commercial catch
+  // | 17-> toggle to do the fmsy calculations (set to 0 for herring)
+
+	init_vector d_iscamCntrl(1,17);
 	int verbose;
 	init_int eofc;
 	LOC_CALCS
@@ -4150,248 +4153,14 @@ FUNCTION calcObjectiveFunction
 					LOG<<"objfun  "<<objfun<<'\n';
 					 */
 				break;
-					
 				}
-		
 	nf++;
 
 	if(verbose){
     LOG<<"**** Ok after calcObjectiveFunction ****\n";
   }
-	//LOG<<"nlvec3 is "<<nlvec(3)<<'\n';
-	 //LOG<<"**** Ok after calcObjectiveFunction ****"<<'\n';
-  	
-	// if(last_phase()){
-	// 	ad_exit(1); //para!
-	// }
-  	
   }
 
-// FUNCTION void equilibrium(const double& fe, const dvector& ak, const double& ro, const double& kap, const double& m, const dvector& age, const dvector& wa, const dvector& fa, const dmatrix& va,double& re,double& ye,double& be,double& ve,double& dye_df,double& d2ye_df2)//,double& phiq,double& dphiq_df, double& dre_df)
-//   {
-// 	/*
-// 	Equilibrium age-structured model used to determin Fmsy and MSY based reference points.
-// 	Author: Steven Martell
-	
-// 	Comments: 
-// 	This code uses a numerical approach to determine a vector of fe_multipliers
-// 	to ensure that the dAllocation is met for each gear type.
-	
-// 	args:
-// 	fe	-steady state fishing mortality
-// 	ak	-dAllocation of total ye to gear k.
-// 	ro	-unfished sage recruits
-// 	kap	-recruitment compensation ration
-// 	m	-instantaneous natural mortality rate
-// 	age	-vector of ages
-// 	wa	-mean weight at age
-// 	fa	-mean fecundity at age
-// 	va	-mean vulnerablity at age for fe gear.
-
-	
-// 	Modified args:
-// 	re	-steady state recruitment
-// 	ye	-steady state yield
-// 	be	-steady state spawning biomass
-// 	phiq		-per recruit yield
-// 	dre_df		-partial of recruitment wrt fe
-// 	dphiq_df	-partial of per recruit yield wrt fe
-	
-// 	LUCIE'S RULE: the derivative of a sum is the sum of its derivatives.
-// 	Lucie says: there is some nasty calculus in here daddy, are you sure
-// 	you've got it right?
-	
-// 	I've got it pretty close. 
-	
-// 	DEPRECATE THIS FUNCTION.  NOW DONE IN THE MSY CLASS
-	
-// 	*/
-// 	int i,j,k;
-// 	int nage    = max(age);
-// 	int sage    = min(age);
-// 	double  dre_df;
-// 	double  phif;
-// 	dvector lx(sage,nage);
-// 	dvector lz(sage,nage);
-// 	dvector lambda(1,ngear);        //F-multiplier
-// 	dvector phix(1,ngear);
-// 	dvector phiq(1,ngear);
-// 	dvector dphiq_df(1,ngear);
-// 	dvector dyek_df(1,ngear);
-// 	dvector d2yek_df2(1,ngear);
-// 	dvector yek(1,ngear);
-// 	dmatrix qa(1,ngear,sage,nage);
-// 	dmatrix xa(1,ngear,sage,nage);  //vulnerable numbers per recruit
-	
-// 	lx          = pow(exp(-m),age-double(sage));
-// 	lx(nage)   /=(1.-exp(-m));
-// 	double phie = lx*fa;		// eggs per recruit
-// 	double so   = kap/phie;
-// 	double beta = (kap-1.)/(ro*phie);
-// 	lambda      = ak/mean(ak);	// multiplier for fe for each gear
-	
-	
-// 	/* Must iteratively solve for f-multilier */
-// 	for(int iter=1;iter<=30;iter++)
-// 	{
-// 		/* Survivorship under fished conditions */
-// 		lz(sage)    = 1.0;
-// 		lambda     /= mean(lambda);
-// 		dvector fk  = fe*lambda;
-// 		dvector ra  = lambda*va;
-// 		dvector za  = m + fe*ra;
-// 		dvector sa  = mfexp(-za);
-// 		dvector oa  = 1.0 - sa;
-		
-		
-// 		for(k=1;k<=ngear;k++)
-// 		{
-// 			qa(k) = elem_prod(elem_div(lambda(k)*va(k),za),oa);
-// 			xa(k) = elem_prod(elem_div(va(k),za),oa);
-// 		}
-		
-// 		double dlz_df = 0, dphif_df = 0;
-// 		dphiq_df.initialize();
-// 		dre_df   = 0;
-// 		for(j=sage;j<=nage;j++)
-// 		{
-// 			if(j>sage) lz(j)  = lz(j-1) * sa(j-1);
-// 			if(j>sage) dlz_df = dlz_df  * sa(j-1) - lz(j-1)*ra(j-1)*sa(j-1);
-			
-// 			if(j==nage)
-// 			{
-// 				lz(j)  = lz(j) / oa(j);
-				
-// 				double t4 = (-ra(j-1)+ra(j))*sa(j)+ra(j-1);
-// 				dlz_df = dlz_df/oa(j) - (lz(j-1)*sa(j-1)*t4) / square(oa(j));
-// 			}
-			
-// 			dphif_df   = dphif_df+fa(j)*dlz_df;
-// 			for(k=1;k<=ngear;k++)
-// 			{
-// 				double t1   = lambda(k) * wa(j) *va(k,j) * ra(j) * lz(j);
-// 				double t3   = -1. + (1.+za(j)) * sa(j);
-// 				double t9   = square(za(j));
-// 				dphiq_df(k)+= wa(j)*qa(k,j)*dlz_df + t1 * t3 / t9; 
-// 			}
-// 		} 
-		
-// 		phif   = elem_prod(lz,exp(-za*d_iscamCntrl(13)))*fa;
-// 		re     = ro*(kap-phie/phif)/(kap-1.);
-// 		dre_df = ro/(kap-1.0)*phie/square(phif)*dphif_df;
-		
-// 		/* Equilibrium yield */
-// 		for(k=1;k<=ngear;k++)
-// 		{
-// 			phix(k)      = sum(elem_prod(elem_prod(lz,wa),xa(k)));
-// 			phiq(k)      = sum(elem_prod(elem_prod(lz,wa),qa(k)));
-// 			yek(k)       = fe*re*phiq(k);
-// 			dyek_df(k)   = re*phiq(k) + fe*phiq(k)*dre_df + fe*re*dphiq_df(k);
-// 			d2yek_df2(k) = phiq(k)*dre_df + re*dphiq_df(k);
-// 		}
-		
-// 		/* Iterative soln for lambda */
-// 		dvector pk = yek/sum(yek);
-// 		dvector t1 = elem_div(ak,pk+1.e-30);
-// 		lambda     = elem_prod(lambda,t1);
-// 		if(abs(sum(ak-pk))<1.e-6) break;
-// 	} // end of iter
-// 	ve       = re*sum(elem_prod(ak,phix));
-// 	be       = re*phif;
-// 	ye       = sum(yek);
-// 	dye_df   = sum(dyek_df);
-// 	d2ye_df2 = sum(d2yek_df2);
-
-// 	// LOG<<"EQUILIBRIUM CODE "<<setprecision(4)<<setw(2)<<fe<<setw(3)<<" "
-// 	// <<ye<<setw(5)<<" "<<dye_df<<"  "<<dyek_df(1,3)<<'\n';
-//   }
-
-
-
-	
-// FUNCTION void equilibrium(const double& fe,const double& ro, const double& kap, const double& m, const dvector& age, const dvector& wa, const dvector& fa, const dvector& va,double& re,double& ye,double& be,double& phiq,double& dphiq_df, double& dre_df)
-//   {
-// 	/*
-// 	This is the equilibrium age-structured model that is 
-// 	conditioned on fe (the steady state fishing mortality rate).
-	
-// 	In the case of multiple fisheries, fe is to be considered as the
-// 	total fishing mortality rate and each fleet is given a specified
-// 	dAllocation based on its selectivity curve.  The dAllocation to 
-// 	each fleet must be specified a priori.
-	
-// 	args:
-// 	fe	-steady state fishing mortality
-// 	ro	-unfished sage recruits
-// 	kap	-recruitment compensation ration
-// 	m	-instantaneous natural mortality rate
-// 	age	-vector of ages
-// 	wa	-mean weight at age
-// 	fa	-mean fecundity at age
-// 	va	-mean vulnerablity at age for fe gear.
-// 	ak	-dAllocation of total ye to gear k.
-	
-// 	Modified args:
-// 	re	-steady state recruitment
-// 	ye	-steady state yield
-// 	be	-steady state spawning biomass
-// 	phiq		-per recruit yield
-// 	dre_df		-partial of recruitment wrt fe
-// 	dphiq_df	-partial of per recruit yield wrt fe
-	
-// 	FIXME add Ricker model to reference points calculations.
-// 	FIXME partial derivatives for dphif_df need to be fixed when d_iscamCntrl(13)>0.
-// 	*/
-// 	int i;
-	
-// 	int nage=max(age);
-// 	int sage=min(age);
-// 	dvector lx=pow(exp(-m),age-double(sage));
-// 	lx(nage)/=(1.-exp(-m));
-// 	dvector lz=lx;
-// 	dvector za=m+fe*va;
-// 	dvector sa=1.-exp(-za);
-// 	dvector qa=elem_prod(elem_div(va,za),sa);
-	
-// 	double phie = lx*fa;		//eggs per recruit
-// 	double so = kap/phie;
-// 	double beta = (kap-1.)/(ro*phie);
-	
-	
-// 	double dlz_df = 0, dphif_df = 0;
-// 	dphiq_df=0; dre_df=0;
-// 	for(i=sage; i<=nage; i++)
-// 	{
-// 		if(i>sage) lz[i]=lz[i-1]*exp(-za[i-1]);
-// 		if(i>sage) dlz_df=dlz_df*exp(-za[i-1]) - lz[i-1]*va[i-1]*exp(-za[i-1]);
-// 		if(i==nage){ //6/11/2007 added plus group.
-// 					lz[i]/=(1.-mfexp(-za[i]));
-					
-// 					dlz_df=dlz_df/(1.-mfexp(-za[i]))
-// 							-lz[i-1]*mfexp(-za[i-1])*va[i]*mfexp(-za[i])
-// 					/((1.-mfexp(-za[i]))*(1.-mfexp(-za[i])));
-// 				}
-// 		dphif_df=dphif_df+fa(i)*dlz_df;
-// 		dphiq_df=dphiq_df+wa(i)*qa(i)*dlz_df+(lz(i)*wa(i)*va(i)*va(i))/za(i)*(exp(-za[i])-sa(i)/za(i));
-// 	}
-// 	//CHANGED need to account for fraction of mortality that occurs
-// 	//before the spawning season in the recruitment calculation.
-// 	//LOG<<"lz\t"<<elem_prod(lz,exp(-za*d_iscamCntrl(13)))<<'\n';
-// 	//exit(1);
-// 	//double phif = lz*fa;
-// 	double phif = elem_prod(lz,exp(-za*d_iscamCntrl(13)))*fa;
-// 	phiq=sum(elem_prod(elem_prod(lz,wa),qa));
-// 	re=ro*(kap-phie/phif)/(kap-1.);
-// 	//LOG<<fe<<" spr ="<<phif/phie<<'\n';
-// 	if(re<=0) re=0;
-// 	dre_df=(ro/(kap-1.))*phie/square(phif)*dphif_df;
-// 	ye=fe*re*phiq;
-// 	be=re*phif;	//spawning biomass
-	
-// 	//LOG<<"Equilibrium\n"<<ro<<'\n'<<re<<'\n'<<ye<<'\n';
-	
-//   }
-	
 FUNCTION void calcReferencePoints()
   {
   	/*
@@ -4399,53 +4168,53 @@ FUNCTION void calcReferencePoints()
   	          over values of F and F-multipliers and calculates the equilibrium yield
   	          for each fishing gear.
   	Author: Steven Martell
-  	
+
   	Arguments:
   		None
-  	
+
   	NOTES:
-  		- This function is based on the msyReferencePoint class object written by 
+  		- This function is based on the msyReferencePoint class object written by
   		  Steve Martell on the Island of Maui while on Sabbatical leave from UBC.
   		- The msyReferencePoint class uses Newton-Raphson method to iteratively solve
-  		  for the Fmsy values that maximize catch for each fleet. You can compare 
+  		  for the Fmsy values that maximize catch for each fleet. You can compare
   		  MSY-reference points with the numerical values calculated at the end of this
   		  function.
   		- Code check: appears to find the correct value of MSY
 		  in terms of maximizing ye.  Check to ensure rec-devs
 		  need a bias correction term to get this right.
-	
+
 		- Modification for multiple fleets:
     	  	Need to pass a weighted average vector of selectivities
     	  	to the equilibrium routine, where the weights for each
     	  	selectivity is based on the dAllocation to each fleet.
-		
+
 	 		Perhaps as a default, assign an equal dAllocation to each
-	 		fleet.  Eventually,user must specify dAllocation in 
+	 		fleet.  Eventually,user must specify dAllocation in
 	 		control file.  DONE
-		
+
 	 	- Use selectivity in the terminal year to calculate reference
 	 	  points.  See todo, this is something that should be specified by the user.
-	
+
 		- June 8, 2012.  SJDM.  Made the following changes to this routine.
 			1) changed reference points calculations to use the average
 			   weight-at-age and fecundity-at-age.
 			2) change equilibrium calculations to use the catch dAllocation
 			   for multiple gear types. Not the average vulnerablity... this was wrong.
-	
+
 		- July 29, 2012.  SJDM Issue1.  New routine for calculating reference points
-		  for multiple fleets. In this case, finds a vector of Fmsy's that simultaneously 
+		  for multiple fleets. In this case, finds a vector of Fmsy's that simultaneously
 		  maximizes the total catch for each of the fleets respectively.  See
 		  iSCAMequil_soln.R for an example.
-	
+
 		- August 1, 2012.  SJDM, In response to Issue1. A major overhaul of this routine.
 		  Now using the new Msy class to calculate reference points. This greatly simplifies
 		  the code in this routine and makes other routines (equilibrium) redundant.  Also
 		  the new Msy class does a much better job in the case of multiple fleets.
-	
+
 		- Aug 11, 2012.
-		  For the Pacific herring branch omit the get_fmsy calculations and use only the 
+		  For the Pacific herring branch omit the get_fmsy calculations and use only the
 		  Bo calculuation for the reference points.  As there are no MSY based reference
-		  points required for the descision table. 
+		  points required for the descision table.
 
 		- May 8, 2013.
 		  Starting to modify this code to allow for multiple areas, sex and stock-specific
@@ -4455,157 +4224,120 @@ FUNCTION void calcReferencePoints()
 		  exists in an area where the fishing gear operates.
 
 		- Aug, 3-6, 2013.
-		  Major effort went into revising this routine as well as the Msy class to 
-		  calculate MSY-based reference points for multiple fleets and multiple sexes.  
-		  I had found a significant bug in the dye calculation where I need to use the 
-		  proper linear algebra to calculate the vector of dye values. This appears to 
+		  Major effort went into revising this routine as well as the Msy class to
+		  calculate MSY-based reference points for multiple fleets and multiple sexes.
+		  I had found a significant bug in the dye calculation where I need to use the
+		  proper linear algebra to calculate the vector of dye values. This appears to
 		  be working properly and I've commented out the lines of code where I numerically
 		  checked the derivatives of the catch equation.  This is a major acomplishment.
 
 		- Mar, 2013.
-		  A major new development here with the use of msy.hpp and a template class for 
+		  A major new development here with the use of msy.hpp and a template class for
 		  calculating MSY-based reference points.  The user can now calculate reference
 		  points for each gear based on fixed allocation, and optimum allocations based
 		  on relative differences in selectivities among the gears landing fish. Uses the
 		  name space "rfp".
 
-   	PSEUDOCODE: 
+   	PSEUDOCODE:
    		(1) : Construct array of selectivities (potentially sex based log_sel)
    		(2) : Construct arrays of d3_wt_avg and d3_wt_mat for reference years.
 	  	(3) : Come up with a reasonable guess for fmsy for each gear in nfleet.
 	  	(4) : Instantiate an Msy class object and get_fmsy.
 	  	(5) : Use Msy object to get reference points.
 
-		
-	slx::Selex<dvar_vector> * ptr;  //Pointer to Selex base class
-  ptr = new slx::LogisticCurve<dvar_vector,dvariable>(mu,sd);
-  log_sel = ptr->logSelectivity(age);
-  delete ptr;
-
   	TODO list:
   	[ ] - allow user to specify which selectivity years are used in reference point
   	      calculations. This should probably be done in the projection File Control.
   	*/
-  	if(!delaydiff){
+  	if(delaydiff){
+      run_FRPdd();
+    }else{
+      int kk,ig;
+      // | (1) : Matrix of selectivities for directed fisheries.
+      // |     : log_sel(gear)(n_ags)(year)(age)
+      // |     : ensure dAllocation sums to 1.
+      dvector d_ak(1,nfleet);
+      d3_array  d_V(1,n_ags,1,nfleet,sage,nage);
+      dvar3_array  dvar_V(1,n_ags,1,nfleet,sage,nage);
+      for(k = 1;k <= nfleet;k++){
+        kk      = nFleetIndex(k);
+        d_ak(k) = dAllocation(kk);
+        for(ig = 1;ig <= n_ags;ig++){
+          d_V(ig)(k) = value(exp(log_sel(kk)(ig)(nyr)));
+          dvar_V(ig)(k) = exp(log_sel(kk)(ig)(nyr));
+        }
+      }
+      d_ak /= sum(d_ak);
+      // | (2) : Average weight and mature spawning biomass for reference years
+      // |     : dWt_bar(1,n_ags,sage,nage)
+      dmatrix fa_bar(1,n_ags,sage,nage);
+      dmatrix  M_bar(1,n_ags,sage,nage);
+      for(ig = 1;ig <= n_ags;ig++){
+        fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
+        M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
+        M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;
+      }
 
-		int kk,ig;
+      // | (3) : Initial guess for fmsy for each fleet
+      // |     : set fmsy = 2/3 of M divided by the number of fleets
+      fmsy.initialize();
+      fall.initialize();
+      msy.initialize();
+      bmsy.initialize();
 
-		// | (1) : Matrix of selectivities for directed fisheries.
-		// |     : log_sel(gear)(n_ags)(year)(age)
-		// |     : ensure dAllocation sums to 1.
-		dvector d_ak(1,nfleet);
-		d3_array  d_V(1,n_ags,1,nfleet,sage,nage);
-		dvar3_array  dvar_V(1,n_ags,1,nfleet,sage,nage);
-		for(k=1;k<=nfleet;k++)
-		{
-			kk      = nFleetIndex(k);
-			d_ak(k) = dAllocation(kk);
-			for(ig=1;ig<=n_ags;ig++)
-			{
-				d_V(ig)(k) = value( exp(log_sel(kk)(ig)(nyr)) );
-				dvar_V(ig)(k) =( exp(log_sel(kk)(ig)(nyr)) );
+      dvar_vector dftry(1,nfleet);
+      dftry  = 0.6/nfleet * mean(M_bar);
 
-			}
-		}
-		d_ak /= sum(d_ak);
+      // | (4) : Instantiate msy class for each stock
+      for(g=1;g<=ngroup;g++){
+        double d_rho = d_iscamCntrl(13);
+        dvector d_mbar = M_bar(g);
+        dvector d_wa = dWt_bar(g);
+        dvector d_fa = fa_bar(g);
 
-		// | (2) : Average weight and mature spawning biomass for reference years
-		// |     : dWt_bar(1,n_ags,sage,nage)
-		dmatrix fa_bar(1,n_ags,sage,nage);
-		dmatrix  M_bar(1,n_ags,sage,nage);
-		for(ig=1;ig<=n_ags;ig++)
-		{
-			fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
-			M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
-			M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
-		}
+        if(d_iscamCntrl(17)){
+          rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
+            c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
+          dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak);
+          bo  = c_MSY.getBo();
+          dvariable dbmsy = c_MSY.getBmsy();
+          dvar_vector dmsy = c_MSY.getMsy();
+          bmsy(g) = value(dbmsy);
+          msy(g)  = value(dmsy);
+          fmsy(g) = value(dfmsy);
+        }
+      }
+      // Data-type version of MSY-based reference points.
+      for(ig = 1;ig <= n_ags;ig++){
+        fa_bar(ig) = elem_prod(dWt_bar(ig), ma(ig));
+        M_bar(ig) = colsum(value(M(ig).sub(pf_cntrl(3), pf_cntrl(4))));
+        M_bar(ig) /= pf_cntrl(4) - pf_cntrl(3) + 1;
+      }
+      for(g = 1;g <= ngroup;g++){
+        double d_ro = value(ro(g));
+        double d_h = value(steepness(g));
+        double d_rho = d_iscamCntrl(13);
+        if(d_iscamCntrl(17)){
+          rfp::msy<double,dvector,dmatrix,d3_array>
+            c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
+          fmsy(g) = c_dMSY.getFmsy(value(dftry));
+          bo = c_dMSY.getBo();
+          bmsy(g) = c_dMSY.getBmsy();
+          msy(g) = c_dMSY.getMsy();
+          dvector finit(1,nfleet);
+          finit = fmsy(g);
+          c_dMSY.checkDerivatives(finit);
+          Msy c_msy(d_ro, d_h, M_bar, d_rho, dWt_bar, fa_bar, &d_V);
+          fmsy(g) = 0.1;
+          c_msy.get_fmsy(fmsy(g));
+          bmsy(g) = c_msy.getBmsy();
+          msy(g) = c_msy.getMsy();
+          bo = c_msy.getBo();
+        }
+      }
+    }
 
-		// | (3) : Initial guess for fmsy for each fleet
-		// |     : set fmsy = 2/3 of M divided by the number of fleets
-		fmsy.initialize();
-		fall.initialize();
-		msy.initialize();
-		bmsy.initialize();
-
-		dvar_vector dftry(1,nfleet);
-		dftry  = 0.6/nfleet * mean(M_bar);
-
-		// | (4) : Instantiate msy class for each stock
-		for(g=1;g<=ngroup;g++)
-		{
-			double d_rho = d_iscamCntrl(13);
-
-			dvector d_mbar = M_bar(g);
-			dvector   d_wa = dWt_bar(g);
-			dvector   d_fa = fa_bar(g);
-
-			//Pointer to the base class
-			//rfp::referencePoints<dvariable,dvar_vector,dvar_matrix> * pMSY; 
-			//pMSY = new rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array>
-			//(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
-			//dvar_vector dfmsy = pMSY->getFmsy(dftry);
-			//delete pMSY;
-
-
-			//LOG<<"Initial Fe "<<dftry<<'\n';
-			rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
-			c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
-
-			dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak);
-			bo  = c_MSY.getBo();
-			dvariable dbmsy = c_MSY.getBmsy();
-			dvar_vector dmsy = c_MSY.getMsy();
-			bmsy(g) = value(dbmsy);
-			msy(g)  = value(dmsy);
-			fmsy(g) = value(dfmsy);
-			//c_MSY.print();	    //RF turned this off
-
-
-		}
-		// Data-type version of MSY-based reference points.
-		for( ig = 1; ig <= n_ags; ig++ ) {
-			fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
-			M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
-			M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;	
-		}
-		for( g = 1; g <= ngroup; g++ ) {
-			double d_ro  = value(ro(g));
-			double d_h   = value(steepness(g));
-			double d_rho = d_iscamCntrl(13);
-			rfp::msy<double,dvector,dmatrix,d3_array>
-			c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
-			fmsy(g) = c_dMSY.getFmsy(value(dftry));
-			bo = c_dMSY.getBo();
-			bmsy(g) = c_dMSY.getBmsy();
-			msy(g)  = c_dMSY.getMsy();
-			//c_dMSY.print();    RF turned this off
-			dvector finit(1,nfleet);
-			finit=fmsy(g);
-			c_dMSY.checkDerivatives(finit);
-			//LOG<<"group \t"<<g<<'\n';
-			//exit(1);
-
-			Msy c_msy(d_ro,d_h,M_bar,d_rho,dWt_bar,fa_bar,&d_V);
-			fmsy(g) = 0.1;
-			c_msy.get_fmsy(fmsy(g));
-			bo = c_msy.getBo();
-			bmsy(g) = c_msy.getBmsy();
-			msy(g) = c_msy.getMsy();
-			//LOG<<"Old Msy class\n;
-	    //LOG<<c_msy<<'\n';
-		}
-	} //end if !delaydiff
-	
-	/*RF added a test of ref point calcs - runs out the model for 100 y and calculates fmsy and bmsy conditional on model parameters and data
-	  Just run once in last MPD phase. Turn off after testing.*/
-	//if(!mceval_phase()) run_FRP();	  //RF ran this March 18 2015 for Arrowtooth Flounder and got perfect agreement with iscam's code above
-	
-	if(delaydiff){
-
-		run_FRPdd();
-	}
-
-	if(verbose){
+    if(verbose){
     	LOG<<"**** Ok after calcReferencePoints ****\n";
   	}
   }

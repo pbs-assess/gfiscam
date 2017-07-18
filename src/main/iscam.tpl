@@ -6417,6 +6417,11 @@ FUNCTION void projection_model_dd(const double& tac);
 //end of projection model dd
 
 TOP_OF_MAIN_SECTION
+  // These lines make all stdout and stderr go to the file
+  // int fd = open("output.txt", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  // dup2(fd, 1);
+  // dup2(fd, 2);
+  // close(fd);
   time(&start);
   arrmblsize = 50000000;
   gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e8);
@@ -6440,6 +6445,8 @@ GLOBALS_SECTION
 
   #include <time.h>
   #include <string.h>
+  #include <unistd.h>
+  #include <fcntl.h>
   #include "../../include/baranov.h"
   #include "../../include/gdbprintlib.h"
   #include "../../include/LogisticNormal.h"

@@ -5195,8 +5195,11 @@ REPORT_SECTION
 		  int ii;
 		  for(ii=1;ii<=n_tac;ii++){
         //LOG<<ii<<" "<<tac(ii)<<'\n';
-		   	if (!delaydiff) projection_model(tac(ii));
-		   	if(delaydiff) 	projection_model_dd(tac(ii));
+		   	if(delaydiff){
+          projection_model_dd(tac(ii));
+        }else{
+          projection_model(tac(ii));
+        }
 		 	}
 		 }
 		 if(n_ags>1){

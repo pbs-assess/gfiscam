@@ -4293,11 +4293,11 @@ FUNCTION void calcReferencePoints()
         dvector d_wa = dWt_bar(g);
         dvector d_fa = fa_bar(g);
 
+        rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
+          c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
+        bo  = c_MSY.getBo();
         if(d_iscamCntrl(17)){
-          rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
-            c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
           dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak);
-          bo  = c_MSY.getBo();
           dvariable dbmsy = c_MSY.getBmsy();
           dvar_vector dmsy = c_MSY.getMsy();
           bmsy(g) = value(dbmsy);
@@ -4315,11 +4315,11 @@ FUNCTION void calcReferencePoints()
         double d_ro = value(ro(g));
         double d_h = value(steepness(g));
         double d_rho = d_iscamCntrl(13);
+        rfp::msy<double,dvector,dmatrix,d3_array>
+          c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
+        bo = c_dMSY.getBo();
         if(d_iscamCntrl(17)){
-          rfp::msy<double,dvector,dmatrix,d3_array>
-            c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
           fmsy(g) = c_dMSY.getFmsy(value(dftry));
-          bo = c_dMSY.getBo();
           bmsy(g) = c_dMSY.getBmsy();
           msy(g) = c_dMSY.getMsy();
           dvector finit(1,nfleet);
@@ -5388,10 +5388,10 @@ FUNCTION mcmc_output
     for(int group=1;group<=ngroup;group++){
       ofs<<","<<"vartheta_gr"<<group;
     }
+    ofs<<","<<"bo";
     // If the msy reference points were set to be calculated in the control file,
     //  include them
     if(d_iscamCntrl(17)){
-      ofs<<","<<"bo";
       ofs<<","<<"bmsy";
       for(int fleet=1;fleet<=nfleet;fleet++){
         ofs<<","<<"msy"<<fleet;
@@ -5532,10 +5532,10 @@ FUNCTION mcmc_output
   for(int group=1;group<=ngroup;group++){
     ofs<<","<<theta(7)(group);
   }
+  ofs<<","<<bo;
   // If the msy reference points were set to be calculated in the control file,
   //  include them
   if(d_iscamCntrl(17)){
-    ofs<<","<<bo;
     ofs<<","<<bmsy;
     for(int fleet=1;fleet<=nfleet;fleet++){
       ofs<<","<<msy(fleet);
@@ -6159,10 +6159,10 @@ FUNCTION void projection_model_dd(const double& tac);
 
 TOP_OF_MAIN_SECTION
   // These lines make all stdout and stderr go to the file
-  // int fd = open("output.txt", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-  // dup2(fd, 1);
-  // dup2(fd, 2);
-  // close(fd);
+  int fd = open("output.txt", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  dup2(fd, 1);
+  dup2(fd, 2);
+  close(fd);
   time(&start);
   arrmblsize = 50000000;
   gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e8);

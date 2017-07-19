@@ -5385,16 +5385,20 @@ FUNCTION mcmc_output
     for(int group=1;group<=ngroup;group++){
       ofs<<","<<"vartheta_gr"<<group;
     }
-    ofs<<","<<"bo";
-    ofs<<","<<"bmsy";
-    for(int fleet=1;fleet<=nfleet;fleet++){
-      ofs<<","<<"msy"<<fleet;
-    }
-    for(int fleet=1;fleet<=nfleet;fleet++){
-      ofs<<","<<"fmsy"<<fleet;
-    }
-    for(int fleet=1;fleet<=nfleet;fleet++){
-      ofs<<","<<"umsy"<<fleet;
+    // If the msy reference points were set to be calculated in the control file,
+    //  include them
+    if(d_iscamCntrl(17)){
+      ofs<<","<<"bo";
+      ofs<<","<<"bmsy";
+      for(int fleet=1;fleet<=nfleet;fleet++){
+        ofs<<","<<"msy"<<fleet;
+      }
+      for(int fleet=1;fleet<=nfleet;fleet++){
+        ofs<<","<<"fmsy"<<fleet;
+      }
+      for(int fleet=1;fleet<=nfleet;fleet++){
+        ofs<<","<<"umsy"<<fleet;
+      }
     }
     for(int i=1;i<=nItNobs;i++){
       ofs<<","<<"q"<<i;
@@ -5525,16 +5529,20 @@ FUNCTION mcmc_output
   for(int group=1;group<=ngroup;group++){
     ofs<<","<<theta(7)(group);
   }
-  ofs<<","<<bo;
-  ofs<<","<<bmsy;
-  for(int fleet=1;fleet<=nfleet;fleet++){
-    ofs<<","<<msy(fleet);
-  }
-  for(int fleet=1;fleet<=nfleet;fleet++){
-    ofs<<","<<fmsy(fleet);
-  }
-  for(int fleet=1;fleet<=nfleet;fleet++){
-    ofs<<","<<1.0-exp(-fmsy(fleet));
+  // If the msy reference points were set to be calculated in the control file,
+  //  include them
+  if(d_iscamCntrl(17)){
+    ofs<<","<<bo;
+    ofs<<","<<bmsy;
+    for(int fleet=1;fleet<=nfleet;fleet++){
+      ofs<<","<<msy(fleet);
+    }
+    for(int fleet=1;fleet<=nfleet;fleet++){
+      ofs<<","<<fmsy(fleet);
+    }
+    for(int fleet=1;fleet<=nfleet;fleet++){
+      ofs<<","<<1.0-exp(-fmsy(fleet));
+    }
   }
   for(int it=1;it<=nItNobs;it++){
     ofs<<","<<q(it);
@@ -5851,11 +5859,11 @@ FUNCTION void projection_model(const double& tac);
    if(nf==1 && runNo==1){
     LOG<<"Running MCMC projections\n";
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-    write_proj_headers(ofsmcmc, syr, nyr);
+    write_proj_headers(ofsmcmc, syr, nyr, d_iscamCntrl(17));
     ofsmcmc.flush();
    }
    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-   write_proj_output(ofsmcmc, syr, nyr, tac, pyr, p_sbt, p_ft, ft(1), bo, fmsy, bmsy);
+   write_proj_output(ofsmcmc, syr, nyr, tac, pyr, p_sbt, p_ft, ft(1), bo, fmsy, bmsy, d_iscamCntrl(17));
    ofsmcmc.flush();
   }else{
 //   if(runNo==1){

@@ -43,7 +43,7 @@ ivector getIndex(const dvector& a, const dvector& b){
   return(tmp);
 }
 
-void write_proj_headers(ofstream &ofsP, int syr, int nyr){
+void write_proj_headers(ofstream &ofsP, int syr, int nyr, bool include_msy){
   // Write the decision table headers for projection years
   ofsP<<"TAC"                  <<",";
   ofsP<<"B"<<nyr+1             <<",";
@@ -61,18 +61,21 @@ void write_proj_headers(ofstream &ofsP, int syr, int nyr){
   ofsP<<"F"<<nyr+1<<"F"<<nyr   <<",";  //want probability F2015>F2014     - this will be > 1 if true
   ofsP<<"U"<<nyr+1             <<",";
   ofsP<<"U"<<nyr+1<<"U"<<nyr   <<",";
-  //MSY based ref points
-  ofsP<<"BMSY"                 <<",";
-  ofsP<<"B"<<nyr+2<<"BMSY"     <<",";  //want probability B2016<BMSY - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"08BMSY"   <<",";  //want probability B2016<0.8BMSY - this will be< 1 if true
-  ofsP<<"B"<<nyr+2<<"04BMSY"   <<",";  //want probability B2016<0.4BMSY - this will be < 1 if true
-  ofsP<<"FMSY"                 <<",";
-  ofsP<<"F"<<nyr+1<<"FMSY"     <<",";
-  ofsP<<"UMSY"                 <<",";
-  ofsP<<"U"<<nyr+1<<"UMSY"     <<'\n'; //want probability F2015>FMSY - this will be > 1 if true
+  if(include_msy){
+    //MSY based ref points
+    ofsP<<"BMSY"                 <<",";
+    ofsP<<"B"<<nyr+2<<"BMSY"     <<",";  //want probability B2016<BMSY - this will be < 1 if true
+    ofsP<<"B"<<nyr+2<<"08BMSY"   <<",";  //want probability B2016<0.8BMSY - this will be< 1 if true
+    ofsP<<"B"<<nyr+2<<"04BMSY"   <<",";  //want probability B2016<0.4BMSY - this will be < 1 if true
+    ofsP<<"FMSY"                 <<",";
+    ofsP<<"F"<<nyr+1<<"FMSY"     <<",";
+    ofsP<<"UMSY"                 <<",";
+    ofsP<<"U"<<nyr+1<<"UMSY";            //want probability F2015>FMSY - this will be > 1 if true
+  }
+  ofsP<<'\n';
 }
 
-void write_proj_output(ofstream &ofsP, int syr, int nyr, double tac, int pyr, dvector p_sbt, dmatrix p_ft, dvar_matrix ft, double bo, dmatrix fmsy, dvector bmsy){
+void write_proj_output(ofstream &ofsP, int syr, int nyr, double tac, int pyr, dvector p_sbt, dmatrix p_ft, dvar_matrix ft, double bo, dmatrix fmsy, dvector bmsy, bool include_msy){
   // Write the projection output to the file
   ofsP<<tac                        <<","
       <<p_sbt(pyr)                 <<","
@@ -90,14 +93,17 @@ void write_proj_output(ofstream &ofsP, int syr, int nyr, double tac, int pyr, dv
       <<p_ft(pyr,1)                <<","
       <<p_ft(pyr,1)/ft(1,nyr)      <<","
       <<(1. - mfexp(-p_ft(pyr,1))) <<","
-      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1,nyr))) <<","
-      //MSY based ref points
-      <<bmsy                       <<","
+      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1,nyr)));
+  if(include_msy){
+    //MSY based ref points
+    ofsP<<","<<bmsy                <<","
       <<p_sbt(pyr+1)/bmsy          <<","
       <<p_sbt(pyr+1)/(0.8*bmsy)    <<","
       <<p_sbt(pyr+1)/(0.4*bmsy)    <<","
       <<fmsy                       <<","
       <<p_ft(pyr,1)/fmsy           <<","
       <<(1. - mfexp(-fmsy))        <<","
-      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy))<<'\n';
+      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy));
+  }
+  ofsP<<'\n';
 }

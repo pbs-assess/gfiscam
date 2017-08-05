@@ -1,5 +1,6 @@
 # Any file with the word 'template' in its name.
 *template*
+*.docx
 
 # Compiled source #
 ###################

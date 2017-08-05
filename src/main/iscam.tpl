@@ -306,8 +306,8 @@ DATA_SECTION
 			t1 = sage;
 			t2 = nage;
 		}else{
-			t1 = 0;
-			t2 = 0;
+			t1 = sage;
+			t2 = nage;
 		}
 	END_CALCS
 	init_vector d_maturityVector(t1,t2);

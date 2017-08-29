@@ -10,12 +10,12 @@
 #endif
 
 /** \brief  Msy class
-
+	
 	The Msy class provides computational support for age-structured models
-	in which MSY-based (Maximum Sustainable Yield) reference points are
+	in which MSY-based (Maximum Sustainable Yield) reference points are 
 	required.  It is specifically designed to deal with cases in which there
 	are multiple fishing fleets that differ in selectivity and is capable of
-	determining optimal fishing mortality rates for each fleet and optimal
+	determining optimal fishing mortality rates for each fleet and optimal 
 	allocations for each fleet such that the sum of catches acrosss all fleets
 	is maximized.  There is also an option to determine MSY-based reference points
 	in cases where there are allocation agreements in place.
@@ -23,7 +23,7 @@
 	LUCIE'S RULE: the derivative of a sum is the sum of its derivatives.
 	Lucie says: there is some nasty calculus in here daddy, are you sure
 	you've got it right?
-
+	
 	© Copyright 2012 UBC Fisheries Centre - Martell. All Rights Reserved.
 
 	\author Steve Martell
@@ -42,7 +42,7 @@ private:
 	int     m_nage;		//!< oldest age class
 	int     m_ngear;	//!< number of gears
 	bool    m_FAIL;		//!< Flag for convergence
-
+	
 	double  m_ro;
 	double  m_h;
 	double  m_M;
@@ -55,7 +55,7 @@ private:
 	dmatrix m_V;		//!< Selectivity for each gear (rows) at age (col)
 	d3_array m_d3_V; 	//!< Selectivity for each gear, sex, age.
 	dmatrix m_lz;   	//!<  survivorship under fished conditions.
-
+	
 	double  m_phie;
 	double  m_phif;
 	dvector m_phiq;
@@ -65,23 +65,23 @@ private:
 	double  m_rmsy;
 	double  m_spr_msy;
 	double  m_bo;
-
+	
 	dvector m_ye;
 	double  m_be;
 	double  m_bi;	// spawning biomass at the start of the year.
 	double  m_re;
 	double  m_spr;
-
+	
 	double m_dYe;
 	double m_d2Ye;
-
+	
 	dvector m_f;	// value of the function to minimize (norm(p))
 	dvector m_g;	// gradient
 	dvector m_p;	// Newton-Raphson step for iteratively solving for Fmsy
-
-
+	
+	
 public:
-
+	
 	Msy()		// default constructor
 	{
 		m_ro = 1;
@@ -93,10 +93,10 @@ public:
 
 
 	~Msy(){}	// destructor
-
+	
 	// Getters
 	bool     getFail() { return m_FAIL;    }  /**< Flag for convergence */
-
+	
 	double     getRo() { return m_ro;      }  /**< Return unfished recruits*/
 	double   getPhie() { return m_phie;    }  /**< Return unfished spawning biomass per recruit*/
 	dvector  getFmsy() { return m_fmsy;    }  /**< Return vector of fishing mortality rates at MSY*/
@@ -114,8 +114,8 @@ public:
 	double     getRe() { return m_re;      }  /**< Return equilibrium recruits*/
 	double    getSpr() { return m_spr;     }  /**< Return Spawning Potential Ratio*/
 	dmatrix    getLz() { return m_lz;      }  /**< Return unfished survivorship vector*/
-
-
+	
+	
 	// Setters
 	void set_ro(double ro)   { m_ro = ro; }	//!< set unfished recruits
 	void  set_m(double m)    { m_M  = m;  }	//!< set natural mortality
@@ -123,7 +123,7 @@ public:
 	void set_fa(dvector& fa) { m_fa = fa; }	//!< set vector or mature weight-at-age
 	void set_wa(dvector& wa) { m_wa = wa; }	//!< set vector of weight-at-age
 	void  set_V(dmatrix& V)  { m_V  = V;  }	//!< set matrix of selectivities
-
+	
 	// Member functions
 	void        calc_phie();
 	void        calc_phie(double& _m, dvector& _fa);
@@ -135,7 +135,7 @@ public:
 	void         get_fmsy(dvector& fe);
 	void         get_fmsy(dvector& fe, dvector& ak);
 	void            print();
-
+	
 };
 
 #endif

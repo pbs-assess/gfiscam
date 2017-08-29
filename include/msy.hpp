@@ -18,21 +18,21 @@
 namespace rfp {
 	/**
 	 * @brief Base class for reference point calculations
-	 * @details The base class for MSY and SPR-based reference point
+	 * @details The base class for MSY and SPR-based reference point 
 	 * calculations.
-	 *
+	 * 
 	 * @param fe vector of fishing mortality rates
 	 * @return getFmsy is a pure virtual function.
 	 */
 	template<typename T, typename T1, typename T2>
-	class referencePoints
+	class referencePoints 
 	{
 	private:
-
+		
 		T1 m_fe;
 
 	public:
-
+		
 		// Pure virtual functions... set = 0;
 		virtual const T1 getFmsy(const T1 &fe) const = 0;
 		// virtual const Type getBmsy(const Type &be) const = 0;
@@ -41,7 +41,7 @@ namespace rfp {
 
 		void setFe(T1 & fe) { this -> m_fe = fe; }
 		T1 getFe()    const { return m_fe;     }
-
+		
 	};
 
 
@@ -49,9 +49,9 @@ namespace rfp {
 	/**
 	 * @brief MSY-based reference points
 	 * @details Class object for computing MSY-based reference points.
-	 *
+	 * 
 	 * @author Steven Martell
-	 *
+	 * 
 	 * @tparam T variable
 	 * @tparam T1 vector
 	 * @tparam T2 matrix
@@ -59,15 +59,16 @@ namespace rfp {
 	 */
 	template<class T, class T1, class T2, class T3>
 	class msy //: public referencePoints<T,T1,T2>
-	{
+	{  
 	private:
 		// Indexes for dimensions
 		int m_sage;
 		int m_nage;
 		int m_nGear;
 		int m_nGrp;
+		
 
-    	T m_ro;
+		T m_ro;
 		T m_bo;
 		T m_rmsy;
 		T m_be;			/// Equilibrium biomass
@@ -102,10 +103,9 @@ namespace rfp {
 
 		T3 m_Va;		/// Selectivity-at-age.
 
-		void calcPhie(); //RF:: bo from this function gets overwritten
+		void calcPhie();
 		void calcEquilibrium(const T1 &fe);
-
-
+		
 		//void calcEquilibrium(const T1 &fe);
 
 	public:
@@ -117,7 +117,7 @@ namespace rfp {
 		    const T2 wa ,
 		    const T2 fa ,
 		    const T3 V )
-		:m_ro(ro),m_h(h),m_rho(rho),m_Ma(ma),m_Wa(wa),m_Fa(fa),m_Va(V)
+		:m_ro(ro),m_h(h),m_rho(rho),m_Ma(ma),m_Wa(wa),m_Fa(fa),m_Va(V) 
 		{
 			//m_Va.allocate(*V);
 			//m_Va = *V;
@@ -131,7 +131,7 @@ namespace rfp {
 			m_nGrp = m_Ma.rowmax() - m_Ma.rowmin() + 1;
 			m_nGear = m_Va(1).rowmax();
 			//LOG<<"NGEAR "<<m_nGear<<'\n';
-
+			
 			m_sage = m_Ma.colmin();
 			m_nage = m_Ma.colmax();
 
@@ -150,10 +150,10 @@ namespace rfp {
 		virtual const T1 getMsy()  {return m_msy; }
 		virtual const T1 getAllocation() {return m_allocation; }
 		//virtual const T1 getdYe()  {return m_dYe; }
-
+		
 		void print();
 		void checkDerivatives(const T1 & fe);
-
+		
 	};
 
 	template<class T,class T1,class T2,class T3>
@@ -186,7 +186,7 @@ namespace rfp {
 	/**
 	 * @brief Check the derivative calculations.
 	 * @details Numerically check the analytical partial derivative calculations.
-	 *
+	 * 
 	 * @param fe vector of fishing mortality rates.
 	 * @tparam T double
 	 * @tparam T2 matrix
@@ -208,10 +208,10 @@ namespace rfp {
 		r1 = m_re;
 		q1 = m_phiq;
 
-
+		
 		for(int k = 1; k <= m_nGear; k++ )
 		{
-
+			
 			fh = fe;
 			fh(k) += hh;
 			calcEquilibrium(fh);
@@ -250,7 +250,7 @@ namespace rfp {
 	 * @details Calculate Fmsy for a given allocation vector ak.
 	 * This function returns a vector fishing mortality rates that
 	 * will maximize the sum of yeilds over all fleets.
-	 *
+	 * 
 	 * @param fe Fishing mortality rate
 	 * @param ak Allocation to each fleet
 	 * @tparam T double
@@ -263,7 +263,7 @@ namespace rfp {
 	{
 		T lb = 1.0e-10;
 		T ub = 5.0e+01;
-
+		
 		T fbar  = mean(fe);
 		T1 fk = fe;
 		T1 pk = ak / sum(ak);	//proportion of total catch
@@ -294,7 +294,7 @@ namespace rfp {
 
 		}
 		m_fe = fk;
-		m_rmsy = m_re;
+		m_rmsy = m_re; 
 		m_fmsy = m_fe;
 		m_bmsy = m_be;
 		m_msy  = m_ye;
@@ -305,9 +305,9 @@ namespace rfp {
 	/**
 	 * @brief get Fmsy vector
 	 * @details Use Newton Raphson method to determine Fmsy while maximizing the sum
-	 * of yields for all fleets.  Uses a backtrack method if estimates of Fmsy are
+	 * of yields for all fleets.  Uses a backtrack method if estimates of Fmsy are 
 	 * outsize the lower and upper bounds.
-	 *
+	 * 
 	 * @param fe vector of fishing mortality rates
 	 * @tparam T Number
 	 * @tparam T2 Matrix
@@ -328,7 +328,7 @@ namespace rfp {
 		{
 			calcEquilibrium(m_fe);
 			m_fe = m_fe +  m_fstp;
-
+			
 			// Backtrack if outside boundary conditions
 			for(int i = 1; i <= n; i++ )
 			{
@@ -340,23 +340,23 @@ namespace rfp {
 				}
 			}
 			//LOG<<iter<<" delta = "<<delta<<" fmsy = "<<m_fe<<'\n';
-
+			
+			
 		}
 		m_msy = m_ye;
 		m_allocation = m_msy/sum(m_msy);
 		m_bmsy = m_be;
 		m_fmsy = m_fe;
-		return(m_fe);
+		return(m_fe);	
 	}
 
 	template<class T, class T1, class T2, class T3>
 	void msy<T,T1,T2,T3>::calcEquilibrium(const T1 &fe)
 	{
-
-		//cout<<"Just arrived in calcEquilibrium"<<endl;
 		//LOG<<"Working on this routine"<<'\n';
 		int j,h,k,kk;
 		T phif = 0.0;
+		
 
 		T1 pza(m_sage,m_nage);
 		T1 psa(m_sage,m_nage);
@@ -423,7 +423,7 @@ namespace rfp {
 				if( j == m_nage )
 				{
 					lz(h,j) = lz(h,j)/oa(h,j);
-					lw(h,j) = lz(h,j-1)*sa(h,j-1)*psa(j)/oa(h,j);  //RF:: This is working because bo is correct
+					lw(h,j) = lz(h,j-1)*sa(h,j-1)*psa(j)/oa(h,j);
 				}
 
 				for( k = 1; k <= m_nGear; k++ )
@@ -431,31 +431,31 @@ namespace rfp {
 					// derivatives for survivorship
 					dlz(k)(j)  = sa(h)(j-1)*( dlz(k)(j-1)-lz(h)(j-1)*m_Va(h)(k)(j-1));
 					d2lz(k)(j) = sa(h)(j-1)*(d2lz(k)(j-1)+lz(h)(j-1)*square(m_Va(h)(k)(j-1)));
-
+					
 					// derivatives for spawning survivorship
-					dlw(k)(j)  = -lz(h)(j)*m_rho*m_Va(h)(k)(j)*psa(j);
+					dlw(k)(j)  = -lz(h)(j)*m_rho*m_Va(h)(k)(j)*psa(j); 
 					d2lw(k)(j) =  lz(h)(j)*square(m_rho)*square(m_Va(h)(k)(j))*psa(j);
 
 					if( j == m_nage ) // + group derivatives
 					{
-						dlz(k)(j)  = dlz(k)(j)/oa(h)(j)
+						dlz(k)(j)  = dlz(k)(j)/oa(h)(j) 
 						             - lz(h)(j-1)*sa(h)(j-1)*m_Va(h)(k)(j)*sa(h)(j)
 						             /square(oa(h)(j));
-
+						
 						dlw(k)(j)  = -lz(h)(j-1)*sa(h)(j-1)*m_rho*m_Va(h)(k)(j)/oa(h)(j)
 									- lz(h)(j-1)*psa(j)*m_Va(h)(k)(j)*sa(h)(j)
 									/square(oa(h)(j));
-
+						
 						T V1  	   = m_Va(h)(k)(j-1);
 						T V2  	   = m_Va(h)(k)(j);
 						T oa2 	   = oa(h)(j)*oa(h)(j);
-
-						d2lz(k)(j) = d2lz(k)(j-1)*sa(h)(j-1)/oa(h)(j)
+						
+						d2lz(k)(j) = d2lz(k)(j-1)*sa(h)(j-1)/oa(h)(j) 
 									+ 2*lz(h)(j-1)*V1*sa(h)(j-1)*V2*sa(h)(j)/oa2
 									+ 2*lz(h)(j-1)*sa(h)(j-1)*V2*V2*sa(h)(j)*sa(h)(j)
 									/(oa(h)(j)*oa2)
 									+ lz(h)(j-1)*sa(h)(j-1)*V2*V2*sa(h)(j)/oa2;
-
+						
 						d2lw(k)(j) = lz(h)(j-1)*square(m_rho)*square(V2)*psa(j)/oa(h)(j)
 									+ 2*lz(h)(j-1)*m_rho*square(V2)*psa(j)*sa(h)(j)/oa2
 									+ 2*lz(h)(j-1)*psa(j)*square(V2)*square(sa(h)(j))
@@ -470,10 +470,8 @@ namespace rfp {
 			} // m_nage
 
 			// Spawning biomass per recruit in fished conditions.
-			//phif += lz(h) * m_Fa(h);  //RF commented this out: I think this should be lw - to account for spawn timing
-
-			//RF CHANGE 1 (changing this on its own makes no difference)
-			phif += lw(h) * m_Fa(h);  //RF uncommented this: I think this should be used - to account for spawn timing
+			phif += lz(h) * m_Fa(h);
+			// phif += lw(h) * m_Fa(h);
 
 		} // m_nGrp
 		m_phif  = phif;
@@ -483,8 +481,8 @@ namespace rfp {
 		T1   dphif(1,m_nGear);   dphif.initialize();
 		T1  d2phif(1,m_nGear);  d2phif.initialize();
 		T1    phiq(1,m_nGear);    phiq.initialize();
-
-
+		
+		
 		T1     dre(1,m_nGear);     dre.initialize();
 		T1    d2re(1,m_nGear);    d2re.initialize();
 		// T1      t1(m_sage,m_nage);  t1.initialize();
@@ -506,8 +504,8 @@ namespace rfp {
 				phiq(k)   +=  lz(h) * qa_m(h)(k);
 
 				for( kk = 1; kk <= m_nGear; kk++ )
-				{
-					/*
+				{	
+					/*				
 					// changed back to ngear==1 to be consistent with spreadsheet.
 					if(m_nGear==1)  // was (if ngear==1), changed during debugging of nfleet>1
 					{
@@ -540,15 +538,15 @@ namespace rfp {
 					T1 t15 = elem_prod(t7,sa(h));
 					T1 t17 = elem_prod(m_Va(h)(kk),t0);
 					T1 t18 = elem_div(t17,za(h));
-					d2phiq(k)(kk)  += d2lz_m(h)(kk)*qa_m(h)(k)
-								+ t2*t9 - t2*t11 - t13*t14 -2.*t13*t15
+					d2phiq(k)(kk)  += d2lz_m(h)(kk)*qa_m(h)(k) 
+								+ t2*t9 - t2*t11 - t13*t14 -2.*t13*t15 
 								+ 2.*t13*t18;
 				} // m_nGear kk loop
 			} // m_nGear k loop
 		} // m_nGrp
 		m_phiq  = phiq;
 		m_dphiq = diagonal(dphiq);
-
+		
 
 		// 1st & 2nd partial derivatives for recruitment
 		T phif2 = square(m_phif);
@@ -557,9 +555,9 @@ namespace rfp {
 		for( k = 1; k <= m_nGear; k++ )
 		{
 			dre(k)      = m_ro*m_phie*dphif(k)/(phif2*km1);
-			d2re(k)     = -2.*m_ro*m_phie*dphif(k)*dphif(k)/(phif2*phif*km1)
-						+ m_ro*m_phie*d2phif(k)/(phif2*km1);
-		}
+			d2re(k)     = -2.*m_ro*m_phie*dphif(k)*dphif(k)/(phif2*phif*km1) 
+						+ m_ro*m_phie*d2phif(k)/(phif2*km1);		
+		}	
 		m_dre = dre;
 
 		// Equilibrium calculations
@@ -576,10 +574,10 @@ namespace rfp {
 		re<0?re=0.01:re=re;
 		ye   = re*elem_prod(fe,phiq);
 		be   = re * phif;
-		dye  = re*phiq
-			  + elem_prod(elem_prod(fe,phiq),dre)
+		dye  = re*phiq 
+			  + elem_prod(elem_prod(fe,phiq),dre) 
 			  + re*elem_prod(fe,diagonal(dphiq));
-
+			  
 
 		// LOG<<"dye "<<dye<<'\n';
 
@@ -588,14 +586,14 @@ namespace rfp {
 		{
 			for(k=1; k<=m_nGear; k++)
 			{
-				d2ye(k)(j) = fe(j)*phiq(j)*d2re(k)
-				             + 2.*fe(j)*dre(k)*dphiq(j)(k)
+				d2ye(k)(j) = fe(j)*phiq(j)*d2re(k) 
+				             + 2.*fe(j)*dre(k)*dphiq(j)(k) 
 				             + fe(j)*re*d2phiq(j)(k);
 				if(k == j)
 				{
 					d2ye(j)(k) += 2.*dre(j)*phiq(j)+2.*re*dphiq(k)(j);
 				}
-			}
+			} 
 		}
 
 		// Inverse of the Jacobi
@@ -616,8 +614,8 @@ namespace rfp {
 		// dye_ak = ak*dre*∑(fk*phik) + ak*re*(∑phik + Fi*dphi[i]/dFi + Fj*dphi[j]/dFi)
 		T1 dye_ak(1,m_nGear);
 		T2 d2ye_ak(1,m_nGear,1,m_nGear);
-		if(allocated(m_ak))
-		{
+		if(allocated(m_ak)) 
+		{	
 			//LOG<<"Allocated"<<'\n';
 			for( k = 1; k <= m_nGear; k++ )
 			{
@@ -625,16 +623,16 @@ namespace rfp {
 				dye_ak(k) = m_ak(k)*dre(k)*(fe*phiq)
 				          + m_ak(k)*re * (sum(phiq) + fe*dphiq(k));
 
-				          // The above may also be fe*column(dphiq,k)??
+				          // The above may also be fe*column(dphiq,k)?? 
 				// Now the second derivative
 				for( kk = 1; kk <= m_nGear; kk++ )
 				{
 					d2ye_ak(k)(kk) = m_ak(k)*d2re(kk)*(fe*phiq)
-					               + 2.0*m_ak(k)*dre(kk)*( sum(phiq)+fe*dphiq(kk) )
+					               + 2.0*m_ak(k)*dre(kk)*( sum(phiq)+fe*dphiq(kk) ) 
 					               + m_ak(k)*re*( 2.0*sum(diagonal(dphiq))+fe*d2phiq(kk) );
 				}
 
-			}
+			}	
 			m_fbar_stp = sum(dye_ak)/sum(diagonal(d2ye_ak));
 			m_dye      = dye_ak;
 			m_dYe      = sum(dye_ak);
@@ -668,9 +666,9 @@ namespace rfp {
 	 * @brief Calculate spawning biomass per recruit.
 	 * @details Calculate spawning biomass per recruit based on survivorship and maturity
 	 * at age.
-	 *
+	 * 
 	 * @author Steven Martell
-	 *
+	 * 
 	 * @param rho Fraction of natural mortality that occurs prior to spawning.
 	 * @param Ma Natural mortality rate at age and sex
 	 * @param Fa Maturity-at-age and sex
@@ -681,7 +679,7 @@ namespace rfp {
 	void msy<T,T1,T2,T3>::calcPhie()
 	{
 		int i,j;
-
+		
 		m_phie = 0;
 		T2 lx(1,m_nGrp,m_sage,m_nage);
 		lx.initialize();
@@ -689,19 +687,16 @@ namespace rfp {
 		{
 			 for( j = m_sage; j <= m_nage; j++ )
 			 {
-			 	lx(i,j) = exp(-m_Ma(i,j)*(j-m_sage)); // *exp(- m_rho*m_Ma(i,j))        - m_rho*m_Ma(i,j));
-			 	//cout<<"Using the function with timing correction commented out"<<endl;
+			 	lx(i,j) = exp(-m_Ma(i,j)*(j-m_sage));// - m_rho*m_Ma(i,j));
 			 	if(j==m_nage) lx(i,j) /= 1.0 -exp(-m_Ma(i,j));
 			 }
 			 m_phie += 1./(m_nGrp) * lx(i) * m_Fa(i);
 		}
 		m_lx = lx;
 		m_bo = m_ro * m_phie;
-        //m_bo = 5000.;  //RF TEST :: verifying that this function is called but the bo value is not used. bo goes on to be calculated again in calcEquilibrium.
-
 		// LOG<< "lx\n"<<lx<<'\n';
 		// LOG<<"Bo = "<<m_bo<<'\n';
-
+		
 	}
 
 

@@ -622,10 +622,10 @@ void Msy::calcEquilibrium(const dvector& fe)
 	{
 		for(k=1; k<=ngear; k++)
 		{
-			//dphif(k)  += dlz_m(h)(k)  * m_dFa(h);  //RF this does not account for spawn timing - msy results match when cntrl(13), d_rho, is zero
-			//d2phif(k) += d2lz_m(h)(k) * m_dFa(h); //RF this does not account for spawn timing - msy results match when cntrl(13), d_rho, is zero
-			dphif(k)   += dlw_m(h)(k)  * m_dFa(h); //RF this has spawn timing correction but msy results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
-			d2phif(k)  += d2lw_m(h)(k) * m_dFa(h); //RF this has spawn timing correction but msy results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
+			dphif(k)  += dlz_m(h)(k)  * m_dFa(h);  //RF this does not account for spawn timing - msy results match when cntrl(13), d_rho, is zero
+			d2phif(k) += d2lz_m(h)(k) * m_dFa(h); //RF this does not account for spawn timing - msy results match when cntrl(13), d_rho, is zero
+			//dphif(k)   += dlw_m(h)(k)  * m_dFa(h); //RF this has spawn timing correction but msy results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
+			//d2phif(k)  += d2lw_m(h)(k) * m_dFa(h); //RF this has spawn timing correction but msy results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
 
 			// per recruit yield
 			phiq(k)   +=  lz_m(h) * qa_m(h)(k);

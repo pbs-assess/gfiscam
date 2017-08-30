@@ -82,10 +82,10 @@ void slow_msy(dvector& ftest,
   lx(sage) = 1.0;
   lw(sage) = 1.0;
   for(i = sage; i <= nage; i++){
-    if(sage >1){
+    if(i >sage){
     	lx(i)=lx(i-1)*sa;
     }
-    lw(i) = lx(i) * mfexp(-Mbar*d_iscamCntrl(13));
+    lw(i) = lx(i) * mfexp(-Mbar*d_iscamCntrl(13)); //correction for spawn timing
   }
   lx(nage) /= (1 - sa);
   lw(nage) /= (1 - sa);
@@ -100,7 +100,7 @@ void slow_msy(dvector& ftest,
     Ss = mfexp(-za);
 
     //  Compute spawning biomass at time of spawning.
-    stmp      = mfexp(-za*d_iscamCntrl(13)); //RF this returns a vector(sage,nage) of 1s if cntrl(13) is set to zero; and a vector ~ 0.69 if cntrl(13) set to 1 
+    stmp      = mfexp(-za*d_iscamCntrl(13)); //RF this returns a vector(sage,nage) of 1s if cntrl(13) is set to zero; and a vector ~ 0.69 if cntrl(13) set to 1
     Ssb(1) = elem_prod(Nn(1), avg_fec)*stmp; //
    /*
     LOG<<"Nn "<<'\n'<<Nn(1)<<'\n';
@@ -120,7 +120,7 @@ void slow_msy(dvector& ftest,
       }
 
       //this is correct ... returns bo, MSY and FMSY verified in spreadsheet calcs. FMSY ref pts do not match SM's. B0 matches SM's.
-      Ssb(t + 1) = elem_prod(Nn(t + 1),avg_fec) * stmp; 
+      Ssb(t + 1) = elem_prod(Nn(t + 1),avg_fec) * stmp;
 
       //catch
       for(j = sage; j <= nage; j++){
@@ -131,6 +131,7 @@ void slow_msy(dvector& ftest,
     }
     ye(k) = Y(Nyr);
     be(k) = Ssb(Nyr);
+
   }
   //ye = finaly;
   //be = finalb;
@@ -148,6 +149,7 @@ void slow_msy(dvector& ftest,
       bmsy = be(k);
     }
   }
+
   LOG<<"Ref points from running out model\n";
   LOG<<msy<<'\n';
   LOG<<fmsy<<'\n';

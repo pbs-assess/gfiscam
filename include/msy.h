@@ -2,11 +2,11 @@
 #define _MSY_H_
 
 #ifndef MAXITER
-#define MAXITER 300
+#define MAXITER 500
 #endif
 
 #ifndef TOL
-#define TOL 1.e-04
+#define TOL 1.e-06
 #endif
 
 /** \brief  Msy class

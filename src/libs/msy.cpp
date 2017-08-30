@@ -471,7 +471,6 @@ void Msy::calcEquilibrium(const dvector& fe)
 	ngrp  = m_dWa.rowmax();
 
 	m_lz.allocate(1,ngrp,sage,nage);
-	//m_lw.allocate(1,ngrp,sage,nage); //RF ADDED THIS (spawn timing correction) ... can't find where it is declared
 
 	double      ro = m_ro;
 	double   kappa = 4.0*m_h/(1.0-m_h);  // Beverton-Holt model
@@ -569,7 +568,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 				{
 					dlz(k)(j)  = dlz(k)(j)/oa(j) - lz(j-1)*sa(j-1)*m_d3_V(h)(k)(j)*sa(j)/square(oa(j));
 
-					dlw(k)(j)  = -lz(j-1)*sa(j-1)*m_rho*m_d3_V(h)(k)(j)/oa(j)        //RF: the bug is here or in the second derivative
+					dlw(k)(j)  = -lz(j-1)*sa(j-1)*m_rho*m_d3_V(h)(k)(j)/oa(j)        //RF: possibly something wrong here or in the second derivative
 								- lz(j-1)*psa(j)*m_d3_V(h)(k)(j)*sa(j)/square(oa(j));
 
 					double V1  = m_d3_V(h)(k)(j-1);
@@ -581,7 +580,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 								+ 2*lz(j-1)*sa(j-1)*V2*V2*sa(j)*sa(j)/(oa(j)*oa2)
 								+ lz(j-1)*sa(j-1)*V2*V2*sa(j)/oa2;
 
-					d2lw(k)(j) = lz(j-1)*square(m_rho)*square(V2)*psa(j)/oa(j)  //RF: the bug is here or in the first derivative
+					d2lw(k)(j) = lz(j-1)*square(m_rho)*square(V2)*psa(j)/oa(j)  //RF: possibly something wrong here or in the first derivative
 								+ 2*lz(j-1)*m_rho*square(V2)*psa(j)*sa(j)/oa2
 								+ 2*lz(j-1)*psa(j)*square(V2)*square(sa(j))/(oa(j)*oa2)
 								+ lz(j-1)*psa(j)*square(V2)*sa(j)/oa2;
@@ -607,7 +606,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 
 	}// ngrp
 	phif2 = phif*phif;
-	m_lz  = lz_m;
+	m_lz  = lz_m;  //this doesn't seem to get used
 
 	// Incidence functions and associated derivatives
 	dvector  dphif(1,ngear);   dphif.initialize();
@@ -623,10 +622,10 @@ void Msy::calcEquilibrium(const dvector& fe)
 	{
 		for(k=1; k<=ngear; k++)
 		{
-			dphif(k)  += dlz_m(h)(k)  * m_dFa(h);  //RF this does not account for spawn timing - results match when cntrl(13), d_rho, is zero
-			d2phif(k) += d2lz_m(h)(k) * m_dFa(h); //RF this does not account for spawn timing - results match when cntrl(13), d_rho, is zero
-			//dphif(k)   += dlw_m(h)(k)  * m_dFa(h); //RF this has spawn timing correction but results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
-			//d2phif(k)  += d2lw_m(h)(k) * m_dFa(h); //RF this has spawn timing correction but results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
+			//dphif(k)  += dlz_m(h)(k)  * m_dFa(h);  //RF this does not account for spawn timing - msy results match when cntrl(13), d_rho, is zero
+			//d2phif(k) += d2lz_m(h)(k) * m_dFa(h); //RF this does not account for spawn timing - msy results match when cntrl(13), d_rho, is zero
+			dphif(k)   += dlw_m(h)(k)  * m_dFa(h); //RF this has spawn timing correction but msy results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
+			d2phif(k)  += d2lw_m(h)(k) * m_dFa(h); //RF this has spawn timing correction but msy results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
 
 			// per recruit yield
 			phiq(k)   +=  lz_m(h) * qa_m(h)(k);
@@ -645,7 +644,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 			dvector t3 = sa_m(h)-t0;
 			dphiq(k)  += qa_m(h)(k)*dlz_m(h)(k) + t1 * t3;
 
-			// 2nd derivative for per recruit yield (nasty)
+			// 2nd derivative for per recruit yield (nasty) -- RF: this works for one fleet with no spawn timing correction ... congrats!
 			dvector t2  = 2. * dlz_m(h)(k);
 			dvector V2  = elem_prod(m_d3_V(h)(k),m_d3_V(h)(k));
 			dvector t5  = elem_div(elem_prod(m_dWa(h),V2),za_m(h));
@@ -737,7 +736,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 	m_g    = diagonal(d2ye);		//Gradient vector
 	m_f    = dye;   				//Value of the function to minimize
 
-   cout<<"m_f = "<<m_f<<endl;
+   cout<<"m_f = "<<m_f<<endl<<endl;
 
 	// cout<<"mean za = "<<mean(za_m)<<endl;
 

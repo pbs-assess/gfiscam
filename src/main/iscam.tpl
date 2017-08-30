@@ -1102,8 +1102,9 @@ DATA_SECTION
 	// | 15-> switch for generating selex based on IFD and cohort biomass
   // | 16-> toggle to fit to annual mean weights for commercial catch
   // | 17-> toggle to do the fmsy calculations (set to 0 for herring)
+  // | 18-> toggle to perform "slow" fmsy test (runs model out 100 years)
 
-	init_vector d_iscamCntrl(1,17);
+	init_vector d_iscamCntrl(1,18);
 	int verbose;
 	init_int eofc;
 	LOC_CALCS
@@ -4248,10 +4249,13 @@ FUNCTION void calcReferencePoints()
   	      calculations. This should probably be done in the projection File Control.
   	*/
   	if(delaydiff){
-      run_FRPdd();
+      if(d_iscamCntrl(18)){
+        run_FRPdd();
+      }
     }else{
-     run_FRP(); //RF code for testing reference point calcs. Should implement a switch for this -- see CG.
-     
+      if(d_iscamCntrl(18)){
+        run_FRP(); //RF code for testing reference point calcs.
+      }
       int kk,ig;
       // | (1) : Matrix of selectivities for directed fisheries.
       // |     : log_sel(gear)(n_ags)(year)(age)

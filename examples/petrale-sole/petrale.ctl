@@ -116,6 +116,7 @@
  0          # 15 -switch for IFD distribution in selectivity simulations
  0          # 16 -toggle fit to annual mean weights for commercial catch
  1          # 17 -toggle to do the fmsy calculations (set to 0 for herring)
+ 1          # 18 -toggle to perform "slow" fmsy test (runs model out 100 years)
 ##
 ## ------------------------------------------------------------------------- ##
 ## MARKER FOR END OF CONTROL FILE (eofc)

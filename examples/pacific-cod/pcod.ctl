@@ -98,30 +98,36 @@
 ## ------------------------------------------------------------------------- ##
 ## OTHER MISCELANEOUS CONTROLS                                               ##
 ## ------------------------------------------------------------------------- ##
- 0    # 1  -verbose ADMB output (0=off, 1=on)
- 1    # 2  -recruitment model (1=beverton-holt, 2=ricker)
- 0.2  # 3  -std in observed catches in first phase.
- 0.05 # 4  -std in observed catches in last phase.
- 0    # 5  -Assume unfished equilibrium in first year (0=FALSE, 1=TRUE, 2 = AT EQUILIBRIUM WITH FISHING MORTALITY IN SYR - IMPLEMENTED ONLY IN DELAY DIFF MODEL)
- 1.00 # 6  -Maternal effects multiplier
- 0.20 # 7  -Mean fishing mortality for regularizing the estimates of Ft
- 2.0  # 8  -std in mean fishing mortality in first phase
- 4.0  # 9  -std in mean fishing mortality in last phase
--1    # 10 -phase for estimating m_deviations (use -1 to turn off mdevs)
- 0.1  # 11 -std in deviations for natural mortality
-12    # 12 -number of estimated nodes for deviations in natural mortality
- 0.   # 13 -fraction of total mortality that takes place prior to spawning
-      #      NOT IMPLEMENTED IN DELAY DIFFERENCE MODEL
-      #      If this is greater than 0, the "slow" fmsy routine will
-      #      be used instead of the newton-rhapson routine. The MSY-
-      #      based reference points in the report file will reflect this.
-      #      If greater than 0, a file called TEST_frp.rep will be produced.
- 0    # 14 -number of prospective years to start estimation from syr
- 0    # 15 -switch for IFD distribution in selectivity simulations
- 1    # 16 -toggle fit to annual mean weights for commercial catch
- 1    # 17 -toggle to do the fmsy calculations (set to 0 for herring)
- 1    # 18 -toggle to perform "slow" fmsy test (runs model out 100 years)
-      #      this produces a file called TEST_frp.rep.
+ 0          # 1  -verbose ADMB output (0=off, 1=on)
+ 1          # 2  -recruitment model (1=beverton-holt, 2=ricker)
+ 0.2        # 3  -std in observed catches in first phase.
+ 0.05       # 4  -std in observed catches in last phase.
+ 0          # 5  -Assume unfished equilibrium in first year (0=FALSE, 1=TRUE, 2 = AT EQUILIBRIUM WITH FISHING MORTALITY IN SYR - IMPLEMENTED ONLY IN DELAY DIFF MODEL)
+ 1.00       # 6  -Maternal effects multiplier
+ 0.20       # 7  -Mean fishing mortality for regularizing the estimates of Ft
+ 2.0        # 8  -std in mean fishing mortality in first phase
+ 4.0        # 9  -std in mean fishing mortality in last phase
+-1          # 10 -phase for estimating m_deviations (use -1 to turn off mdevs)
+ 0.1        # 11 -std in deviations for natural mortality
+12          # 12 -number of estimated nodes for deviations in natural mortality
+ 0.         # 13 -fraction of total mortality that takes place prior to spawning
+            #      NOT IMPLEMENTED IN DELAY DIFFERENCE MODEL
+            #      If this is greater than 0, the "slow" fmsy routine will
+            #      be used instead of the newton-rhapson routine. The MSY-
+            #      based reference points in the report file will reflect this.
+            #      If greater than 0, a file called TEST_frp.rep will be produced.
+ 0          # 14 -number of prospective years to start estimation from syr
+ 0          # 15 -switch for IFD distribution in selectivity simulations
+ 1          # 16 -toggle fit to annual mean weights for commercial catch
+ 1          # 17 -toggle to do the fmsy calculations (set to 0 for herring)
+ 0          # 18 -toggle to perform "slow" fmsy test (runs model out 100 years)
+            #      this produces a file called TEST_frp.rep.
+ 0.00001    # 19 -precision for F for the "slow" fmsy calculations (only used if
+            #      control 18 is 1). This must be a maximum of 0.0001 or the
+            #      program will stop.
+ 3          # 20 -maximum F for the "slow" fmsy calculations (only used if
+            #      control 18 is 1). If this is greater than 1, a warning will
+            #      be issued because it will take a long time to run.
 ##
 ## ------------------------------------------------------------------------- ##
 ## MARKER FOR END OF CONTROL FILE (eofc)

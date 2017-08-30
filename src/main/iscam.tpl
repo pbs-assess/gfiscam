@@ -1097,17 +1097,42 @@ DATA_SECTION
 	// | 10-> phase for estimating deviations in natural mortality.
 	// | 11-> std in natural mortality deviations.
 	// | 12-> number of estimated nodes for deviations in natural mortality
-	// | 13-> fraction of total mortality that takes place prior to spawning
+  // | 13-> fraction of total mortality that takes place prior to spawning
+  // |       NOT IMPLEMENTED IN DELAY DIFFERENCE MODEL
+  // |       If this is greater than 0, the "slow" fmsy routine will
+  // |       be used instead of the newton-rhapson routine. The MSY-
+  // |       based reference points in the report file will reflect this.
+  // |       If greater than 0, a file called TEST_frp.rep will be produced.
 	// | 14-> number of prospective years to start estimation from syr.
 	// | 15-> switch for generating selex based on IFD and cohort biomass
   // | 16-> toggle to fit to annual mean weights for commercial catch
   // | 17-> toggle to do the fmsy calculations (set to 0 for herring)
   // | 18-> toggle to perform "slow" fmsy test (runs model out 100 years)
+  // |       this produces a file called TEST_frp.rep.
+  // | 19-> precision for F for the "slow" fmsy calculations (only used if
+  // |       control 18 is 1). This must be a maximum of 0.0001 or the
+  // |       program will stop.
+  // | 20-> maximum F for the "slow" fmsy calculations (only used if
+  // |       control 18 is 1). If this is greater than 1, a warning will
+  // |       be issued because it will take a long time to run.
 
-	init_vector d_iscamCntrl(1,18);
+	init_vector d_iscamCntrl(1,20);
 	int verbose;
 	init_int eofc;
 	LOC_CALCS
+    if((d_iscamCntrl(13) || d_iscamCntrl(19)) && d_iscamCntrl(19) > 0.0001){
+      cerr<<"Error - you have set the precision for the slow msy calculations"
+        " too high. The maximum is 0.0001.\n";
+      exit(1);
+    }
+    if((d_iscamCntrl(13) || d_iscamCntrl(19)) && d_iscamCntrl(19) < 0.000001){
+      cout<<"Warning - you have set the precision for the slow msy calculations"
+        " below 0.000001. This may cause the program to run for a longer time.\n";
+    }
+    if((d_iscamCntrl(13) || d_iscamCntrl(19)) && d_iscamCntrl(20) > 1){
+      cout<<"Warning - you have set the maximum F value above 1. This may cause"
+        " the program to run for a longer time.\n";
+    }
 		verbose = d_iscamCntrl(1);
 		if(verbose) LOG<<d_iscamCntrl;
 		for(int ig=1;ig<=n_ags;ig++)
@@ -6285,9 +6310,12 @@ FUNCTION void run_FRP()
     LOG<<"\n*********Getting reference points the slow way************\n";
     LOG<<"*******************************************\n\n";
   }
-  dvector ftest(1, 300001);  //Vector of test F from 0 to 3 by increment of 0.00001. Increment needs to be this small to acount for rounding differences
-  ftest.fill_seqadd(0, 0.00001);
-  //ftest(1) =  0.;
+  // ftest is a vector of F's from 0 to the number selected in the control
+  //  file with the number of elements necessary to match the precision
+  //  selected in the control file.
+  int vec_size = (int)(d_iscamCntrl(20) / d_iscamCntrl(19)) + 1;
+  dvector ftest(1, vec_size);
+  ftest.fill_seqadd(0, d_iscamCntrl(19));
   int Nf = size_count(ftest);
   double Fmsy;
   double MSY;
@@ -6320,6 +6348,8 @@ FUNCTION void run_FRP()
   }
 
   ofstream ofsr("TEST_frp.rep");
+  ofsr<<"Max F"<<'\n'<<d_iscamCntrl(20)<<'\n';
+  ofsr<<"Precision for F"<<'\n'<<d_iscamCntrl(19)<<'\n';
   ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
   ofsr<<"MSY"<<'\n'<<MSY<<'\n';
   ofsr<<"Bmsy"<<'\n'<<Bmsy<<'\n';

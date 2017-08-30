@@ -125,8 +125,14 @@
  0          # 15 -switch for IFD distribution in selectivity simulations
  0          # 16 -toggle fit to annual mean weights for commercial catch
  1          # 17 -toggle to do the fmsy calculations (set to 0 for herring)
- 1          # 18 -toggle to perform "slow" fmsy test (runs model out 100 years)
+ 0          # 18 -toggle to perform "slow" fmsy test (runs model out 100 years)
             #      this produces a file called TEST_frp.rep.
+ 0.00001    # 19 -precision for F for the "slow" fmsy calculations (only used if
+            #      control 18 is 1). This must be a maximum of 0.0001 or the
+            #      program will stop.
+ 3          # 20 -maximum F for the "slow" fmsy calculations (only used if
+            #      control 18 is 1). If this is greater than 1, a warning will
+            #      be issued because it will take a long time to run.
 ##
 ## ------------------------------------------------------------------------- ##
 ## MARKER FOR END OF CONTROL FILE (eofc)

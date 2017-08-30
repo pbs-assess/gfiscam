@@ -4249,13 +4249,12 @@ FUNCTION void calcReferencePoints()
   	      calculations. This should probably be done in the projection File Control.
   	*/
   	if(delaydiff){
-      if(d_iscamCntrl(18)){
-        run_FRPdd();
-      }
+      run_FRPdd();
     }else{
-      if(d_iscamCntrl(18)){
+      if(d_iscamCntrl(13) || d_iscamCntrl(18)){
         run_FRP(); //RF code for testing reference point calcs.
-      }else{
+      }
+      if(!d_iscamCntrl(13)){
         int kk,ig;
         // | (1) : Matrix of selectivities for directed fisheries.
         // |     : log_sel(gear)(n_ags)(year)(age)
@@ -6294,9 +6293,9 @@ FUNCTION void run_FRP()
     LOG<<"\n*********Getting reference points the slow way************\n";
     LOG<<"*******************************************\n\n";
   }
-   dvector ftest(1, 60001);  //Vector of test F from 1 to 3 by increment of 0.00001. Increment needs to be this small to acount for rounding differences
-   ftest.fill_seqadd(0, 0.00001);
-  ftest(1) =  0.; 
+  dvector ftest(1, 60001);  //Vector of test F from 1 to 3 by increment of 0.00001. Increment needs to be this small to acount for rounding differences
+  ftest.fill_seqadd(0, 0.00001);
+  ftest(1) =  0.;
   int Nf = size_count(ftest);
   double Fmsy;
   double MSY;
@@ -6308,19 +6307,25 @@ FUNCTION void run_FRP()
   //Matrix for putting numerically derived equilibrium catches for
   // calculating MSY and FMSY (in R)
   dvector Be(1,Nf);
-  double fmsy,msy,bmsy;
   dvector ye(1, Nf);
   dvector be(1, Nf);
 
-  slow_msy(ftest, ye, be, msy, fmsy, bmsy, B0,
+  slow_msy(ftest, Ye, Be, MSY, Fmsy, Bmsy, B0,
            sage, nage, nyr, M, dWt_bar, ma, ro, log_sel,
            so, beta, d_iscamCntrl, pf_cntrl);
 
-  Fmsy = fmsy;
-  MSY = msy;
-  Bmsy = bmsy;
-  Ye = ye;
-  Be = be;
+  if(d_iscamCntrl(13)){
+    // If the fraction of total mortality that takes place
+    //  before spawning is greater than 0, set the report
+    //  file outputs to the results from the slow_msy
+    //  routine
+    fmsy = Fmsy;
+    msy = MSY;
+    bmsy = Bmsy;
+    ye = Ye;
+    be = Be;
+    bo = B0;
+  }
 
   ofstream ofsr("TEST_frp.rep");
   ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
@@ -6329,7 +6334,7 @@ FUNCTION void run_FRP()
   ofsr<<"ftest"<<'\n'<<ftest<<'\n';
   ofsr<<"Ye"<<'\n'<<Ye<<'\n';
   ofsr<<"Be"<<'\n'<<Be<<'\n';
-    ofsr<<"B0"<<'\n'<<B0<<'\n';
+  ofsr<<"B0"<<'\n'<<B0<<'\n';
 
 //RF's function for calling slow msy routine to test ref points -- currently
 // the only ref points implemented for delay difference model

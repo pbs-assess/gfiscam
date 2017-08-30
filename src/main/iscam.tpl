@@ -4287,8 +4287,7 @@ FUNCTION void calcReferencePoints()
 
       dvar_vector dftry(1,nfleet);
       dftry  = 0.6/nfleet * mean(M_bar);
-     //dftry  = 0.6 * mean(M_bar); //RF testing whether this is causing differences between these calcs and slow_msy
-
+     
       // | (4) : Instantiate msy class for each stock
       for(g=1;g<=ngroup;g++){
         double d_rho = d_iscamCntrl(13); //this is fraction of mortality that takes place prior to spawning
@@ -6320,7 +6319,7 @@ FUNCTION void slow_msy(dvector& ftest,
     if(sage >1){
     	lx(i)=lx(i-1)*sa;
     }
-    lw(i) = lx(i) * mfexp(-Mbar*d_iscamCntrl(13));  //RF do not do this correction for spawn timing if F=0   
+    lw(i) = lx(i) * mfexp(-Mbar*d_iscamCntrl(13));  
   }
   lx(nage) /= (1 - sa);
   lw(nage) /= (1 - sa);
@@ -6330,11 +6329,14 @@ FUNCTION void slow_msy(dvector& ftest,
     if(k==1) Nn(1, j) = Ro * lx(j);  //unfished ... do not adjust for survey timing
     if(k>1) Nn(1, j) = Ro * lw(j); //fished ... adjust for survey timing
   }
- Ssb(1) = sum(elem_prod(Nn(1), avg_fec)*mfexp(-Mbar*d_iscamCntrl(13))); //
-  
+   
   for(k = 1; k <= NF; k++){
     za = (Mbar + ftest(k) * vd);
     Ss = mfexp(-za);
+    
+   //  Compute spawning biomass at time of spawning.
+    stmp      = mfexp(-za*d_iscamCntrl(13)); //RF this returns a vector(sage,nage) of 1s if cntrl(13) is set to zero; and a vector ~ 0.69 if cntrl(13) set to 1 
+    Ssb(1) = elem_prod(Nn(1), avg_fec)*stmp; //
       
    /*
     LOG<<"Nn "<<'\n'<<Nn(1)<<'\n';
@@ -6354,9 +6356,6 @@ FUNCTION void slow_msy(dvector& ftest,
 		Nn(t + 1)(sage) = value(so(1)) * Ssb(t-1 ) /  (1 + value(beta(1)) * Ssb(t -1));
 	      }
 
-	      //  Compute spawning biomass at time of spawning.
-	      stmp      = mfexp(-za*d_iscamCntrl(13)); //RF this returns a vector(sage,nage) of 1s if cntrl(13) is set to zero; and a vector ~ 0.69 if cntrl(13) set to 1 
-	  	     	     
 	     //this is correct ... returns bo, MSY and FMSY verified in spreadsheet calcs. FMSY ref pts do not match SM's. B0 matches SM's.
 	     Ssb(t + 1) = elem_prod(Nn(t + 1),avg_fec) * stmp; 
 

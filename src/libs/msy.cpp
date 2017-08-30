@@ -419,28 +419,6 @@ void Msy::calc_equilibrium(const dvector& fe)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /** \brief Equilibrium model conditional on a vector of fishing mortality rates.
 
 	This is the main engine behind the Msy class.
@@ -481,6 +459,8 @@ void Msy::calcEquilibrium(const dvector& fe)
 
 
 	*/
+    cout<<"In calcEquilibrium in msy.cpp"<<endl;
+    cout<<"Is the objective function of the Newton Raphson algorithm being minimized?"<<endl;
 
 	// Indexes for dimensions
 	int h,j,k;
@@ -491,6 +471,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 	ngrp  = m_dWa.rowmax();
 
 	m_lz.allocate(1,ngrp,sage,nage);
+	//m_lw.allocate(1,ngrp,sage,nage); //RF ADDED THIS (spawn timing correction) ... can't find where it is declared
 
 	double      ro = m_ro;
 	double   kappa = 4.0*m_h/(1.0-m_h);  // Beverton-Holt model
@@ -541,10 +522,10 @@ void Msy::calcEquilibrium(const dvector& fe)
 		}
 		za_m(h) = za;
 
-		pza     = m_rho*za;
+		pza     = m_rho*za; //spawn timimg correction
 		sa      = exp(-za);
 		sa_m(h) = sa;
-		psa     = exp(-pza);
+		psa     = exp(-pza); //spawn timimg correction
 		oa      = 1.-sa;
 		oa_m(h) = oa;
 		poa     = 1.-elem_prod(sa,psa);
@@ -571,7 +552,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 			if( j==nage )
 			{
 				lz(j) = lz(j)/oa(j);
-				lw(j) = lz(j-1)*sa(j-1)*psa(j)/oa(j);
+				lw(j) = lz(j-1)*sa(j-1)*psa(j)/oa(j); //spawn timing correction
 			}
 
 			for(k=1; k<=ngear; k++)
@@ -588,7 +569,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 				{
 					dlz(k)(j)  = dlz(k)(j)/oa(j) - lz(j-1)*sa(j-1)*m_d3_V(h)(k)(j)*sa(j)/square(oa(j));
 
-					dlw(k)(j)  = -lz(j-1)*sa(j-1)*m_rho*m_d3_V(h)(k)(j)/oa(j)
+					dlw(k)(j)  = -lz(j-1)*sa(j-1)*m_rho*m_d3_V(h)(k)(j)/oa(j)        //RF: the bug is here or in the second derivative
 								- lz(j-1)*psa(j)*m_d3_V(h)(k)(j)*sa(j)/square(oa(j));
 
 					double V1  = m_d3_V(h)(k)(j-1);
@@ -600,7 +581,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 								+ 2*lz(j-1)*sa(j-1)*V2*V2*sa(j)*sa(j)/(oa(j)*oa2)
 								+ lz(j-1)*sa(j-1)*V2*V2*sa(j)/oa2;
 
-					d2lw(k)(j) = lz(j-1)*square(m_rho)*square(V2)*psa(j)/oa(j)
+					d2lw(k)(j) = lz(j-1)*square(m_rho)*square(V2)*psa(j)/oa(j)  //RF: the bug is here or in the first derivative
 								+ 2*lz(j-1)*m_rho*square(V2)*psa(j)*sa(j)/oa2
 								+ 2*lz(j-1)*psa(j)*square(V2)*square(sa(j))/(oa(j)*oa2)
 								+ lz(j-1)*psa(j)*square(V2)*sa(j)/oa2;
@@ -614,8 +595,15 @@ void Msy::calcEquilibrium(const dvector& fe)
 		}// age
 		lz_m(h) = lz;
 		lw_m(h) = lw;
-		phisf += lz * m_dFa(h);
-		phif  += lz * m_dFa(h);
+
+		//cout<<"f = "<<fe<<endl;  RF Tested OK
+		//cout<<"lz_m = "<<lz_m<<endl;
+		//cout<<"lw_m = "<<lw_m<<endl;
+
+		//phisf += lz * m_dFa(h); //RF COMMENTED THIS OUT (no spawn timing correction)
+		//phif  += lz * m_dFa(h); //RF COMMENTED THIS OUT (no spawn timing correction)
+		phisf += lw * m_dFa(h); //RF ADDED THIS (spawn timing correction)
+		phif  += lw * m_dFa(h); //RF ADDED THIS (spawn timing correction)
 
 	}// ngrp
 	phif2 = phif*phif;
@@ -635,13 +623,14 @@ void Msy::calcEquilibrium(const dvector& fe)
 	{
 		for(k=1; k<=ngear; k++)
 		{
-			dphif(k)  += dlz_m(h)(k)  * m_dFa(h);
-			d2phif(k) += d2lz_m(h)(k) * m_dFa(h);
-			//dphif(k)   += dlw_m(h)(k)  * m_dFa(h);
-			//d2phif(k)  += d2lw_m(h)(k) * m_dFa(h);
+			dphif(k)  += dlz_m(h)(k)  * m_dFa(h);  //RF this does not account for spawn timing - results match when cntrl(13), d_rho, is zero
+			d2phif(k) += d2lz_m(h)(k) * m_dFa(h); //RF this does not account for spawn timing - results match when cntrl(13), d_rho, is zero
+			//dphif(k)   += dlw_m(h)(k)  * m_dFa(h); //RF this has spawn timing correction but results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
+			//d2phif(k)  += d2lw_m(h)(k) * m_dFa(h); //RF this has spawn timing correction but results do not match spreadsheet, search algorithm doesn't work, even when cntrl(13), d_rho, is zero
 
 			// per recruit yield
 			phiq(k)   +=  lz_m(h) * qa_m(h)(k);
+
 			if(ngear>=1)  // was (if ngear==1), changed during debugging of nfleet>1
 			{
 				// dphiq = wa*oa*va*dlz/za + lz*wa*va^2*sa/za - lz*wa*va^2*oa/za^2
@@ -669,7 +658,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 			dvector t17 = elem_prod(m_d3_V(h)(k),t0);
 			dvector t18 = elem_div(t17,za_m(h));
 			d2phiq(k)  += d2lz_m(h)(k)*qa_m(h)(k)
-						+ t2*t9 - t2*t11 - t13*t14 -2.*t13*t15
+					+ t2*t9 - t2*t11 - t13*t14 -2.*t13*t15
 						+ 2.*t13*t18;
 		}   // gear
 	}  // ngrp
@@ -690,17 +679,22 @@ void Msy::calcEquilibrium(const dvector& fe)
 	dmatrix d2ye(1,ngear,1,ngear);
 	dmatrix invJ(1,ngear,1,ngear);
 
-	// cout<<"Ro = "<<ro<<endl;
-	// cout<<"kappa="<<kappa<<endl;
-	// cout<<"phie=" <<m_phie<<endl;
-	// cout<<"phif = "<<phif<<endl;
-	// cout<<"km1 = "<<km1<<endl;
-
-
-	re   = ro*(kappa-m_phie/phif) / km1;
+	re   = ro*(kappa-m_phie/phif) / km1; //km1 = kappa - 1
 	ye   = re*elem_prod(fe,phiq);
-	// dye  = re*phiq + elem_prod(fe,elem_prod(phiq,dre)) + elem_prod(fe,re*dphiq);
+	//dye  = re*phiq + elem_prod(fe,elem_prod(phiq,dre)) + elem_prod(fe,re*dphiq);
 	dye  = re*phiq + elem_prod(fe,phiq)*dre + (fe*re)*dphiq;
+
+  //all of these check out against Robyn's spreadsheet so there must be an error in the derivatives somewhere
+   cout<<"F = "<<fe<<endl;
+   //cout<<"Ro = "<<ro<<endl;
+   //cout<<"kappa="<<kappa<<endl;
+    //cout<<"phie=" <<m_phie<<endl;
+  // cout<<"phif = "<<phif<<endl;
+	//cout<<"km1 = "<<km1<<endl;
+   // cout<<"re=" <<re<<endl;
+	cout<<"ye=" <<ye<<endl;
+	//cout<<"qa=" <<qa<<endl;
+	//cout<<"phiq=" <<phiq<<endl;
 
 	// cout<<"Re     = "<<re<<endl;
 	// cout<<"phiq   = "<<phiq<<endl;
@@ -742,6 +736,8 @@ void Msy::calcEquilibrium(const dvector& fe)
 	m_d2Ye = sum(diagonal(d2ye));
 	m_g    = diagonal(d2ye);		//Gradient vector
 	m_f    = dye;   				//Value of the function to minimize
+
+   cout<<"m_f = "<<m_f<<endl;
 
 	// cout<<"mean za = "<<mean(za_m)<<endl;
 

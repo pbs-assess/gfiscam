@@ -738,7 +738,7 @@ DATA_SECTION
 						d3_len_age(ig)(iyr)(idx(ii)) = pow(d3_wt_avg(ig)(iyr)(idx(ii))
 					                               /d_a(ig),1./d_b(ig));
 					}
-					d3_wt_mat(ig)(iyr)      = elem_prod(ma(ig),d3_wt_avg(ig)(iyr)); //this is fecundity (RF)
+					d3_wt_mat(ig)(iyr)      = elem_prod(ma(ig),d3_wt_avg(ig)(iyr));
 				}
 			}
 		}
@@ -749,7 +749,7 @@ DATA_SECTION
 			dWt_bar(ig)        = colsum(d3_wt_avg(ig).sub(pf_cntrl(3),pf_cntrl(4)));
 			dWt_bar(ig)       /= pf_cntrl(4)-pf_cntrl(3)+1;
 			d3_wt_avg(ig)(nyr+1) = dWt_bar(ig);
-			d3_wt_mat(ig)(nyr+1) = elem_prod(dWt_bar(ig),ma(ig)); //this is fecundity (RF)
+			d3_wt_mat(ig)(nyr+1) = elem_prod(dWt_bar(ig),ma(ig));
 			d3_len_age(ig)(nyr+1) = pow(dWt_bar(ig)/d_a(ig),1./d_b(ig));
 		}
 		
@@ -4250,8 +4250,8 @@ FUNCTION void calcReferencePoints()
   	if(delaydiff){
       run_FRPdd();
     }else{
-      run_FRP(); //RF code for testing reference point calcs. Should implement a switch for this -- see CG.
-      
+     run_FRP(); //RF code for testing reference point calcs. Should implement a switch for this -- see CG.
+     
       int kk,ig;
       // | (1) : Matrix of selectivities for directed fisheries.
       // |     : log_sel(gear)(n_ags)(year)(age)
@@ -4277,8 +4277,8 @@ FUNCTION void calcReferencePoints()
         M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
         M_bar(ig) /= pf_cntrl(4)-pf_cntrl(3)+1;
       }
-      
-       // | (3) : Initial guess for fmsy for each fleet
+
+      // | (3) : Initial guess for fmsy for each fleet
       // |     : set fmsy = 2/3 of M divided by the number of fleets
       fmsy.initialize();
       fall.initialize();
@@ -4287,55 +4287,45 @@ FUNCTION void calcReferencePoints()
 
       dvar_vector dftry(1,nfleet);
       dftry  = 0.6/nfleet * mean(M_bar);
-     
+
       // | (4) : Instantiate msy class for each stock
       for(g=1;g<=ngroup;g++){
-        double d_rho = d_iscamCntrl(13); //this is fraction of mortality that takes place prior to spawning
+        double d_rho = d_iscamCntrl(13);
         dvector d_mbar = M_bar(g);
         dvector d_wa = dWt_bar(g);
         dvector d_fa = fa_bar(g);
         
-           //RF checking that average weights are the same in calcReferencePoints as in the slow_MSY code 
-	  cout<<"calcReferencePoints: dWt_bar, fa_bar , M_bar, sel, ro, steepness, rho  "<<endl;
-	  cout<<"g= "<<g<<endl;
-	  cout<<dWt_bar(g)<<endl;
-	  cout<< fa_bar(g)<<endl;
-	  cout<< M_bar(g)<<endl;
-	  cout<< dvar_V<<endl;
-	  cout<< ro(g)<<endl;
-	  cout<< steepness(g)<<endl;
-          cout<< "nfleet="<<nfleet<<endl;
+         //RF checking that average weights are the same in calcReferencePoints as in the slow_MSY code 
+		  cout<<"calcReferencePoints: dWt_bar, fa_bar , M_bar, sel, ro, steepness, rho  "<<endl;
+		  cout<<"g= "<<g<<endl;
+		  cout<<dWt_bar(g)<<endl;
+		  cout<< fa_bar(g)<<endl;
+		  cout<< M_bar(g)<<endl;
+		  cout<< dvar_V<<endl;
+		  cout<< ro(g)<<endl;
+		  cout<< steepness(g)<<endl;
+	          cout<< "nfleet="<<nfleet<<endl;
           cout<<"d_rho"<< d_rho<<endl;
 
         rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
-          c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);  //RF, why aren't d_mbar, d_wa, d_fa being passed in?? Some of these are vectors if g>1
+          c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
         bo  = c_MSY.getBo();
         if(d_iscamCntrl(17)){
-          dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak); //
+          dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak);
           dvariable dbmsy = c_MSY.getBmsy();
           dvar_vector dmsy = c_MSY.getMsy();
           bmsy(g) = value(dbmsy);
           msy(g)  = value(dmsy);
           fmsy(g) = value(dfmsy);
-          
-          /*cout<<"fmsy1, msy1, bmsy1, bo1"<<endl;
-          cout<<fmsy(g)<<endl;
-          cout<<msy(g)<<endl;
-          cout<<bmsy(g)<<endl;
-          cout<<bo(g)<<endl;*/
-         
         }
       }
-      
-      // Data-type version of MSY-based reference points. These ones are written to report file. Very close to above
-     
+      // Data-type version of MSY-based reference points.
       for(ig = 1;ig <= n_ags;ig++){
         fa_bar(ig) = elem_prod(dWt_bar(ig), ma(ig));
         M_bar(ig) = colsum(value(M(ig).sub(pf_cntrl(3), pf_cntrl(4))));
         M_bar(ig) /= pf_cntrl(4) - pf_cntrl(3) + 1;
       }
-     
-   for(g = 1;g <= ngroup;g++){
+      for(g = 1;g <= ngroup;g++){
         double d_ro = value(ro(g));
         double d_h = value(steepness(g));
         double d_rho = d_iscamCntrl(13);
@@ -4349,20 +4339,12 @@ FUNCTION void calcReferencePoints()
           dvector finit(1,nfleet);
           finit = fmsy(g);
           c_dMSY.checkDerivatives(finit);
-          
-      
           Msy c_msy(d_ro, d_h, M_bar, d_rho, dWt_bar, fa_bar, &d_V);
           fmsy(g) = 0.1;
           c_msy.get_fmsy(fmsy(g));
-         bmsy(g) = c_msy.getBmsy();
-         msy(g) = c_msy.getMsy();
+          bmsy(g) = c_msy.getBmsy();
+          msy(g) = c_msy.getMsy();
           bo = c_msy.getBo();
-          
-         /*cout<<"fmsy2, msy2, bmsy2, bo2"<<endl;
-	 cout<<fmsy(g)<<endl;
-	 cout<<msy(g)<<endl;
-         cout<<bmsy(g)<<endl;
-         cout<<bo(g)<<endl;*/
         }
       }
     }
@@ -6249,8 +6231,7 @@ FUNCTION void slow_msy(dvector& ftest,
                        dvector& be,
                        double& msy,
                        double& fmsy,
-                       double& bmsy,
-                       double& bo)
+                       double& bmsy, double& bo)
   //THIS CODE VERIFIES THAT THE EQM CODE IS RETURNING CORRECT REF POINTS
   int i;
   int j;
@@ -6267,9 +6248,9 @@ FUNCTION void slow_msy(dvector& ftest,
   saf.initialize();
   dvector lx(sage, nage);
   lx.initialize();
+  dvector vd(sage, nage);
   dvector lw(sage, nage);
   lw.initialize();
-  dvector vd(sage, nage);
   vd.initialize();
   dvector avg_wt(sage, nage);
   avg_wt.initialize();
@@ -6277,25 +6258,25 @@ FUNCTION void slow_msy(dvector& ftest,
   dvector M_bar(sage, nage);
 
   avg_wt = dWt_bar(1);
-  
   avg_fec = elem_prod(dWt_bar(1), ma(1));
   vd = exp(value(log_sel(1)(1)(nyr)));
 
-   double Ro = value(ro(1));
+  double Ro = value(ro(1));
   //double CR = value(kappa(1));
   double Mbar;
   M_bar = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4)))); //mean across years
   M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
   Mbar = mean(M_bar); //mean across ages
   
-     //RF checking that average weights are the same in the slow_MSY code as in calcReferencePoints
-    cout<<"slow_MSY: avg_wt, avg_fec, Mbar, sel, ro "<<endl;
-    cout<<avg_wt<<endl;
-    cout<< avg_fec<<endl;
-    cout<< Mbar<<endl;
-    cout<< vd<<endl;
-    cout<< Ro<<endl;
+   //RF checking that average weights are the same in the slow_MSY code as in calcReferencePoints
+      cout<<"slow_MSY: avg_wt, avg_fec, Mbar, sel, ro "<<endl;
+      cout<<avg_wt<<endl;
+      cout<< avg_fec<<endl;
+      cout<< Mbar<<endl;
+      cout<< vd<<endl;
+      cout<< Ro<<endl;
      
+
   dmatrix Nn(1, Nyr + 1, sage, nage); //Numbers at age
   dmatrix Ff(1, Nyr + 1, sage, nage); //Age-specific fishing mortality
   dmatrix Zz(1, Nyr + 1, sage, nage);
@@ -6303,11 +6284,9 @@ FUNCTION void slow_msy(dvector& ftest,
   dvector stmp(sage, nage);
   dmatrix Cc(1, Nyr, sage, nage);
   dvector Ssb(1, Nyr + 1);
-  Ssb.initialize();
   dvector Bb(1, Nyr + 1);
   dvector Y(1, Nyr); //predicted catch biomass
 
- 
   //dvector finaly(1,NF);
   //dvector finalb(1,NF);
 
@@ -6322,14 +6301,13 @@ FUNCTION void slow_msy(dvector& ftest,
     lw(i) = lx(i) * mfexp(-Mbar*d_iscamCntrl(13));  
   }
   lx(nage) /= (1 - sa);
-  lw(nage) /= (1 - sa);
+    lw(nage) /= (1 - sa);
 
   //Initialize model - same for all F scenarios
   for(j = sage; j <= nage; j++){
-    if(k==1) Nn(1, j) = Ro * lx(j);  //unfished ... do not adjust for survey timing
-    if(k>1) Nn(1, j) = Ro * lw(j); //fished ... adjust for survey timing
+    Nn(1, j) = Ro * lx(j);
   }
-   
+  
   for(k = 1; k <= NF; k++){
     za = (Mbar + ftest(k) * vd);
     Ss = mfexp(-za);
@@ -6359,8 +6337,6 @@ FUNCTION void slow_msy(dvector& ftest,
 	     //this is correct ... returns bo, MSY and FMSY verified in spreadsheet calcs. FMSY ref pts do not match SM's. B0 matches SM's.
 	     Ssb(t + 1) = elem_prod(Nn(t + 1),avg_fec) * stmp; 
 
-	      //Ssb(t + 1) = sum(elem_prod(Nn(t + 1),avg_fec));  //no correction. gives right ref points ... suggests error in SM code
-
 	     //catch
 	      for(j = sage; j <= nage; j++){
 		Cc(t, j) = ((ftest(k) * vd(j)) / za(j)) * (1.-exp(-(za(j)))) *
@@ -6368,33 +6344,31 @@ FUNCTION void slow_msy(dvector& ftest,
 	      }
 	      Y(t) = sum(Cc(t));
     }
-    
     ye(k) = Y(Nyr);
     be(k) = Ssb(Nyr);
   }
-  bo = be(1); //Unfished biomass
   //ye = finaly;
   //be = finalb;
-  
+    bo = be(1); //Unfished biomass
+    
   //get MSY and Fmsy
   msy = max(ye);
   double mtest;
-    
-  for(int kk = 1; kk <= NF; kk++){
-    mtest = ye(kk);
+  for(k = 1; k <= NF; k++){
+    mtest = ye(k);
     if(mtest == msy){
-      fmsy = ftest(kk);
+      fmsy = ftest(k);
     }
     if(mtest == msy){
-      bmsy = be(kk);
+      bmsy = be(k);
     }
   }
   LOG<<"Ref points from running out model\n";;
   LOG<<msy<<'\n';
   LOG<<fmsy<<'\n';
   LOG<<bmsy<<'\n';
-  LOG<<bo<<'\n';
-  
+   LOG<<bo<<'\n';
+
 FUNCTION void ddiff_msy(dvector& ftest,
                         dvector& ye,
                         dvector& be,
@@ -6460,9 +6434,9 @@ FUNCTION void run_FRP()
     LOG<<"\n*********Getting reference points the slow way************\n";
     LOG<<"*******************************************\n\n";
   }
-  dvector ftest(1, 60001);  //Vector of test F from 1 to 3 by increment of 0.00001. Increment needs to be this small to acount for rounding differences
-  ftest.fill_seqadd(0, 0.00001);
-  ftest(1) =  0.; //option to put in a test value
+   dvector ftest(1, 60001);  //Vector of test F from 1 to 3 by increment of 0.00001. Increment needs to be this small to acount for rounding differences
+   ftest.fill_seqadd(0, 0.00001);
+  ftest(1) =  0.; 
   int Nf = size_count(ftest);
   double Fmsy;
   double MSY;
@@ -6492,7 +6466,7 @@ FUNCTION void run_FRP()
   ofsr<<"ftest"<<'\n'<<ftest<<'\n';
   ofsr<<"Ye"<<'\n'<<Ye<<'\n';
   ofsr<<"Be"<<'\n'<<Be<<'\n';
-  ofsr<<"B0"<<'\n'<<B0<<'\n';
+    ofsr<<"B0"<<'\n'<<B0<<'\n';
 
 //RF's function for calling slow msy routine to test ref points -- currently
 // the only ref points implemented for delay difference model

@@ -329,10 +329,10 @@ void Msy::calc_equilibrium(const dvector& fe)
 
 	for(k=1; k<=ngear; k++)
 	{
-		//dphif(k)   = dlz(k)  * m_fa;
-		//d2phif(k)  = d2lz(k) * m_fa;
-		dphif(k)   = dlw(k)  * m_fa;
-		d2phif(k)  = d2lw(k) * m_fa;
+		dphif(k)   = dlz(k)  * m_fa;
+		d2phif(k)  = d2lz(k) * m_fa;
+		//dphif(k)   = dlw(k)  * m_fa;
+		//d2phif(k)  = d2lw(k) * m_fa;
 
 		// per recruit yield
 		phiq(k)    = lz * qa(k);

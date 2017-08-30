@@ -447,14 +447,14 @@ void Msy::calcEquilibrium(const dvector& fe)
 	dye  = re*phiq + elem_prod(fe,phiq)*dre + (fe*re)*dphiq;
 
   //all of these check out against Robyn's spreadsheet so there must be an error in the derivatives somewhere
-  cout<<"F = "<<fe<<endl;
+  //cout<<"F = "<<fe<<endl;
   //cout<<"Ro = "<<ro<<endl;
   //cout<<"kappa="<<kappa<<endl;
   //cout<<"phie=" <<m_phie<<endl;
   // cout<<"phif = "<<phif<<endl;
 	//cout<<"km1 = "<<km1<<endl;
   // cout<<"re=" <<re<<endl;
-	cout<<"ye=" <<ye<<endl;
+	//cout<<"ye=" <<ye<<endl;
 	//cout<<"qa=" <<qa<<endl;
 	//cout<<"phiq=" <<phiq<<endl;
 
@@ -499,7 +499,7 @@ void Msy::calcEquilibrium(const dvector& fe)
 	m_g    = diagonal(d2ye);		//Gradient vector
 	m_f    = dye;   				//Value of the function to minimize
 
-  cout<<"m_f = "<<m_f<<endl<<endl;
+  //cout<<"m_f = "<<m_f<<endl<<endl;
 
 	// cout<<"mean za = "<<mean(za_m)<<endl;
 

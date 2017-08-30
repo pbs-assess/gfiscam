@@ -6285,9 +6285,9 @@ FUNCTION void run_FRP()
     LOG<<"\n*********Getting reference points the slow way************\n";
     LOG<<"*******************************************\n\n";
   }
-  dvector ftest(1, 60001);  //Vector of test F from 1 to 3 by increment of 0.00001. Increment needs to be this small to acount for rounding differences
+  dvector ftest(1, 300001);  //Vector of test F from 0 to 3 by increment of 0.00001. Increment needs to be this small to acount for rounding differences
   ftest.fill_seqadd(0, 0.00001);
-  ftest(1) =  0.;
+  //ftest(1) =  0.;
   int Nf = size_count(ftest);
   double Fmsy;
   double MSY;

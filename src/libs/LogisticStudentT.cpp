@@ -55,7 +55,7 @@ dvariable logistic_student_t::negative_log_likelihood(){
 	RETURN_ARRAYS_INCREMENT();
 	dvariable v = m_v;
   dvariable nll = 0.0;
-  int p;
+  int p = 0;
   for(int i = m_y1; i <= m_y2; i++){
     p = size_count(m_Op(i)) - 1;
     const double lppi2 = 0.5 * p * log(PI);

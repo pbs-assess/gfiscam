@@ -306,8 +306,8 @@ DATA_SECTION
 			t1 = sage;
 			t2 = nage;
 		}else{
-			t1 = sage;
-			t2 = nage;
+			t1 = 0;
+			t2 = 0;
 		}
 	END_CALCS
 	init_vector d_maturityVector(t1,t2);
@@ -6164,19 +6164,11 @@ FUNCTION void projection_model_dd(const double& tac);
 			<<'\n';
 	   }
 	}
-
-
-
-
-
-
-
-
 //end of projection model dd
 
 TOP_OF_MAIN_SECTION
   // These lines make all stdout and stderr go to the file
-  int fd = open("output.txt", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  int fd = open("admb_runtime.log", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   dup2(fd, 1);
   dup2(fd, 2);
   close(fd);

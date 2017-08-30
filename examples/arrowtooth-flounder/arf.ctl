@@ -116,11 +116,17 @@
  0.1        # 11 -std in deviations for natural mortality
 12          # 12 -number of estimated nodes for deviations in natural mortality
  0.00       # 13 -fraction of total mortality that takes place prior to spawning
+            #      NOT IMPLEMENTED IN DELAY DIFFERENCE MODEL
+            #      If this is greater than 0, the "slow" fmsy routine will
+            #      be used instead of the newton-rhapson routine. The MSY-
+            #      based reference points in the report file will reflect this.
+            #      If greater than 0, a file called TEST_frp.rep will be produced.
  0          # 14 -number of prospective years to start estimation from syr
  0          # 15 -switch for IFD distribution in selectivity simulations
  0          # 16 -toggle fit to annual mean weights for commercial catch
  1          # 17 -toggle to do the fmsy calculations (set to 0 for herring)
  1          # 18 -toggle to perform "slow" fmsy test (runs model out 100 years)
+            #      this produces a file called TEST_frp.rep.
 ##
 ## ------------------------------------------------------------------------- ##
 ## MARKER FOR END OF CONTROL FILE (eofc)

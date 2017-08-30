@@ -27,7 +27,7 @@ void slow_msy(dvector& ftest,
   int k;
   int t;
   int NF = size_count(ftest);
-  int Nyr = 5; //number of years to run out the model
+  int Nyr = 100; //number of years to run out the model
   ye.initialize();
   be.initialize();
   double sa;

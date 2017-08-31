@@ -6321,6 +6321,7 @@ FUNCTION void run_FRP()
   double MSY;
   double Bmsy;
   double B0;
+  
   //Matrix for putting numerically derived equilibrium catches for
   // calculating MSY and FMSY (in R)
   dvector Ye(1,Nf);
@@ -6329,10 +6330,8 @@ FUNCTION void run_FRP()
   dvector Be(1,Nf);
   dvector ye(1, Nf);
   dvector be(1, Nf);
-
-  slow_msy(ftest, Ye, Be, MSY, Fmsy, Bmsy, B0,
-           sage, nage, nyr, M, dWt_bar, ma, ro, log_sel,
-           so, beta, d_iscamCntrl, pf_cntrl);
+  
+  slow_msy(ftest, Ye, Be, MSY, Fmsy, Bmsy, B0, sage, nage, nyr, M, dWt_bar, ma, ro, kappa, log_sel, d_iscamCntrl, pf_cntrl);
 
   if(d_iscamCntrl(13)){
     // If the fraction of total mortality that takes place

@@ -17,11 +17,11 @@ void slow_msy(dvector& ftest,
               dmatrix dWt_bar,
               dmatrix ma,
               dvar_vector ro,
+              dvar_vector kappa,
               dvar4_array log_sel,
-              dvar_vector so,
-              dvar_vector beta,
               dvector d_iscamCntrl,
               dvector pf_cntrl){
+
   int i;
   int j;
   int k;
@@ -31,6 +31,12 @@ void slow_msy(dvector& ftest,
   ye.initialize();
   be.initialize();
   double sa;
+  double phie;
+  double bhalpha; //Bev-Holt alpha parameter (called so in the rest of iscam -- it's a salmon thing)
+  double bhbeta; //Bev-Holt beta parameter (called beta in the rest of iscam)
+  double Mbar;
+  double Kappa;
+  double Ro;
   dvector za(sage, nage);
   za.initialize();
   dvector saf(sage, nage);
@@ -50,18 +56,18 @@ void slow_msy(dvector& ftest,
   avg_fec = elem_prod(dWt_bar(1), ma(1));
   vd = exp(value(log_sel(1)(1)(nyr)));
 
-  double Ro = value(ro(1));
-  //double CR = value(kappa(1));
-  double Mbar;
   M_bar = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4)))); //mean across years
   M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
   Mbar = mean(M_bar); //mean across ages
+
+  Ro = value(ro(1));
+  Kappa = value(kappa(1));
+
   //RF checking that average weights are the same in the slow_MSY code as in calcReferencePoints
   // cout<<"slow_MSY: avg_wt, avg_fec, Mbar, sel, ro "<<endl;
-  // cout<<avg_wt<<endl;
-  // cout<< avg_fec<<endl;
-  // cout<< Mbar<<endl;
-  // cout<< vd<<endl;
+  cout<<"mean wt at age for slow ref pts = "<<avg_wt<<endl;
+  cout<<"Mbar for slow ref pts = "<<Mbar<<endl;
+  cout<< "Selectivity (fleet 1) for slow ref pts = "<<vd<<endl;
   // cout<< Ro<<endl;
 
   dmatrix Nn(1, Nyr + 1, sage, nage); //Numbers at age
@@ -76,7 +82,6 @@ void slow_msy(dvector& ftest,
 
   //dvector finaly(1,NF);
   //dvector finalb(1,NF);
-
   //unfished
   sa = mfexp(-Mbar);
   lx(sage) = 1.0;
@@ -89,6 +94,17 @@ void slow_msy(dvector& ftest,
   }
   lx(nage) /= (1 - sa);
   lw(nage) /= (1 - sa);
+
+  //Get phie0 (unfished spawning biomass per recruit) -- Needed for stock-recruit parameters. Need to calculate it here so correct average weight is used.
+  phie = lw*avg_fec;
+
+  //Stock-recruit parameters - need to get these from inside this function (not global environment) to ensure that correct weight at age is used
+ //Kappa = (4.*h)/(1.-h);
+ bhalpha = Kappa/phie;
+ bhbeta = (Kappa-1)/(Ro*phie);
+
+  cout<<"bhalpha for slow ref pts = "<<bhalpha<<endl;
+  cout<<"bhbeta for slow ref pts = "<<bhbeta<<endl;
 
   //Initialize model - same for all F scenarios
   for(j = sage; j <= nage; j++){
@@ -108,34 +124,39 @@ void slow_msy(dvector& ftest,
     LOG<<"SSb "<<'\n'<<Ssb(1)<<'\n';
     LOG<<"wt "<<avg_wt<<'\n';
     */
-    for(t = 1; t <= Nyr; t++){
-      Nn(t + 1)(sage + 1, nage) = ++elem_prod(Nn(t)(sage,nage-1),Ss(sage, nage - 1));
-      Nn(t + 1, nage) += Nn(t, nage) * Ss(nage);
 
-      if(t ==1){
-        Nn(t + 1)(sage) = Ro;
-      }
-      if(t >1){
-        Nn(t + 1)(sage) = value(so(1)) * Ssb(t-1 ) /  (1 + value(beta(1)) * Ssb(t -1));
-      }
+	for(t = 1; t <= Nyr; t++){
+	     if(t <sage){
+		        Nn(t + 1)(sage,nage) = Ro * lx;
+		        //cout<<Nn(t + 1)(sage,nage)<<endl;
+            }else{
+			  Nn(t + 1)(sage) = bhalpha * Ssb(t+1-sage) /  (1 + bhbeta * Ssb(t+1-sage));
+			  Nn(t + 1)(sage + 1, nage) = ++elem_prod(Nn(t)(sage,nage-1),Ss(sage, nage - 1));
+			  Nn(t + 1, nage) += Nn(t, nage) * Ss(nage);
+          } //end if
 
-      //this is correct ... returns bo, MSY and FMSY verified in spreadsheet calcs. FMSY ref pts do not match SM's. B0 matches SM's.
-      Ssb(t + 1) = elem_prod(Nn(t + 1),avg_fec) * stmp;
+		  //this is correct ... returns bo, MSY and FMSY verified in spreadsheet calcs. FMSY ref pts do not match SM's. B0 matches SM's.
+		  Ssb(t + 1) = elem_prod(Nn(t + 1),avg_fec) * stmp;
 
-      //catch
-      for(j = sage; j <= nage; j++){
-        Cc(t, j) = ((ftest(k) * vd(j)) / za(j)) * (1.-exp(-(za(j)))) *
-          Nn(t, j) * avg_wt(j);
-      }
-      Y(t) = sum(Cc(t));
-    }
-    ye(k) = Y(Nyr);
-    be(k) = Ssb(Nyr);
+		  //catch
+		  for(j = sage; j <= nage; j++){
+			Cc(t, j) = ((ftest(k) * vd(j)) / za(j)) * (1.-exp(-(za(j)))) *
+			  Nn(t, j) * avg_wt(j);
+		  }
+		  Y(t) = sum(Cc(t));
 
-  }
+		} //end t
+			ye(k) = Y(Nyr);
+			be(k) = Ssb(Nyr);
+
+			//Testing the numbers work when sage > 1 (OK)
+			//if(k == 1001) 	cout<<"ftest = "<<ftest(k)<<endl<<"Nn = "<<Nn<<endl;
+
+  } //end k
   //ye = finaly;
   //be = finalb;
   bo = be(1); //Unfished biomass
+
 
   //get MSY and Fmsy
   msy = max(ye);

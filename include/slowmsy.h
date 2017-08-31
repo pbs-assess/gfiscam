@@ -16,9 +16,8 @@ void slow_msy(dvector& ftest,
               dmatrix dWt_bar,
               dmatrix ma,
               dvar_vector ro,
+              dvar_vector kappa,
               dvar4_array log_sel,
-              dvar_vector so,
-              dvar_vector beta,
               dvector d_iscamCntrl,
               dvector pf_cntrl);
 #endif

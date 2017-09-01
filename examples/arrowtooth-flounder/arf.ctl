@@ -124,15 +124,20 @@
  0          # 14 -number of prospective years to start estimation from syr
  0          # 15 -switch for IFD distribution in selectivity simulations
  0          # 16 -toggle fit to annual mean weights for commercial catch
- 1          # 17 -toggle to do the fmsy calculations (set to 0 for herring)
- 0          # 18 -toggle to perform "slow" fmsy test (runs model out 100 years)
-            #      this produces a file called TEST_frp.rep.
- 0.00001    # 19 -precision for F for the "slow" fmsy calculations (only used if
+ 0          # 17 -toggle to perform "slow" fmsy test (runs model out 100 years)
+            #      this produces a file called TEST_frp.rep. Note that even
+            #      if you set this to 0, the routine will be run if control 13
+            #      is greater than 1.
+ 0.00001    # 18 -precision for F for the "slow" fmsy calculations (only used if
             #      control 18 is 1). This must be a maximum of 0.0001 or the
             #      program will stop.
- 3          # 20 -maximum F for the "slow" fmsy calculations (only used if
+ 3          # 19 -maximum F for the "slow" fmsy calculations (only used if
             #      control 18 is 1). If this is greater than 1, a warning will
             #      be issued because it will take a long time to run.
+ 0          # 20 - Report B0 only in mcmc calculations even if the "slow" msy
+            #       routine was run. MSY-based reference points will not be
+            #       output for MCMCs. This control is only used if control 13
+            #       is greater than 0.
 ##
 ## ------------------------------------------------------------------------- ##
 ## MARKER FOR END OF CONTROL FILE (eofc)

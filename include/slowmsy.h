@@ -2,6 +2,7 @@
 #define __SLOW_MSY_H
 
 #include <admodel.h>
+
 void slow_msy(dvector& ftest,
               dvector& ye,
               dvector& be,
@@ -20,4 +21,15 @@ void slow_msy(dvector& ftest,
               dvar4_array log_sel,
               dvector d_iscamCntrl,
               dvector pf_cntrl);
+
+void calc_bo(double& bo,
+             int sage,
+             int nage,
+             dvar3_array M,
+             dmatrix dWt_bar,
+             dmatrix ma,
+             dvar_vector ro,
+             int spawn_timing,
+             dvector pf_cntrl);
+
 #endif

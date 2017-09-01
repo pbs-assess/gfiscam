@@ -4321,35 +4321,6 @@ FUNCTION void calcReferencePoints()
         dftry  = 0.6/nfleet * mean(M_bar);
 
         // | (4) : Instantiate msy class for each stock
-        for(g=1;g<=ngroup;g++){
-          double d_rho = d_iscamCntrl(13);
-          dvector d_mbar = M_bar(g);
-          dvector d_wa = dWt_bar(g);
-          dvector d_fa = fa_bar(g);
-
-          //RF checking that average weights are the same in calcReferencePoints as in the slow_MSY code
-          // cout<<"calcReferencePoints: dWt_bar, fa_bar , M_bar, sel, ro, steepness, rho  "<<endl;
-          // cout<<"g= "<<g<<endl;
-          // cout<<dWt_bar(g)<<endl;
-          // cout<< fa_bar(g)<<endl;
-          // cout<< M_bar(g)<<endl;
-          // cout<< dvar_V<<endl;
-          // cout<< ro(g)<<endl;
-          // cout<< steepness(g)<<endl;
-          // cout<< "nfleet="<<nfleet<<endl;
-          // cout<<"d_rho"<< d_rho<<endl;
-
-          rfp::msy<dvariable,dvar_vector,dvar_matrix,dvar3_array> 
-            c_MSY(ro(g),steepness(g),d_rho,M_bar,dWt_bar,fa_bar,dvar_V);
-          bo  = c_MSY.getBo();
-          dvar_vector dfmsy = c_MSY.getFmsy(dftry,d_ak);
-          dvariable dbmsy = c_MSY.getBmsy();
-          dvar_vector dmsy = c_MSY.getMsy();
-          bmsy(g) = value(dbmsy);
-          msy(g)  = value(dmsy);
-          fmsy(g) = value(dfmsy);
-        }
-        // Data-type version of MSY-based reference points.
         for(ig = 1;ig <= n_ags;ig++){
           fa_bar(ig) = elem_prod(dWt_bar(ig), ma(ig));
           M_bar(ig) = colsum(value(M(ig).sub(pf_cntrl(3), pf_cntrl(4))));
@@ -4359,15 +4330,6 @@ FUNCTION void calcReferencePoints()
           double d_ro = value(ro(g));
           double d_h = value(steepness(g));
           double d_rho = d_iscamCntrl(13);
-          rfp::msy<double,dvector,dmatrix,d3_array>
-            c_dMSY(d_ro,d_h,d_rho,M_bar,dWt_bar,fa_bar,d_V);
-          bo = c_dMSY.getBo();
-          fmsy(g) = c_dMSY.getFmsy(value(dftry));
-          bmsy(g) = c_dMSY.getBmsy();
-          msy(g) = c_dMSY.getMsy();
-          dvector finit(1,nfleet);
-          finit = fmsy(g);
-          c_dMSY.checkDerivatives(finit);
           Msy c_msy(d_ro, d_h, M_bar, d_rho, dWt_bar, fa_bar, &d_V);
           fmsy(g) = 0.1;
           c_msy.get_fmsy(fmsy(g));

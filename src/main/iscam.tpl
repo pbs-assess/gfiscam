@@ -1106,34 +1106,30 @@ DATA_SECTION
 	// | 14-> number of prospective years to start estimation from syr.
 	// | 15-> switch for generating selex based on IFD and cohort biomass
   // | 16-> toggle to fit to annual mean weights for commercial catch
-  // | 17-> toggle to perform "slow" fmsy test (runs model out 100 years)
+  // | 17-> toggle to do the fmsy calculations (set to 0 for herring)
+  // | 18-> toggle to perform "slow" fmsy test (runs model out 100 years)
   // |       this produces a file called TEST_frp.rep.
-  // | 18-> precision for F for the "slow" fmsy calculations (only used if
+  // | 19-> precision for F for the "slow" fmsy calculations (only used if
   // |       control 18 is 1). This must be a maximum of 0.0001 or the
   // |       program will stop.
-  // | 19-> maximum F for the "slow" fmsy calculations (only used if
+  // | 20-> maximum F for the "slow" fmsy calculations (only used if
   // |       control 18 is 1). If this is greater than 1, a warning will
   // |       be issued because it will take a long time to run.
-  // | 20-> Report b0 only in mcmc calculations even if the "slow" msy
-  // |       routine was run. MSY-based reference points will not be
-  // |       output for MCMCs. This control only matters if control 13
-  // |       is greater than 0.
-
 
 	init_vector d_iscamCntrl(1,20);
 	int verbose;
 	init_int eofc;
 	LOC_CALCS
-    if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(18) > 0.0001){
+    if((d_iscamCntrl(13) || d_iscamCntrl(19)) && d_iscamCntrl(19) > 0.0001){
       cerr<<"Error - you have set the precision for the slow msy calculations"
         " too high. The maximum is 0.0001.\n";
       exit(1);
     }
-    if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(18) < 0.000001){
+    if((d_iscamCntrl(13) || d_iscamCntrl(19)) && d_iscamCntrl(19) < 0.000001){
       cout<<"Warning - you have set the precision for the slow msy calculations"
         " below 0.000001. This may cause the program to run for a longer time.\n";
     }
-    if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(19) > 1){
+    if((d_iscamCntrl(13) || d_iscamCntrl(19)) && d_iscamCntrl(20) > 1){
       cout<<"Warning - you have set the maximum F value above 1. This may cause"
         " the program to run for a longer time.\n";
     }
@@ -4280,7 +4276,7 @@ FUNCTION void calcReferencePoints()
   	if(delaydiff){
       run_FRPdd();
     }else{
-      if(d_iscamCntrl(13) || d_iscamCntrl(17)){
+      if(d_iscamCntrl(13) || d_iscamCntrl(18)){
         run_FRP(); //RF code for testing reference point calcs.
       }
       if(!d_iscamCntrl(13)){
@@ -4321,6 +4317,26 @@ FUNCTION void calcReferencePoints()
         dftry  = 0.6/nfleet * mean(M_bar);
 
         // | (4) : Instantiate msy class for each stock
+        for(g=1;g<=ngroup;g++){
+          //double d_rho = d_iscamCntrl(13);
+          //dvector d_mbar = M_bar(g);
+          //dvector d_wa = dWt_bar(g);
+          //dvector d_fa = fa_bar(g);
+
+          //RF checking that average weights are the same in calcReferencePoints as in the slow_MSY code
+          // cout<<"calcReferencePoints: dWt_bar, fa_bar , M_bar, sel, ro, steepness, rho  "<<endl;
+          // cout<<"g= "<<g<<endl;
+          // cout<<dWt_bar(g)<<endl;
+          // cout<< fa_bar(g)<<endl;
+          // cout<< M_bar(g)<<endl;
+          // cout<< dvar_V<<endl;
+          // cout<< ro(g)<<endl;
+          // cout<< steepness(g)<<endl;
+          // cout<< "nfleet="<<nfleet<<endl;
+          // cout<<"d_rho"<< d_rho<<endl;
+	
+        }
+        // Data-type version of MSY-based reference points.
         for(ig = 1;ig <= n_ags;ig++){
           fa_bar(ig) = elem_prod(dWt_bar(ig), ma(ig));
           M_bar(ig) = colsum(value(M(ig).sub(pf_cntrl(3), pf_cntrl(4))));
@@ -4330,12 +4346,15 @@ FUNCTION void calcReferencePoints()
           double d_ro = value(ro(g));
           double d_h = value(steepness(g));
           double d_rho = d_iscamCntrl(13);
-          Msy c_msy(d_ro, d_h, M_bar, d_rho, dWt_bar, fa_bar, &d_V);
-          fmsy(g) = 0.1;
-          c_msy.get_fmsy(fmsy(g));
-          bmsy(g) = c_msy.getBmsy();
-          msy(g) = c_msy.getMsy();
-          bo = c_msy.getBo();
+         
+          if(d_iscamCntrl(17)){
+            Msy c_msy(d_ro, d_h, M_bar, d_rho, dWt_bar, fa_bar, &d_V);
+            fmsy(g) = 0.1;
+            c_msy.get_fmsy(fmsy(g));
+            bmsy(g) = c_msy.getBmsy();
+            msy(g) = c_msy.getMsy();
+            bo = c_msy.getBo();
+          }
         }
       }
     }
@@ -5393,7 +5412,9 @@ FUNCTION mcmc_output
       ofs<<","<<"vartheta_gr"<<group;
     }
     ofs<<","<<"bo";
-    if(!d_iscamCntrl(13) && !d_iscamCntrl(20)){
+    // If the msy reference points were set to be calculated in the control file,
+    //  include them
+    if(d_iscamCntrl(17)){
       ofs<<","<<"bmsy";
       for(int fleet=1;fleet<=nfleet;fleet++){
         ofs<<","<<"msy"<<fleet;
@@ -5508,17 +5529,8 @@ FUNCTION mcmc_output
   }
 
   // Leading parameters & reference points
-  // Delay difference/Age-structured switch is in calcReferencePoints
-  if(d_iscamCntrl(13) && d_iscamCntrl(20)){
-    calcReferencePoints();
-  }else{
-    // Only report B0 - calc_bo() is in slowmsy.cpp
-    double B0;
-    calc_bo(B0, sage, nage, M,
-            dWt_bar, ma, ro,
-            value(d_iscamCntrl(13)), pf_cntrl);
-    bo = B0;
-  }
+  //Delay difference/Age-structured switch is in calcReferencePoints
+  calcReferencePoints();
 
   // Append the values to the files
   ofstream ofs("iscam_mcmc.csv",ios::app);
@@ -5544,7 +5556,9 @@ FUNCTION mcmc_output
     ofs<<","<<theta(7)(group);
   }
   ofs<<","<<bo;
-  if(!d_iscamCntrl(13) && !d_iscamCntrl(20)){
+  // If the msy reference points were set to be calculated in the control file,
+  //  include them
+  if(d_iscamCntrl(17)){
     ofs<<","<<bmsy;
     for(int fleet=1;fleet<=nfleet;fleet++){
       ofs<<","<<msy(fleet);
@@ -5865,23 +5879,17 @@ FUNCTION void projection_model(const double& tac);
   FOR THE ARROWTOOTH ASSESSMENT ONLY WRITE OUT THE FIRST GEAR
   */
 
-  //write_proj_headers and write_proj_output are in include/utilities.h
-  //ofsmcmc object is in libs/utilities.cpp
+//write_proj_headers and write_proj_output are in include/utilities.h 
+//ofsmcmc object is in libs/utilities.cpp
   if(mceval_phase()){
    if(nf==1 && runNo==1){
     LOG<<"Running MCMC projections\n";
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-    write_proj_headers(ofsmcmc, syr, nyr,
-                       !d_iscamCntrl(13),
-                       d_iscamCntrl(13) && d_iscamCntrl(20));
+    write_proj_headers(ofsmcmc, syr, nyr, d_iscamCntrl(17));
     ofsmcmc.flush();
    }
    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-   write_proj_output(ofsmcmc, syr, nyr, tac, pyr,
-                     p_sbt, p_ft, ft(1), bo, fmsy, bmsy,
-                     !d_iscamCntrl(13),
-                     d_iscamCntrl(13) && d_iscamCntrl(20));
-
+   write_proj_output(ofsmcmc, syr, nyr, tac, pyr, p_sbt, p_ft, ft(1), bo, fmsy, bmsy, d_iscamCntrl(17));
    ofsmcmc.flush();
   }else{
 //   if(runNo==1){
@@ -6286,9 +6294,9 @@ FUNCTION void run_FRP()
   // ftest is a vector of F's from 0 to the number selected in the control
   //  file with the number of elements necessary to match the precision
   //  selected in the control file.
-  int vec_size = (int)(d_iscamCntrl(19) / d_iscamCntrl(18)) + 1;
+  int vec_size = (int)(d_iscamCntrl(20) / d_iscamCntrl(19)) + 1;
   dvector ftest(1, vec_size);
-  ftest.fill_seqadd(0, d_iscamCntrl(18));
+  ftest.fill_seqadd(0, d_iscamCntrl(19));
   int Nf = size_count(ftest);
   double Fmsy;
   double MSY;
@@ -6303,11 +6311,8 @@ FUNCTION void run_FRP()
   dvector Be(1,Nf);
   dvector ye(1, Nf);
   dvector be(1, Nf);
-
-  slow_msy(ftest, Ye, Be, MSY, Fmsy,
-           Bmsy, B0, sage, nage, nyr,
-           M, dWt_bar, ma, ro, kappa,
-           log_sel, d_iscamCntrl, pf_cntrl);
+  
+  slow_msy(ftest, Ye, Be, MSY, Fmsy, Bmsy, B0, sage, nage, nyr, M, dWt_bar, ma, ro, kappa, log_sel, d_iscamCntrl, pf_cntrl);
 
   if(d_iscamCntrl(13)){
     // If the fraction of total mortality that takes place
@@ -6323,8 +6328,8 @@ FUNCTION void run_FRP()
   }
 
   ofstream ofsr("TEST_frp.rep");
-  ofsr<<"Max F"<<'\n'<<d_iscamCntrl(19)<<'\n';
-  ofsr<<"Precision for F"<<'\n'<<d_iscamCntrl(18)<<'\n';
+  ofsr<<"Max F"<<'\n'<<d_iscamCntrl(20)<<'\n';
+  ofsr<<"Precision for F"<<'\n'<<d_iscamCntrl(19)<<'\n';
   ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
   ofsr<<"MSY"<<'\n'<<MSY<<'\n';
   ofsr<<"Bmsy"<<'\n'<<Bmsy<<'\n';

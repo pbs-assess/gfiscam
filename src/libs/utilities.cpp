@@ -43,20 +43,14 @@ ivector getIndex(const dvector& a, const dvector& b){
   return(tmp);
 }
 
-void write_proj_headers(ofstream &ofsP,
-                        int syr,
-                        int nyr,
-                        bool include_msy,
-                        bool include_bo){
+void write_proj_headers(ofstream &ofsP, int syr, int nyr, bool include_msy){
   // Write the decision table headers for projection years
   ofsP<<"TAC"                  <<",";
   ofsP<<"B"<<nyr+1             <<",";
   ofsP<<"B"<<nyr+2             <<",";
-  if(include_bo){
-    ofsP<<"B0"                   <<",";
-    ofsP<<"04B0"                 <<",";
-    ofsP<<"02B0"                 <<",";
-  }
+  ofsP<<"B0"                   <<",";
+  ofsP<<"04B0"                 <<",";
+  ofsP<<"02B0"                 <<",";
   ofsP<<"B"<<syr               <<",";
   ofsP<<"B"<<nyr+2<<"B"<<nyr+1 <<",";  //want probability B2016<B2015 - this will be < 1 if true
   ofsP<<"B"<<nyr+2<<"04B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
@@ -81,49 +75,35 @@ void write_proj_headers(ofstream &ofsP,
   ofsP<<'\n';
 }
 
-void write_proj_output(ofstream &ofsP,
-                       int syr,
-                       int nyr,
-                       double tac,
-                       int pyr,
-                       dvector p_sbt,
-                       dmatrix p_ft,
-                       dvar_matrix ft,
-                       double bo,
-                       dmatrix fmsy,
-                       dvector bmsy,
-                       bool include_msy,
-                       bool include_bo){
+void write_proj_output(ofstream &ofsP, int syr, int nyr, double tac, int pyr, dvector p_sbt, dmatrix p_ft, dvar_matrix ft, double bo, dmatrix fmsy, dvector bmsy, bool include_msy){
   // Write the projection output to the file
-  ofsP<<tac                        <<",";
-  ofsP<<p_sbt(pyr)                 <<",";
-  ofsP<<p_sbt(pyr+1)               <<",";
-  if(include_bo){
-    ofsP<<bo                         <<",";
-    ofsP<<0.4*bo                     <<",";
-    ofsP<<0.2*bo                     <<",";
-  }
-  ofsP<<p_sbt(syr)                 <<",";
-  ofsP<<p_sbt(pyr+1)/p_sbt(pyr)    <<",";
-  ofsP<<p_sbt(pyr+1)/(0.4*bo)      <<",";
-  ofsP<<p_sbt(pyr+1)/(0.2*bo)      <<",";
-  ofsP<<p_sbt(pyr+1)/p_sbt(syr)    <<",";
-  //ofsP<<ft(1)(1,nyr)               <<",";
-  ofsP<<ft(1,nyr)                  <<",";
-  ofsP<<p_ft(pyr,1)                <<",";
-  ofsP<<p_ft(pyr,1)/ft(1,nyr)      <<",";
-  ofsP<<(1. - mfexp(-p_ft(pyr,1))) <<",";
-  ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1,nyr)));
+  ofsP<<tac                        <<","
+      <<p_sbt(pyr)                 <<","
+      <<p_sbt(pyr+1)               <<","
+      <<bo                         <<","
+      <<0.4*bo                     <<","
+      <<0.2*bo                     <<","
+      <<p_sbt(syr)                 <<","
+      <<p_sbt(pyr+1)/p_sbt(pyr)    <<","
+      <<p_sbt(pyr+1)/(0.4*bo)      <<","
+      <<p_sbt(pyr+1)/(0.2*bo)      <<","
+      <<p_sbt(pyr+1)/p_sbt(syr)    <<","
+    //<<ft(1)(1,nyr)               <<","
+      <<ft(1,nyr)                  <<","
+      <<p_ft(pyr,1)                <<","
+      <<p_ft(pyr,1)/ft(1,nyr)      <<","
+      <<(1. - mfexp(-p_ft(pyr,1))) <<","
+      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1,nyr)));
   if(include_msy){
     //MSY based ref points
-    ofsP<<","<<bmsy                <<",";
-    ofsP<<p_sbt(pyr+1)/bmsy          <<",";
-    ofsP<<p_sbt(pyr+1)/(0.8*bmsy)    <<",";
-    ofsP<<p_sbt(pyr+1)/(0.4*bmsy)    <<",";
-    ofsP<<fmsy                       <<",";
-    ofsP<<p_ft(pyr,1)/fmsy           <<",";
-    ofsP<<(1. - mfexp(-fmsy))        <<",";
-    ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy));
+    ofsP<<","<<bmsy                <<","
+      <<p_sbt(pyr+1)/bmsy          <<","
+      <<p_sbt(pyr+1)/(0.8*bmsy)    <<","
+      <<p_sbt(pyr+1)/(0.4*bmsy)    <<","
+      <<fmsy                       <<","
+      <<p_ft(pyr,1)/fmsy           <<","
+      <<(1. - mfexp(-fmsy))        <<","
+      <<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy));
   }
   ofsP<<'\n';
 }

@@ -69,6 +69,7 @@ void slow_msy(dvector& ftest,
   cout<<"Mbar for slow ref pts = "<<Mbar<<endl;
   cout<< "Selectivity (fleet 1) for slow ref pts = "<<vd<<endl;
   // cout<< Ro<<endl;
+
   dmatrix Nn(1, Nyr + 1, sage, nage); //Numbers at age
   dmatrix Ff(1, Nyr + 1, sage, nage); //Age-specific fishing mortality
   dmatrix Zz(1, Nyr + 1, sage, nage);
@@ -177,50 +178,4 @@ void slow_msy(dvector& ftest,
   LOG<<bo<<'\n';
 }
 
-void calc_bo(double& bo,
-             int sage,
-             int nage,
-             dvar3_array M,
-             dmatrix dWt_bar,
-             dmatrix ma,
-             dvar_vector ro,
-             int spawn_timing,
-             dvector pf_cntrl){
 
-  double sa;
-  double Mbar;
-  dvector M_bar(sage, nage);
-  dvector lx(sage, nage);
-  lx.initialize();
-  dvector lw(sage, nage);
-  lw.initialize();
-  double phie;
-  dvector avg_fec(sage, nage);
-
-  avg_fec = elem_prod(dWt_bar(1), ma(1));
-
-  // Mean across years
-  M_bar = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4))));
-  M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
-  // Mean across ages
-  Mbar = mean(M_bar);
-
-  sa = mfexp(-Mbar);
-  lx(sage) = 1.0;
-  lw(sage) = 1.0;
-  for(int i = sage; i <= nage; i++){
-    if(i >sage){
-    	lx(i)=lx(i-1) * sa;
-    }
-    // Correction for spawn timing
-    lw(i) = lx(i) * mfexp(-Mbar * spawn_timing);
-  }
-  lx(nage) /= (1 - sa);
-  lw(nage) /= (1 - sa);
-
-  // Get phie0 (unfished spawning biomass per recruit) -- Needed for
-  //  stock-recruit parameters. Need to calculate it here so correct average
-  //  weight is used.
-  phie = lw * avg_fec;
-  bo = value(sum(phie * ro));
-}

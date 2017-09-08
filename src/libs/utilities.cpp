@@ -66,10 +66,10 @@ void write_proj_headers(ofstream &ofsP,
   ofsP<<"F"<<nyr+1             <<",";
   ofsP<<"F"<<nyr+1<<"F"<<nyr   <<",";  //want probability F2015>F2014     - this will be > 1 if true
   ofsP<<"U"<<nyr+1             <<",";
-  ofsP<<"U"<<nyr+1<<"U"<<nyr   <<",";
+  ofsP<<"U"<<nyr+1<<"U"<<nyr;
   if(include_msy){
     //MSY based ref points
-    ofsP<<"BMSY"                 <<",";
+    ofsP<<","<<"BMSY"                 <<",";
     ofsP<<"B"<<nyr+2<<"BMSY"     <<",";  //want probability B2016<BMSY - this will be < 1 if true
     ofsP<<"B"<<nyr+2<<"08BMSY"   <<",";  //want probability B2016<0.8BMSY - this will be< 1 if true
     ofsP<<"B"<<nyr+2<<"04BMSY"   <<",";  //want probability B2016<0.4BMSY - this will be < 1 if true

@@ -5525,6 +5525,19 @@ FUNCTION mcmc_output
       }
     }
     of6<<'\n';
+
+    ofstream of7("iscam_m_mcmc.csv");
+    iter = 1;
+    for(int yr=syr;yr<=nyr;yr++){
+      if(iter == 1){
+        of7<<"m_age2_"<<yr;
+      }else{
+        of7<<",m_age2_"<<yr;
+      }
+      iter++;
+    }
+    of7<<'\n';
+
   }
 
   // Leading parameters & reference points
@@ -5691,6 +5704,19 @@ FUNCTION mcmc_output
   }
   of6<<'\n';
 
+  // output natural mortality - age 2 (added for herring)
+  ofstream of7("iscam_m_mcmc.csv",ios::app);
+  iter = 1;
+  for(int yr=syr;yr<=nyr;yr++){
+    if(iter == 1){
+      of7<<M(1)(yr)(2);
+    }else{
+      of7<<","<<M(1)(yr)(2);
+    }
+    iter++;
+  }
+  of7<<'\n';
+
   ofs.flush();
   of1.flush();
   of2.flush();
@@ -5698,6 +5724,7 @@ FUNCTION mcmc_output
   of4.flush();
   of5.flush();
   of6.flush();
+  of7.flush();
 
  //RF:: March 17 2015. RF re-instated projection_model for Arrowtooth Flounder assessment. NOT IMPLEMENTED FOR MULTIPLE AREA/GROUPS
  // CW: Took this out while testing  the multiple area delaydiff

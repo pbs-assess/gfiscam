@@ -73,7 +73,7 @@ void write_proj_headers(ofstream &ofsP,
   ofsP<<"PropAge3"               <<",";
   ofsP<<"PropAge4to10"           <<",";
   ofsP<<"UT"                     <<",";
-  ofsP<<"U20"                    <<",";
+  ofsP<<"U20";
   if(include_msy){
     //MSY based ref points
     ofsP<<","<<"BMSY"            <<",";
@@ -145,7 +145,7 @@ void write_proj_output(ofstream &ofsP,
   ofsP<<propAge3                   <<",";
   ofsP<<propAge4to10               <<",";
   ofsP<<ut                         <<",";
-  ofsP<<u20                        <<",";
+  ofsP<<u20;
   if(include_msy){
     //MSY based ref points
     ofsP<<","<<bmsy                <<",";

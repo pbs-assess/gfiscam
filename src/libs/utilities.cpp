@@ -64,12 +64,16 @@ void write_proj_headers(ofstream &ofsP,
     ofsP<<"B"<<nyr+2<<"04B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
     ofsP<<"B"<<nyr+2<<"02B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
   }
-  ofsP<<"B"<<nyr+2<<"B"<<syr   <<",";
-  ofsP<<"F"<<nyr               <<",";
-  ofsP<<"F"<<nyr+1             <<",";
-  ofsP<<"F"<<nyr+1<<"F"<<nyr   <<",";  //want probability F2015>F2014     - this will be > 1 if true
-  ofsP<<"U"<<nyr+1             <<",";
-  ofsP<<"U"<<nyr+1<<"U"<<nyr;
+  ofsP<<"B"<<nyr+2<<"B"<<syr     <<",";
+  ofsP<<"F"<<nyr                 <<",";
+  ofsP<<"F"<<nyr+1               <<",";
+  ofsP<<"F"<<nyr+1<<"F"<<nyr     <<",";  //want probability F2015>F2014     - this will be > 1 if true
+  ofsP<<"U"<<nyr+1               <<",";
+  ofsP<<"U"<<nyr+1<<"U"<<nyr     <<",";
+  ofsP<<"PropAge3"               <<",";
+  ofsP<<"PropAge4to10"           <<",";
+  ofsP<<"UT"                     <<",";
+  ofsP<<"U20"                    <<",";
   if(include_msy){
     //MSY based ref points
     ofsP<<","<<"BMSY"            <<",";
@@ -81,7 +85,7 @@ void write_proj_headers(ofstream &ofsP,
     ofsP<<"UMSY"                 <<",";
     ofsP<<"U"<<nyr+1<<"UMSY";            //want probability F2015>FMSY - this will be > 1 if true
   }
-  ofsP<<'\n';
+  ofsP<<"\n";
 }
 
 void write_proj_output(ofstream &ofsP,
@@ -94,6 +98,7 @@ void write_proj_output(ofstream &ofsP,
                        dmatrix p_ft,
                        dmatrix p_N,
                        dvar3_array M,
+                       dmatrix ma,
                        dmatrix dWt_bar,
                        dvar_matrix ft,
                        double bo,
@@ -104,6 +109,15 @@ void write_proj_output(ofstream &ofsP,
 
   double  ut  = tac / ( tac + p_sbt(pyr) );
 	double u20  = tac / ( (p_N(pyr)(3,nage)*exp(-value(M(1)(nyr,3))))* dWt_bar(1)(3,nage) );
+
+  double NAge3 = (p_N(pyr)(3)*dWt_bar(1)(3)*ma(1)(3));
+	dvar_vector NallWt = elem_prod(p_N(pyr)(2,nage),dWt_bar(1)(2,nage));
+	dvar_vector NallWtMat= elem_prod(NallWt(2,nage),ma(1)(2,nage));
+
+	double sumAge2to10 = value(sum(NallWtMat(2,nage)));
+	double sumAge4to10 = value(sum(NallWtMat(4,nage)));
+	double propAge3 = NAge3/sumAge2to10;
+	double propAge4to10 = sumAge4to10/sumAge2to10;
 
   // Write the projection output to the file
   ofsP<<tac                        <<",";
@@ -127,7 +141,11 @@ void write_proj_output(ofstream &ofsP,
   ofsP<<p_ft(pyr,1)                <<",";
   ofsP<<p_ft(pyr,1)/ft(1,nyr)      <<",";
   ofsP<<(1. - mfexp(-p_ft(pyr,1))) <<",";
-  ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1,nyr)));
+  ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1,nyr))) <<",";
+  ofsP<<propAge3                   <<",";
+  ofsP<<propAge4to10               <<",";
+  ofsP<<ut                         <<",";
+  ofsP<<u20                        <<",";
   if(include_msy){
     //MSY based ref points
     ofsP<<","<<bmsy                <<",";
@@ -139,5 +157,5 @@ void write_proj_output(ofstream &ofsP,
     ofsP<<(1. - mfexp(-fmsy))        <<",";
     ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy));
   }
-  ofsP<<'\n';
+  ofsP<<"\n";
 }

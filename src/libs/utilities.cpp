@@ -55,12 +55,15 @@ void write_proj_headers(ofstream &ofsP,
   if(include_bo){
     ofsP<<"B0"                   <<",";
     ofsP<<"04B0"                 <<",";
+    ofsP<<"03B0"                 <<",";
     ofsP<<"02B0"                 <<",";
   }
   ofsP<<"B"<<syr               <<",";
   ofsP<<"B"<<nyr+2<<"B"<<nyr+1 <<",";  //want probability B2016<B2015 - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"04B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"02B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
+  if(include_bo){
+    ofsP<<"B"<<nyr+2<<"04B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
+    ofsP<<"B"<<nyr+2<<"02B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
+  }
   ofsP<<"B"<<nyr+2<<"B"<<syr   <<",";
   ofsP<<"F"<<nyr               <<",";
   ofsP<<"F"<<nyr+1             <<",";
@@ -69,7 +72,7 @@ void write_proj_headers(ofstream &ofsP,
   ofsP<<"U"<<nyr+1<<"U"<<nyr;
   if(include_msy){
     //MSY based ref points
-    ofsP<<","<<"BMSY"                 <<",";
+    ofsP<<","<<"BMSY"            <<",";
     ofsP<<"B"<<nyr+2<<"BMSY"     <<",";  //want probability B2016<BMSY - this will be < 1 if true
     ofsP<<"B"<<nyr+2<<"08BMSY"   <<",";  //want probability B2016<0.8BMSY - this will be< 1 if true
     ofsP<<"B"<<nyr+2<<"04BMSY"   <<",";  //want probability B2016<0.4BMSY - this will be < 1 if true
@@ -84,16 +87,24 @@ void write_proj_headers(ofstream &ofsP,
 void write_proj_output(ofstream &ofsP,
                        int syr,
                        int nyr,
+                       int nage,
                        double tac,
                        int pyr,
                        dvector p_sbt,
                        dmatrix p_ft,
+                       dmatrix p_N,
+                       dvar3_array M,
+                       dmatrix dWt_bar,
                        dvar_matrix ft,
                        double bo,
                        dmatrix fmsy,
                        dvector bmsy,
                        bool include_msy,
                        bool include_bo){
+
+  double  ut  = tac / ( tac + p_sbt(pyr) );
+	double u20  = tac / ( (p_N(pyr)(3,nage)*exp(-value(M(1)(nyr,3))))* dWt_bar(1)(3,nage) );
+
   // Write the projection output to the file
   ofsP<<tac                        <<",";
   ofsP<<p_sbt(pyr)                 <<",";
@@ -101,12 +112,15 @@ void write_proj_output(ofstream &ofsP,
   if(include_bo){
     ofsP<<bo                         <<",";
     ofsP<<0.4*bo                     <<",";
+    ofsP<<0.3*bo                     <<",";
     ofsP<<0.2*bo                     <<",";
   }
   ofsP<<p_sbt(syr)                 <<",";
   ofsP<<p_sbt(pyr+1)/p_sbt(pyr)    <<",";
-  ofsP<<p_sbt(pyr+1)/(0.4*bo)      <<",";
-  ofsP<<p_sbt(pyr+1)/(0.2*bo)      <<",";
+  if(include_bo){
+    ofsP<<p_sbt(pyr+1)/(0.4*bo)      <<",";
+    ofsP<<p_sbt(pyr+1)/(0.2*bo)      <<",";
+  }
   ofsP<<p_sbt(pyr+1)/p_sbt(syr)    <<",";
   //ofsP<<ft(1)(1,nyr)               <<",";
   ofsP<<ft(1,nyr)                  <<",";

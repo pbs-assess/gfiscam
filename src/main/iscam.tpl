@@ -5929,9 +5929,9 @@ FUNCTION void projection_model(const double& tac);
     ofsmcmc.flush();
    }
    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-   write_proj_output(ofsmcmc, syr, nyr, tac, pyr,
-                     p_sbt, p_ft, ft(1), bo, fmsy, bmsy,
-                     !d_iscamCntrl(13),
+   write_proj_output(ofsmcmc, syr, nyr, nage, tac, pyr,
+                     p_sbt, p_ft, p_N, M, dWt_bar, ft(1),
+                     bo, fmsy, bmsy, !d_iscamCntrl(13),
                      d_iscamCntrl(13) && d_iscamCntrl(20));
 
    ofsmcmc.flush();

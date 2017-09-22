@@ -5412,6 +5412,7 @@ FUNCTION mcmc_output
       ofs<<","<<"vartheta_gr"<<group;
     }
     ofs<<","<<"bo";
+    ofs<<","<<"sbo";
     if(!d_iscamCntrl(13) ||
        (d_iscamCntrl(13) && !d_iscamCntrl(20))){
       ofs<<","<<"bmsy";
@@ -5581,6 +5582,7 @@ FUNCTION mcmc_output
     ofs<<","<<theta(7)(group);
   }
   ofs<<","<<bo;
+  ofs<<","<<sbo;
   if(!d_iscamCntrl(13) ||
      (d_iscamCntrl(13) && !d_iscamCntrl(20))){
     ofs<<","<<bmsy;

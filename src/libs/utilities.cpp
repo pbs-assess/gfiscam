@@ -47,12 +47,12 @@ void write_proj_headers(ofstream &ofsP,
                         int syr,
                         int nyr,
                         bool include_msy,
-                        bool include_bo){
+                        bool include_sbo){
   // Write the decision table headers for projection years
   ofsP<<"TAC"                  <<",";
   ofsP<<"B"<<nyr+1             <<",";
   ofsP<<"B"<<nyr+2             <<",";
-  if(include_bo){
+  if(include_sbo){
     ofsP<<"B0"                   <<",";
     ofsP<<"04B0"                 <<",";
     ofsP<<"03B0"                 <<",";
@@ -60,7 +60,7 @@ void write_proj_headers(ofstream &ofsP,
   }
   ofsP<<"B"<<syr               <<",";
   ofsP<<"B"<<nyr+2<<"B"<<nyr+1 <<",";  //want probability B2016<B2015 - this will be < 1 if true
-  if(include_bo){
+  if(include_sbo){
     ofsP<<"B"<<nyr+2<<"04B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
     ofsP<<"B"<<nyr+2<<"02B0"     <<",";  //want probability B2016<0.4B0 - this will be < 1 if true
   }
@@ -101,11 +101,11 @@ void write_proj_output(ofstream &ofsP,
                        dmatrix ma,
                        dmatrix dWt_bar,
                        dvar_matrix ft,
-                       double bo,
+                       double sbo,
                        dmatrix fmsy,
                        dvector bmsy,
                        bool include_msy,
-                       bool include_bo){
+                       bool include_sbo){
 
   double  ut  = tac / ( tac + p_sbt(pyr) );
 	double u20  = tac / ( (p_N(pyr)(3,nage)*exp(-value(M(1)(nyr,3))))* dWt_bar(1)(3,nage) );
@@ -123,20 +123,20 @@ void write_proj_output(ofstream &ofsP,
   ofsP<<tac                        <<",";
   ofsP<<p_sbt(pyr)                 <<",";
   ofsP<<p_sbt(pyr+1)               <<",";
-  if(include_bo){
-    ofsP<<bo                         <<",";
-    ofsP<<0.4*bo                     <<",";
-    ofsP<<0.3*bo                     <<",";
-    ofsP<<0.2*bo                     <<",";
+  if(include_sbo){
+    ofsP<<sbo                      <<",";
+    ofsP<<0.4*sbo                  <<",";
+    ofsP<<0.3*sbo                  <<",";
+    ofsP<<0.2*sbo                  <<",";
   }
   ofsP<<p_sbt(syr)                 <<",";
   ofsP<<p_sbt(pyr+1)/p_sbt(pyr)    <<",";
-  if(include_bo){
-    ofsP<<p_sbt(pyr+1)/(0.4*bo)      <<",";
-    ofsP<<p_sbt(pyr+1)/(0.2*bo)      <<",";
+  if(include_sbo){
+    ofsP<<p_sbt(pyr+1)/(0.4*sbo)   <<",";
+    ofsP<<p_sbt(pyr+1)/(0.2*sbo)   <<",";
   }
   ofsP<<p_sbt(pyr+1)/p_sbt(syr)    <<",";
-  //ofsP<<ft(1)(1,nyr)               <<",";
+  //ofsP<<ft(1)(1,nyr)             <<",";
   ofsP<<ft(1,nyr)                  <<",";
   ofsP<<p_ft(pyr,1)                <<",";
   ofsP<<p_ft(pyr,1)/ft(1,nyr)      <<",";
@@ -149,12 +149,12 @@ void write_proj_output(ofstream &ofsP,
   if(include_msy){
     //MSY based ref points
     ofsP<<","<<bmsy                <<",";
-    ofsP<<p_sbt(pyr+1)/bmsy          <<",";
-    ofsP<<p_sbt(pyr+1)/(0.8*bmsy)    <<",";
-    ofsP<<p_sbt(pyr+1)/(0.4*bmsy)    <<",";
-    ofsP<<fmsy                       <<",";
-    ofsP<<p_ft(pyr,1)/fmsy           <<",";
-    ofsP<<(1. - mfexp(-fmsy))        <<",";
+    ofsP<<p_sbt(pyr+1)/bmsy        <<",";
+    ofsP<<p_sbt(pyr+1)/(0.8*bmsy)  <<",";
+    ofsP<<p_sbt(pyr+1)/(0.4*bmsy)  <<",";
+    ofsP<<fmsy                     <<",";
+    ofsP<<p_ft(pyr,1)/fmsy         <<",";
+    ofsP<<(1. - mfexp(-fmsy))      <<",";
     ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy));
   }
   ofsP<<"\n";

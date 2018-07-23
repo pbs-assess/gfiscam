@@ -15,7 +15,7 @@
 -0.6931472 -2.302585   0.     1  1    -0.6931472  0.1     # log.m log(0.4)=-0.9162907  log(0.596)=-0.5175146      log(0.3) = -1.203973 log(0.5) = -0.6931472
  8.9        1.0       12.     1  0     1.0       12.      # log_avgrec
  9.54       1.0       12.     1  0     1.0       12.      # log_recinit
- 0.088968   0.01       0.999 -3  3     3.0       12.      # rho Pcod: rho and varphi fixed to give sig=1 and tau=0.8. 
+ 0.088968   0.01       0.999 -3  3     3.0       12.      # rho Pcod: rho and varphi fixed to give sig=0.25 and tau=0.8. 
  1.423488   0.01     150.    -2  4     7.49836    5.78354 # kappa (precision) FOR P COD, VARPHI AND RHO ARE FIXED TO make average ratio of sds from the two surveys the same as 2005
 ## ------------------------------------------------------------------------- ##
 ##

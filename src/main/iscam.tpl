@@ -5952,8 +5952,7 @@ FUNCTION void projection_model(const double& tac);
    LOG<<"Finished projection model for TAC = "<<tac<<'\n';
   }
 
-FUNCTION void projection_model_dd(const double& tac);
-  {
+FUNCTION void projection_model_dd(const double& tac)
 	/*
 	This routine conducts population projections based on
 	the estimated values of theta.  Note that all variables
@@ -5973,7 +5972,8 @@ FUNCTION void projection_model_dd(const double& tac);
 
 	** NOTES **
 	* Projections are based on estimated constant natural mortality
-	* Currently, reference points are historical only, based average historical biomass and ft, and minimum biomass, based on years provided in the pfc file
+	* Currently, reference points are historical only, based average historical
+     biomass and ft, and minimum biomass, based on years provided in the pfc file
 	* TO DO: implement fmsy and bo-based reference points
 
 	*/
@@ -6010,11 +6010,11 @@ FUNCTION void projection_model_dd(const double& tac);
 	//Values needed for calculating historical reference points
 	int nshort=pf_cntrl(7)-syr+1;
 	int nlong=pf_cntrl(8)-syr+1;
-	double meanfshort;	  // average F between 1956 and 2004
-	double meanflong;	    // average F between 1956 and 2012
-	 double meanbshort;	 // average B between 1956 and 2004
-	double meanblong;	  // average B between 1956 and 2012
-	double minb;	  // biomass in 1971 for 5CD or 1985 for 5AB
+	double meanfshort = 0;	  // average F between 1956 and 2004
+	double meanflong = 0;	    // average F between 1956 and 2012
+	double meanbshort = 0;	 // average B between 1956 and 2004
+	double meanblong = 0;	  // average B between 1956 and 2012
+	double minb = 0;	  // biomass in 1971 for 5CD or 1985 for 5AB
 
 	dvector hist_ftshort(syr,pf_cntrl(7));
 	dvector hist_ftlong(syr,pf_cntrl(8));
@@ -6062,7 +6062,7 @@ FUNCTION void projection_model_dd(const double& tac);
                	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
 
 		//get_ftdd is defined in the Baranov.cpp file
-		p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i));	    //hardwiring the catch to gear 1 for this assessment       m_bar is same as constant M
+		p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i)); //hardwiring the catch to gear 1 for this assessment. m_bar is same as constant M
 
 		/*
 		//test get_ftdd with Baranov equation
@@ -6080,143 +6080,47 @@ FUNCTION void projection_model_dd(const double& tac);
 	//_S= Short: Start and end year in pfc file (for P. cod 1956-2004)
 	//_L=Long: Start and end year in pfc file (for P. cod 1956-2012)
 
-	//QUANTITIES NEEDED FOR DECISION TABLE
-	//TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE (LRP=0.2B0; USR=0.4B0 -- could add these to control file)
+	// QUANTITIES NEEDED FOR DECISION TABLE
+	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE
+  //  (LRP=0.2B0; USR=0.4B0 -- could add these to control file)
 	if(mceval_phase()){
-		if(nf==1 && runNo==1)
-		{
-			ofstream ofsP("iscammcmc.proj");
-			ofsP<<"tac" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+1 <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"B_"<<nyr+1 <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bnyr+1 - this will be < 1 if true
-			ofsP<<"F_"<<nyr <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1 <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1<<"F_"<<nyr <<setw(6)     <<   "\t";		   //want probability Fnyr+1>Fnyr     - this will be > 1 if true
-			//MSY based ref points
-			ofsP<<"BMSY" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"BMSY" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<BMSY - this will be < 1 if true
-			ofsP<<"B_"<<nyr+2<<"0.8BMSY" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<0.8BMSY - this will be< 1 if true
-			ofsP<<"B_"<<nyr+2<<"0.4BMSY" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<0.4BMSY - this will be < 1 if true
-			ofsP<<"FMSY" <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1<<"FMSY"<<setw(6)     <<   "\t";		   //want probability Fnyr+1>Fnyr - this will be > 1 if true
-			//Historical ref points "short"
-			ofsP<<"Bmin" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"Bmin" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bmin
-			ofsP<<"BAvg_S" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"BAvg_S" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bavg
-			ofsP<<"FAvg_S" <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1<<"FAvg_S"<<setw(6)     <<   "\t";
-			//Historical ref points "long"
-			ofsP<<"BAvg_L" <<setw(6)     <<   "\t";
-			ofsP<<"B_"<<nyr+2<<"BAvg_L" <<setw(6)     <<   "\t";		   //want probability Bnyr+2<Bavg - this will be < 1 if true
-			ofsP<<"FAvg_L" <<setw(6)     <<   "\t";
-			ofsP<<"F_"<<nyr+1<<"FAvg_L\n";		   //want probability Fnyr+1>FAvg - this will be > 1 if true
-
-			LOG<<"Running MCMC evaluations"<<'\n';
-			LOG<<"Bo when nf==1 \t"<<bo<<'\n';
+		if(nf==1 && runNo==1){
+      LOG<<"Running MCMC projections\n";
+      ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
+      write_proj_headers_dd(ofsmcmc, nyr);
+      ofsmcmc.flush();
 		}
+    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
+    write_proj_output_dd(ofsmcmc, tac, pyr,
+                         p_bt, p_ft, fmsy, bmsy, minb,
+                         meanbshort,
+                         meanblong,
+                         meanfshort,
+                         meanflong);
 
-		ofstream ofsP("iscammcmc.proj",ios::app);
-		ofsP <<tac <<setw(6)                            <<"\t"
-		  << p_bt(pyr-1) <<setw(6)       <<"\t"
-		  << p_bt(pyr) <<setw(6)       <<"\t"
-		  << p_bt(pyr)/p_bt(pyr-1) <<setw(6)      <<"\t"
-		 << p_ft(pyr-2) <<setw(6)      <<"\t"
-		 << p_ft(pyr-1)  <<setw(6)     <<"\t"
-		 << p_ft(pyr-1)/p_ft(pyr-2)  <<setw(6)     <<"\t"
-		//MSY based ref points
-		<<bmsy <<setw(6)     <<   "\t"
-		<<p_bt(pyr)/bmsy <<setw(6)     <<   "\t"
-		<<p_bt(pyr)/(0.8*bmsy) <<setw(6)     <<   "\t"
-		<<p_bt(pyr)/(0.4*bmsy) <<setw(6)     <<   "\t"
-		<<fmsy <<setw(6)     <<   "\t"
-		<<p_ft(pyr-1)/fmsy <<setw(6)     <<   "\t"
-		//Historical ref points "short"
-		<<minb <<setw(6)     <<   "\t"
-		<<p_bt(pyr)/minb <<setw(6)     <<   "\t"
-		<<meanbshort <<setw(6)     <<   "\t"
-		<<p_bt(pyr)/meanbshort <<setw(6)     <<   "\t"
-		<<meanfshort <<setw(6)     <<   "\t"
-		<<p_ft(pyr-1)/meanfshort<<setw(6)     <<   "\t"
-		 //Historical ref points "long"
-		<<meanblong <<setw(6)     <<   "\t"
-		<<p_bt(pyr)/meanblong <<setw(6)     <<   "\t"
-		<<meanflong <<setw(6)     <<   "\t"
-		<<p_ft(pyr-1)/meanflong<<   "\t"
-		 <<'\n';
-	   }
+    ofsmcmc.flush();
+  }
 
-	 //MPD projections
- 	//TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE (LRP=0.2B0; USR=0.4B0 -- could add proportions to control file)
-       if(last_phase() && !mceval_phase()){
-	   		if(runNo==1)
-	   		{
-	   			LOG<<"Running MPD projections"<<'\n';
+	// MPD projections
+ 	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE
+  //  (LRP=0.2B0; USR=0.4B0 -- could add proportions to control file)
+  if(last_phase() && !mceval_phase()){
+	  if(runNo==1){
+      LOG<<"Running MPD projections\n";
+      ofstream ofsmpd("iscammpd_proj_Gear1.csv");
+      write_proj_headers_dd(ofsmpd, nyr);
+      ofsmpd.flush();
+    }
+    ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
+    write_proj_output_dd(ofsmpd, tac, pyr,
+                         p_bt, p_ft, fmsy, bmsy, minb,
+                         meanbshort,
+                         meanblong,
+                         meanfshort,
+                         meanflong);
 
-	   			ofstream ofsP("iscammpd.proj");
-	   			ofsP<<"tac" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+1 <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2 <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"B_"<<nyr+1 <<setw(6)     <<   "\t";
-				ofsP<<"F_"<<nyr <<setw(6)     <<   "\t";
-				ofsP<<"F_"<<nyr+1 <<setw(6)     <<   "\t";
-				ofsP<<"F_" <<nyr+1<<"F_"<<nyr <<setw(6)     <<   "\t";
-				//MSY based ref points
-				ofsP<<"BMSY" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"BMSY" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"0.8BMSY" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"0.4BMSY" <<setw(6)     <<   "\t";
-				ofsP<<"FMSY" <<setw(6)     <<   "\t";
-				ofsP<<"F_"<<nyr+1<<"FMSY"<<setw(6)     <<   "\t";
-				//Historical ref points "short"
-				ofsP<<"Bmin" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"Bmin" <<setw(6)     <<   "\t";
-				ofsP<<"BAvg_S" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"BAvg_S" <<setw(6)     <<   "\t";
-				ofsP<<"FAvg_S" <<setw(6)     <<   "\t";
-				ofsP<<"F_"<<nyr+1<<"FAvg_S"<<setw(6)     <<   "\t";
-				//Historical ref points "long"
-				ofsP<<"BAvg_L" <<setw(6)     <<   "\t";
-				ofsP<<"B_"<<nyr+2<<"BAvg_L" <<setw(6)     <<   "\t";
-				ofsP<<"FAvg_L" <<setw(6)     <<   "\t";
-				ofsP<<"F_"<<nyr+ 1<< "FAvg_L\n";
-
-	   		}
-
-	   		LOG<<"tac = "<<tac<<'\n';
-	   		ofstream ofsP("iscammpd.proj",ios::app);
-	   		ofsP
-	   		  <<tac <<setw(6)                            <<"\t"
-			  << p_bt(pyr-1) <<setw(6)       <<"\t"
-			  << p_bt(pyr) <<setw(6)       <<"\t"
-			  << p_bt(pyr)/p_bt(pyr-1) <<setw(6)      <<"\t"
-		  	 << p_ft(pyr-2) <<setw(6)      <<"\t"
-			 << p_ft(pyr-1)  <<setw(6)     <<"\t"
-		  	 << p_ft(pyr-1)/p_ft(pyr-2)  <<setw(6)     <<"\t"
-			//MSY based ref points
-			<<bmsy <<setw(6)     <<   "\t"
-			<<p_bt(pyr)/bmsy <<setw(6)     <<   "\t"
-			<<p_bt(pyr)/(0.8*bmsy) <<setw(6)     <<   "\t"
-			<<p_bt(pyr)/(0.4*bmsy) <<setw(6)     <<   "\t"
-			<<fmsy <<setw(6)     <<   "\t"
-			<<p_ft(pyr-1)/fmsy <<setw(6)     <<   "\t"
-			//Historical ref points "short"
-			<<minb <<setw(6)     <<   "\t"
-			<<p_bt(pyr)/minb <<setw(6)     <<   "\t"
-			<<meanbshort <<setw(6)     <<   "\t"
-			<<p_bt(pyr)/meanbshort <<setw(6)     <<   "\t"
-			<<meanfshort <<setw(6)     <<   "\t"
-			<<p_ft(pyr-1)/meanfshort<<setw(6)     <<   "\t"
-			 //Historical ref points "long"
-			<<meanblong <<setw(6)     <<   "\t"
-			<<p_bt(pyr)/meanblong <<setw(6)     <<   "\t"
-			<<meanflong <<setw(6)     <<   "\t"
-			<<p_ft(pyr-1)/meanflong<<   "\t"
-			<<'\n';
-	   }
-	}
-//end of projection model dd
+    ofsmpd.flush();
+  }
 
 TOP_OF_MAIN_SECTION
   // These lines make all stdout and stderr go to the file

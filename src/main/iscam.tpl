@@ -3156,7 +3156,8 @@ FUNCTION calcNumbersBiomass_deldiff
 			        tmp_N(sage)  = mfexp( log_avgrec(ih)+log_rec_devs(ih)(syr));
 				for(int j=sage+1;j<=nage;j++)
 				{
-					tmp_N(j)=mfexp(log_recinit(ih)+init_log_rec_devs(ih)(j))*mfexp(-M_dd(ig)(syr)*(j-sage));
+					tmp_N(j)=mfexp(log_avgrec(ih)+ init_log_rec_devs(ih)(j))*mfexp(-M_dd(ig)(syr)*(j-sage)); // AUG 7 2018. do not use log_rec_init in dd model
+					//tmp_N(j)=mfexp(log_recinit(ih)+init_log_rec_devs(ih)(j))*mfexp(-M_dd(ig)(syr)*(j-sage));
 				}
 		        	tmp_N(nage)/=(1.-mfexp(-M_dd(ig)(syr)));
 		        	numbers(ig,syr) = sum(tmp_N)* 1./nsex;

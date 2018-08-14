@@ -1736,12 +1736,22 @@ FUNCTION void initParameters()
 	sig       = elem_prod(sqrt(rho) , varphi);
 	tau       = elem_prod(sqrt(1.0-rho) , varphi);
 
-	for(ih=1;ih<=n_ag;ih++)
-	{
-		log_avgrec(ih)  = theta(4,ih);
-		log_recinit(ih) = theta(5,ih);
-	}
-
+        if(!delaydiff){
+        	for(ih=1;ih<=n_ag;ih++)
+		{
+			log_avgrec(ih)  = theta(4,ih);
+			log_recinit(ih) = theta(5,ih);
+		}
+         }
+         
+         //AUG 14 2018 Set all average rec parameters to ro in delay difference model
+          if(delaydiff){
+	         	for(ih=1;ih<=n_ag;ih++)
+	 		{
+	 			log_avgrec(ih)  = theta(1,ih);
+	 			log_recinit(ih) = theta(1,ih);
+	 		}
+         }
 
 
 	switch(int(d_iscamCntrl(2)))

@@ -1,0 +1,55 @@
+## _____________________________ ##
+## Projection file control (pfc) ##
+## _____________________________ ##
+##
+## n_tac  length of catch vector.
+13
+## tac vector (1000 mt)
+#***must have '0' at first tac value
+0
+3
+3.32
+4
+4.5
+5.15
+6
+6.8
+6.9
+7
+9
+10.55
+12
+
+
+
+##
+## _____________________________ ##
+## Control options               ##
+## _____________________________ ##
+8    ## Length of control options vector
+
+## _____________________________ ##
+## Consider 3 scenarios:
+##  Scenario A: longterm average
+##	Scenario B: recent average
+##	Scenario C: longterm + average
+## _____________________________ ##
+
+## This is Scenario B
+
+2013 ## - 1) Start year for mean natural mortality rate
+2017 ## - 2)  Last year for mean natural mortality rate
+
+2013 ## - 3) Start year for average fecundity/weight-at-age in projections
+2017 ## - 4)  Last year for average fecundity/weight-at-age in projections
+
+##not currently used
+1951 ## - 5) Start year for average recruitment period in projections.
+2012 ## - 6)   End year for average recruitment period in projections.
+
+##reference_period_years
+2000 ## - 7) start of reference period
+2006 ## - 8) end of reference period
+
+## eof
+-999

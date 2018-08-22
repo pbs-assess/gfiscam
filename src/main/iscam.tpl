@@ -6022,10 +6022,10 @@ FUNCTION void projection_model_dd(const double& tac)
 	int nshort=pf_cntrl(7)-syr+1;
 	int nlong=pf_cntrl(8)-syr+1;
 	double meanfshort = 0;	  // average F between syr and pf_cntrl(7)
-	double meanflong = 0;	    // average F between 1956 and pf_cntrl(8)
-	double meanbshort = 0;	 // average B between 1956 and pf_cntrl(7)
-	double meanblong = 0;	  // average B between 1956 and pf_cntrl(8)
-	double minb = 0;	  // biomass in 1pf_cntrl(9)
+	double meanflong = 0;	    // average F between syr and pf_cntrl(8)
+	double meanbshort = 0;	 // average B between syr and pf_cntrl(7)
+	double meanblong = 0;	  // average B between syr and pf_cntrl(8)
+	double minb = 0;	  // biomass in pf_cntrl(9)
 
 	dvector hist_ftshort(syr,pf_cntrl(7));
 	dvector hist_ftlong(syr,pf_cntrl(8));

@@ -6006,15 +6006,15 @@ FUNCTION void projection_model_dd(const double& tac)
 	p_S(syr,nyr)   = value(surv(1)(syr,nyr));
 	p_rt(syr+sage,nyr)   = value(rt(1)(syr+sage,nyr));
 
-	// *** HISTORICAL REFERENCE POINTS *** //
+// *** HISTORICAL REFERENCE POINTS *** //
 	//Values needed for calculating historical reference points
 	int nshort=pf_cntrl(7)-syr+1;
 	int nlong=pf_cntrl(8)-syr+1;
-	double meanfshort = 0;	  // average F between 1956 and 2004
-	double meanflong = 0;	    // average F between 1956 and 2012
-	double meanbshort = 0;	 // average B between 1956 and 2004
-	double meanblong = 0;	  // average B between 1956 and 2012
-	double minb = 0;	  // biomass in 1971 for 5CD or 1985 for 5AB
+	double meanfshort = 0;	  // average F between syr and pf_cntrl(7)
+	double meanflong = 0;	    // average F between syr and pf_cntrl(8)
+	double meanbshort = 0;	 // average B between syr and pf_cntrl(7)
+	double meanblong = 0;	  // average B between syr and pf_cntrl(8)
+	double minb = 0;	  // biomass in pf_cntrl(9)
 
 	dvector hist_ftshort(syr,pf_cntrl(7));
 	dvector hist_ftlong(syr,pf_cntrl(8));
@@ -6038,7 +6038,8 @@ FUNCTION void projection_model_dd(const double& tac)
 	if(nyr>=pf_cntrl(8)) meanblong=sum(hist_btlong)/nlong;
 
 	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
-	minb=pf_cntrl(9);
+	//minb=pf_cntrl(9); August 21, 2018. This is just the year. Need the biomass
+	minb=value(biomass(1)(pf_cntrl(8))); //RF::August 21, 2018.
 
 
 	/* Simulate population into the future under constant tac policy. */

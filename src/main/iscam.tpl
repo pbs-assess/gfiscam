@@ -6050,7 +6050,7 @@ FUNCTION void projection_model_dd(const double& tac)
 
 	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
 	//minb=pf_cntrl(9); August 21, 2018. This is just the year. Need the biomass
-	minb=value(biomass(1)(pf_cntrl(8))); //RF::August 21, 2018. 
+	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018. 
 
 
 	/* Simulate population into the future under constant tac policy. */

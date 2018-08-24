@@ -5570,6 +5570,7 @@ FUNCTION mcmc_output
   }
 
   // Append the values to the files
+  //these should be named parameters
   ofstream ofs("iscam_mcmc.csv",ios::app);
   for(int group=1;group<=ngroup;group++){
     ofs<<exp(theta(1)(group));
@@ -5581,10 +5582,12 @@ FUNCTION mcmc_output
     ofs<<","<<exp(theta(3)(gs));
   }
   for(int ag=1;ag<=n_ag;ag++){
-    ofs<<","<<exp(theta(4)(ag));
+    //ofs<<","<<exp(theta(4)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
+     ofs<<","<<exp(log_avgrec(ag));
   }
   for(int ag=1;ag<=n_ag;ag++){
-    ofs<<","<<exp(theta(5)(ag));
+    //ofs<<","<<exp(theta(5)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
+    ofs<<","<<exp(log_recinit(ag));
   }
   for(int group=1;group<=ngroup;group++){
     ofs<<","<<theta(6)(group);

@@ -5994,7 +5994,8 @@ FUNCTION void projection_model_dd(const double& tac)
 	static int runNo=0;
 	runNo ++;
 	int i;
-	int pyr = nyr+2;	//projection year.
+	//int pyr = nyr+2;	//projection year.
+	int pyr = nyr+3;	//projection year. Sept 11 2018. RF testing two year projection. Add this to control file.
 
 	 BaranovCatchEquation cBaranov;
 
@@ -6102,11 +6103,11 @@ FUNCTION void projection_model_dd(const double& tac)
 		if(nf==1 && runNo==1){
       LOG<<"Running MCMC projections\n";
       ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-      write_proj_headers_dd(ofsmcmc, nyr);
+      write_proj_headers_dd(ofsmcmc, nyr, pyr);
       ofsmcmc.flush();
 		}
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-    write_proj_output_dd(ofsmcmc, tac, pyr,
+    write_proj_output_dd(ofsmcmc, tac, nyr, pyr,
                          p_bt, p_ft, fmsy, bmsy, minb,
                          meanbshort,
                          meanblong,
@@ -6123,11 +6124,11 @@ FUNCTION void projection_model_dd(const double& tac)
 	  if(runNo==1){
       LOG<<"Running MPD projections\n";
       ofstream ofsmpd("iscammpd_proj_Gear1.csv");
-      write_proj_headers_dd(ofsmpd, nyr);
+      write_proj_headers_dd(ofsmpd, nyr, pyr);
       ofsmpd.flush();
     }
     ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
-    write_proj_output_dd(ofsmpd, tac, pyr,
+    write_proj_output_dd(ofsmpd, tac, nyr, pyr,
                          p_bt, p_ft, fmsy, bmsy, minb,
                          meanbshort,
                          meanblong,

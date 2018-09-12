@@ -33,10 +33,12 @@ void write_proj_output(ofstream &ofsP,
                        bool include_bo);
 
 void write_proj_headers_dd(ofstream &ofsP,
-                           int nyr);
+                           int nyr,
+                           int pyr);
 
 void write_proj_output_dd(ofstream &ofsP,
                           double tac,
+                          int nyr,
                           int pyr,
                           dvector p_bt,
                           dvector p_ft,

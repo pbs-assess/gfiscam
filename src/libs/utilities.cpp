@@ -44,34 +44,35 @@ ivector getIndex(const dvector& a, const dvector& b){
 }
 
 void write_proj_headers_dd(ofstream &ofsP,
-                           int nyr){
+                           int nyr,
+                           int pyr){
   // Write the decision table headers for projection years for delay diff model (PCod 2018)
   ofsP<<"TAC"                    <<",";
   ofsP<<"B"<<nyr+1               <<",";
-  ofsP<<"B"<<nyr+2               <<",";
-  ofsP<<"B"<<nyr+2<<"B"<<nyr+1   <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr               <<",";
+  ofsP<<"B"<<pyr <<"B"<<nyr+1   <<",";  // this will be < 1 if true
   ofsP<<"F"<<nyr                 <<",";
-  ofsP<<"F"<<nyr+1               <<",";
-  ofsP<<"F"<<nyr+1<<"F"<<nyr     <<",";  // this will be > 1 if true
+  ofsP<<"F"<<pyr-1                <<",";
+  ofsP<<"F"<<pyr-1 <<"F"<<nyr     <<",";  // this will be > 1 if true
   // MSY based ref points
   ofsP<<"BMSY"                   <<",";
-  ofsP<<"B"<<nyr+2<<"BMSY"       <<",";  // this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"0.8BMSY"    <<",";  // this will be < 1 if true
-  ofsP<<"B"<<nyr+2<<"0.4BMSY"    <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"BMSY"       <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"0.8BMSY"    <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"0.4BMSY"    <<",";  // this will be < 1 if true
   ofsP<<"FMSY"                   <<",";
-  ofsP<<"F"<<nyr+1<<"FMSY"       <<",";  // this will be > 1 if true
+  ofsP<<"F"<<pyr-1<<"FMSY"       <<",";  // this will be > 1 if true
   // Historical ref points "short"
   ofsP<<"Bmin"                   <<",";
-  ofsP<<"B"<<nyr+2<<"Bmin"       <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"Bmin"       <<",";  // this will be < 1 if true
   ofsP<<"BAvgS"                  <<",";
-  ofsP<<"B"<<nyr+2<<"BAvgS"      <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"BAvgS"      <<",";  // this will be < 1 if true
   ofsP<<"FAvgS"                  <<",";
-  ofsP<<"F"<<nyr+1<<"FAvgS"      <<",";  // this will be > 1 if true
+  ofsP<<"F"<<pyr<<"FAvgS"      <<",";  // this will be > 1 if true
   // Historical ref points "long"
   ofsP<<"BAvgL"                  <<",";
-  ofsP<<"B"<<nyr+2<<"BAvgL"      <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"BAvgL"      <<",";  // this will be < 1 if true
   ofsP<<"FAvgL"                  <<",";
-  ofsP<<"F"<<nyr+1<<"FAvgL"      <<",";  // this will be > 1 if true
+  ofsP<<"F"<<pyr-1<<"FAvgL"      <<",";  // this will be > 1 if true
 
   ofsP<<"\n";
 }
@@ -123,6 +124,7 @@ void write_proj_headers(ofstream &ofsP,
 
 void write_proj_output_dd(ofstream &ofsP,
                           double tac,
+                          int nyr,
                           int pyr,
                           dvector p_bt,
                           dvector p_ft,
@@ -135,12 +137,12 @@ void write_proj_output_dd(ofstream &ofsP,
                           double meanflong){
   // Write the projection output to the file for delay difference model (PCod 2018)
   ofsP<<tac                        <<",";
-  ofsP<<p_bt(pyr-1)                <<",";
+  ofsP<<p_bt(nyr+1)               <<",";
   ofsP<<p_bt(pyr)                  <<",";
-  ofsP<<p_bt(pyr)/p_bt(pyr-1)      <<",";
-  ofsP<<p_ft(pyr-2)                <<",";
+  ofsP<<p_bt(pyr)/p_bt(nyr+1 )      <<",";
+  ofsP<<p_ft(nyr)                <<",";
   ofsP<<p_ft(pyr-1)                <<",";
-  ofsP<<p_ft(pyr-1)/p_ft(pyr-2)    <<",";
+  ofsP<<p_ft(pyr-1)/p_ft(nyr)    <<",";
 
 	// MSY based ref points
   ofsP<<bmsy                       <<",";

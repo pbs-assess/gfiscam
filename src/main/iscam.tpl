@@ -5994,8 +5994,8 @@ FUNCTION void projection_model_dd(const double& tac)
 	static int runNo=0;
 	runNo ++;
 	int i;
-	//int pyr = nyr+2;	//projection year.
-	int pyr = nyr+3;	//projection year. Sept 11 2018. RF testing two year projection. Add this to control file.
+	int pyr = nyr+2;	//projection year.
+	//int pyr = nyr+3;	//projection year. Sept 11 2018. RF testing two year projection. Add this to control file.
 
 	 BaranovCatchEquation cBaranov;
 

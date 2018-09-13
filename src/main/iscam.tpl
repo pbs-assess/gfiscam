@@ -6044,37 +6044,45 @@ FUNCTION void projection_model_dd(const double& tac)
 
 	/* Simulate population into the future under constant tac policy. */
 	for(i = nyr+1; i<=pyr; i++)
-	{
-		//recruits
-		//double p_tau = value(sqrt(1-rho)/varphi);
-		double p_tau = value(tau(1));
-		double xx = randn(nf+i)*p_tau;
-
-		//double rt;
-		double et=p_bt(i-kage(1)); //delay diff
-
-		if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-		if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-
-		//numbers and biomass
-		//Update biomass and numbers
-		p_bt(i) =(p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
-		p_N(i)=p_S(i-1)*p_N(i-1)+p_rt(i);
-               	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
-
-		//get_ftdd is defined in the Baranov.cpp file
-		p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i)); //hardwiring the catch to gear 1 for this assessment. m_bar is same as constant M
-
-		/*
-		//test get_ftdd with Baranov equation
-		double testf =p_ft(i);
-		double testc = p_bt(i)*(1-mfexp(-value(m)-testf))*(testf/(value(m) + testf));
-		LOG<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<'\n'<<'\n';
-		*/
-
-		//Calculate mortality for next projection year
-		p_S(i) = mfexp(-(value(M_dd(1)(syr))+p_ft(i)));
-
+		{
+			//recruits
+			//double p_tau = value(sqrt(1-rho)/varphi);
+			double p_tau = value(tau(1));
+			double xx = randn(nf+i)*p_tau;
+	
+			//double rt;
+			double et=p_bt(i-kage(1)); //delay diff
+	
+			if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
+			if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
+	                
+	                //for nyr + 1 use values projected using the actual catch
+	                if(i==nyr+1) {
+	                      p_bt(i)   = value(biomass(1)(nyr+1));
+	                      p_N(i) = value(numbers(1)(nyr+1));
+	                }
+	                
+			//numbers and biomass
+			//Update biomass and numbers
+			if(i>nyr+1) {
+			     p_bt(i) = (p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
+			     p_N(i) = p_S(i-1)*p_N(i-1)+p_rt(i);
+			 }
+	               	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
+	
+			//get_ftdd is defined in the Baranov.cpp file
+			p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i)); //hardwiring the catch to gear 1 for this assessment. m_bar is same as constant M
+	
+			/*
+			//test get_ftdd with Baranov equation
+			double testf =p_ft(i);
+			double testc = p_bt(i)*(1-mfexp(-value(m)-testf))*(testf/(value(m) + testf));
+			LOG<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<'\n'<<'\n';
+			*/
+	
+			//Calculate mortality for next projection year
+			p_S(i) = mfexp(-(value(M_dd(1)(syr))+p_ft(i)));
+	
 	}
 
 

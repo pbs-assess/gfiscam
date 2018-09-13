@@ -67,7 +67,7 @@ void write_proj_headers_dd(ofstream &ofsP,
   ofsP<<"BAvgS"                  <<",";
   ofsP<<"B"<<pyr<<"BAvgS"      <<",";  // this will be < 1 if true
   ofsP<<"FAvgS"                  <<",";
-  ofsP<<"F"<<pyr<<"FAvgS"      <<",";  // this will be > 1 if true
+  ofsP<<"F"<<pyr-1<<"FAvgS"      <<",";  // this will be > 1 if true
   // Historical ref points "long"
   ofsP<<"BAvgL"                  <<",";
   ofsP<<"B"<<pyr<<"BAvgL"      <<",";  // this will be < 1 if true

@@ -43,7 +43,7 @@ ivector getIndex(const dvector& a, const dvector& b){
   return(tmp);
 }
 
-void write_proj_headers_dd(ofstream &ofsP,
+ void write_proj_headers_dd(ofstream &ofsP,
                            int nyr,
                            int pyr){
   // Write the decision table headers for projection years for delay diff model (PCod 2018)
@@ -75,7 +75,7 @@ void write_proj_headers_dd(ofstream &ofsP,
   ofsP<<"F"<<pyr-1<<"FAvgL"      <<",";  // this will be > 1 if true
 
   ofsP<<"\n";
-}
+ }
 
 void write_proj_headers(ofstream &ofsP,
                         int syr,

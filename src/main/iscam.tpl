@@ -5980,6 +5980,7 @@ FUNCTION void projection_model_dd(const double& tac)
 	runNo ++;
 	int i;
 	int pyr = nyr+2;	//projection year.
+	//int pyr = nyr+3;	//projection year. Sept 11 2018. RF testing two year projection. Add this to control file.
 
 	 BaranovCatchEquation cBaranov;
 
@@ -6005,7 +6006,7 @@ FUNCTION void projection_model_dd(const double& tac)
 	p_S(syr,nyr)   = value(surv(1)(syr,nyr));
 	p_rt(syr+sage,nyr)   = value(rt(1)(syr+sage,nyr));
 
-// *** HISTORICAL REFERENCE POINTS *** //
+	// *** HISTORICAL REFERENCE POINTS *** //
 	//Values needed for calculating historical reference points
 	int nshort=pf_cntrl(7)-syr+1;
 	int nlong=pf_cntrl(8)-syr+1;
@@ -6038,55 +6039,54 @@ FUNCTION void projection_model_dd(const double& tac)
 
 	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
 	//minb=pf_cntrl(9); August 21, 2018. This is just the year. Need the biomass
-	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018.
-
+	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018. 
 
 	/* Simulate population into the future under constant tac policy. */
 	for(i = nyr+1; i<=pyr; i++)
-		{
-			//recruits
-			//double p_tau = value(sqrt(1-rho)/varphi);
-			double p_tau = value(tau(1));
-			double xx = randn(nf+i)*p_tau;
-	
-			//double rt;
-			double et=p_bt(i-kage(1)); //delay diff
-	
-			if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-			if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-	                
-	                //for nyr + 1 use values projected using the actual catch
-	                if(i==nyr+1) {
-	                      p_bt(i)   = value(biomass(1)(nyr+1));
-	                      p_N(i) = value(numbers(1)(nyr+1));
-	                }
-	                
-			//numbers and biomass
-			//Update biomass and numbers
-			if(i>nyr+1) {
-			     p_bt(i) = (p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
-			     p_N(i) = p_S(i-1)*p_N(i-1)+p_rt(i);
-			 }
-	               	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
-	
-			//get_ftdd is defined in the Baranov.cpp file
-			p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i)); //hardwiring the catch to gear 1 for this assessment. m_bar is same as constant M
-	
-			/*
-			//test get_ftdd with Baranov equation
-			double testf =p_ft(i);
-			double testc = p_bt(i)*(1-mfexp(-value(m)-testf))*(testf/(value(m) + testf));
-			LOG<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<'\n'<<'\n';
-			*/
-	
-			//Calculate mortality for next projection year
-			p_S(i) = mfexp(-(value(M_dd(1)(syr))+p_ft(i)));
-	
+	{
+		//recruits
+		//double p_tau = value(sqrt(1-rho)/varphi);
+		double p_tau = value(tau(1));
+		double xx = randn(nf+i)*p_tau;
+
+		//double rt;
+		double et=p_bt(i-kage(1)); //delay diff
+
+		if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
+		if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
+                
+                //for nyr + 1 use values projected using the actual catch
+                if(i==nyr+1) {
+                      p_bt(i)   = value(biomass(1)(nyr+1));
+                      p_N(i) = value(numbers(1)(nyr+1));
+                }
+                
+		//numbers and biomass
+		//Update biomass and numbers
+		if(i>nyr+1) {
+		     p_bt(i) = (p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
+		     p_N(i) = p_S(i-1)*p_N(i-1)+p_rt(i);
+		 }
+               	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
+
+		//get_ftdd is defined in the Baranov.cpp file
+		p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i)); //hardwiring the catch to gear 1 for this assessment. m_bar is same as constant M
+
+		/*
+		//test get_ftdd with Baranov equation
+		double testf =p_ft(i);
+		double testc = p_bt(i)*(1-mfexp(-value(m)-testf))*(testf/(value(m) + testf));
+		LOG<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<'\n'<<'\n';
+		*/
+
+		//Calculate mortality for next projection year
+		p_S(i) = mfexp(-(value(M_dd(1)(syr))+p_ft(i)));
+
 	}
 
 
-	//_S= Short: Start and end year in pfc file (for P. cod 1956-2004)
-	//_L=Long: Start and end year in pfc file (for P. cod 1956-2012)
+	//_S= Short: Start and end year in pfc file 
+	//_L=Long: Start and end year in pfc file 
 
 	// QUANTITIES NEEDED FOR DECISION TABLE
 	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE
@@ -6095,11 +6095,11 @@ FUNCTION void projection_model_dd(const double& tac)
 		if(nf==1 && runNo==1){
       LOG<<"Running MCMC projections\n";
       ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-      write_proj_headers_dd(ofsmcmc, nyr);
+      write_proj_headers_dd(ofsmcmc, nyr, pyr);
       ofsmcmc.flush();
 		}
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-    write_proj_output_dd(ofsmcmc, tac, pyr,
+    write_proj_output_dd(ofsmcmc, tac, nyr, pyr,
                          p_bt, p_ft, fmsy, bmsy, minb,
                          meanbshort,
                          meanblong,
@@ -6116,11 +6116,11 @@ FUNCTION void projection_model_dd(const double& tac)
 	  if(runNo==1){
       LOG<<"Running MPD projections\n";
       ofstream ofsmpd("iscammpd_proj_Gear1.csv");
-      write_proj_headers_dd(ofsmpd, nyr);
+      write_proj_headers_dd(ofsmpd, nyr, pyr);
       ofsmpd.flush();
     }
     ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
-    write_proj_output_dd(ofsmpd, tac, pyr,
+    write_proj_output_dd(ofsmpd, tac, nyr, pyr,
                          p_bt, p_ft, fmsy, bmsy, minb,
                          meanbshort,
                          meanblong,

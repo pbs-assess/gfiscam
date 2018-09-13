@@ -3226,8 +3226,7 @@ FUNCTION calcNumbersBiomass_deldiff
 			annual_mean_wt(ig,i)=biomass(ig,i)/numbers(ig,i);		//calculate predicted weight in dynamics - possible option to fit to it
 				sbt(g,i) += biomass(ig,i);
 		}
-	  	  //RF doesn't like this projection step - prefers to stick to projection in projection model - this one calculates recruitment inconsistently with projection model
-
+	  	  
 	  	biomass(ig,nyr+1)=(surv(ig,nyr)*(rho_g(gs)*biomass(ig,nyr)+alpha_g(gs)*numbers(ig,nyr))+wk(gs)*rnplus(ih)/nsex);
 		numbers(ig,nyr+1)=surv(ig,nyr)*numbers(ig,nyr)+rnplus(ih)/nsex;
 
@@ -6056,7 +6055,6 @@ FUNCTION void projection_model_dd(const double& tac)
 	//minb=pf_cntrl(9); August 21, 2018. This is just the year. Need the biomass
 	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018. 
 
-
 	/* Simulate population into the future under constant tac policy. */
 	for(i = nyr+1; i<=pyr; i++)
 	{
@@ -6070,11 +6068,19 @@ FUNCTION void projection_model_dd(const double& tac)
 
 		if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
 		if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-
+                
+                //for nyr + 1 use values projected using the actual catch
+                if(i==nyr+1) {
+                      p_bt(i)   = value(biomass(1)(nyr+1));
+                      p_N(i) = value(numbers(1)(nyr+1));
+                }
+                
 		//numbers and biomass
 		//Update biomass and numbers
-		p_bt(i) =(p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
-		p_N(i)=p_S(i-1)*p_N(i-1)+p_rt(i);
+		if(i>nyr+1) {
+		     p_bt(i) = (p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
+		     p_N(i) = p_S(i-1)*p_N(i-1)+p_rt(i);
+		 }
                	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
 
 		//get_ftdd is defined in the Baranov.cpp file

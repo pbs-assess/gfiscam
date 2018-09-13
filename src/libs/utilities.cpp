@@ -124,6 +124,7 @@ void write_proj_headers(ofstream &ofsP,
 
 void write_proj_output_dd(ofstream &ofsP,
                           double tac,
+                          int nyr,
                           int pyr,
                           dvector p_bt,
                           dvector p_ft,

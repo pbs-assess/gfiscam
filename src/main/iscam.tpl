@@ -5483,7 +5483,7 @@ FUNCTION mcmc_output
     ofstream of4("iscam_rdev_mcmc.csv");
     iter = 1;
     for(int ag=1;ag<=n_ag;ag++){
-      for(int yr=syr;yr<=nyr;yr++){
+      for(int yr=syr+sage;yr<=nyr;yr++){
         if(iter == 1){
           of4<<"rdev"<<ag<<"_"<<yr;
         }else{
@@ -5660,7 +5660,7 @@ FUNCTION mcmc_output
   ofstream of4("iscam_rdev_mcmc.csv",ios::app);
   iter = 1;
   for(int ag=1;ag<=n_ag;ag++){
-    for(int yr=syr;yr<=nyr;yr++){
+    for(int yr=syr+sage;yr<=nyr;yr++){
       if(iter == 1){
         of4<<log_rec_devs(ag)(yr);
       }else{
@@ -6039,7 +6039,7 @@ FUNCTION void projection_model_dd(const double& tac)
 
 	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
 	//minb=pf_cntrl(9); August 21, 2018. This is just the year. Need the biomass
-	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018. 
+	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018.
 
 	/* Simulate population into the future under constant tac policy. */
 	for(i = nyr+1; i<=pyr; i++)
@@ -6054,13 +6054,13 @@ FUNCTION void projection_model_dd(const double& tac)
 
 		if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
 		if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-                
+
                 //for nyr + 1 use values projected using the actual catch
                 if(i==nyr+1) {
                       p_bt(i)   = value(biomass(1)(nyr+1));
                       p_N(i) = value(numbers(1)(nyr+1));
                 }
-                
+
 		//numbers and biomass
 		//Update biomass and numbers
 		if(i>nyr+1) {
@@ -6085,8 +6085,8 @@ FUNCTION void projection_model_dd(const double& tac)
 	}
 
 
-	//_S= Short: Start and end year in pfc file 
-	//_L=Long: Start and end year in pfc file 
+	//_S= Short: Start and end year in pfc file
+	//_L=Long: Start and end year in pfc file
 
 	// QUANTITIES NEEDED FOR DECISION TABLE
 	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE

@@ -56,6 +56,9 @@ void write_proj_headers_dd(ofstream &ofsP,
   ofsP<<"F"<<pyr-1 <<"F"<<nyr     <<",";  // this will be > 1 if true
   // MSY based ref points
   ofsP<<"BMSY"                   <<",";
+  ofsP<<"B0"                     <<",";
+  ofsP<<"B"<<pyr<<"0.4B0"       <<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"0.2B0"       <<",";  // this will be < 1 if true
   ofsP<<"B"<<pyr<<"BMSY"       <<",";  // this will be < 1 if true
   ofsP<<"B"<<pyr<<"0.8BMSY"    <<",";  // this will be < 1 if true
   ofsP<<"B"<<pyr<<"0.4BMSY"    <<",";  // this will be < 1 if true
@@ -130,6 +133,7 @@ void write_proj_output_dd(ofstream &ofsP,
                           dvector p_ft,
                           dmatrix fmsy,
                           dvector bmsy,
+                          named_dvar_vector bo,
                           double bmin,
                           double meanbshort,
                           double meanblong,
@@ -146,6 +150,9 @@ void write_proj_output_dd(ofstream &ofsP,
 
 	// MSY based ref points
   ofsP<<bmsy                       <<",";
+  ofsP<<bo                         <<",";
+  ofsP<<p_bt(pyr)/(0.4*bo)         <<",";
+  ofsP<<p_bt(pyr)/(0.2*bo)         <<",";
   ofsP<<p_bt(pyr)/bmsy             <<",";
   ofsP<<p_bt(pyr)/(0.8*bmsy)       <<",";
   ofsP<<p_bt(pyr)/(0.4*bmsy)       <<",";

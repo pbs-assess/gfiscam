@@ -6100,7 +6100,7 @@ FUNCTION void projection_model_dd(const double& tac)
 		}
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
     write_proj_output_dd(ofsmcmc, tac, nyr, pyr,
-                         p_bt, p_ft, fmsy, bmsy, minb,
+                         p_bt, p_ft, fmsy, bmsy, sbo, minb,
                          meanbshort,
                          meanblong,
                          meanfshort,
@@ -6121,7 +6121,7 @@ FUNCTION void projection_model_dd(const double& tac)
     }
     ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
     write_proj_output_dd(ofsmpd, tac, nyr, pyr,
-                         p_bt, p_ft, fmsy, bmsy, minb,
+                         p_bt, p_ft, fmsy, bmsy, sbo, minb,
                          meanbshort,
                          meanblong,
                          meanfshort,

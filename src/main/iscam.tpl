@@ -1743,7 +1743,7 @@ FUNCTION void initParameters()
 			log_recinit(ih) = theta(5,ih);
 		}
          }
-         
+
          //AUG 14 2018 Set all average rec parameters to ro in delay difference model
           if(delaydiff){
 	         	for(ih=1;ih<=n_ag;ih++)
@@ -3226,12 +3226,8 @@ FUNCTION calcNumbersBiomass_deldiff
 			annual_mean_wt(ig,i)=biomass(ig,i)/numbers(ig,i);		//calculate predicted weight in dynamics - possible option to fit to it
 				sbt(g,i) += biomass(ig,i);
 		}
-<<<<<<< HEAD
 
-=======
-	  	  
->>>>>>> fix_rinit_ro_dd
-	  	biomass(ig,nyr+1)=(surv(ig,nyr)*(rho_g(gs)*biomass(ig,nyr)+alpha_g(gs)*numbers(ig,nyr))+wk(gs)*rnplus(ih)/nsex);
+    biomass(ig,nyr+1)=(surv(ig,nyr)*(rho_g(gs)*biomass(ig,nyr)+alpha_g(gs)*numbers(ig,nyr))+wk(gs)*rnplus(ih)/nsex);
 		numbers(ig,nyr+1)=surv(ig,nyr)*numbers(ig,nyr)+rnplus(ih)/nsex;
 
 	  	sbt(g,nyr+1) += biomass(ig,nyr+1); //set spawning biomass to biomass
@@ -6057,11 +6053,7 @@ FUNCTION void projection_model_dd(const double& tac)
 
 	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
 	//minb=pf_cntrl(9); August 21, 2018. This is just the year. Need the biomass
-<<<<<<< HEAD
 	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018.
-=======
-	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018. 
->>>>>>> fix_rinit_ro_dd
 
 	/* Simulate population into the future under constant tac policy. */
 	for(i = nyr+1; i<=pyr; i++)
@@ -6076,21 +6068,12 @@ FUNCTION void projection_model_dd(const double& tac)
 
 		if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
 		if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-<<<<<<< HEAD
 
-=======
-                
->>>>>>> fix_rinit_ro_dd
-                //for nyr + 1 use values projected using the actual catch
-                if(i==nyr+1) {
-                      p_bt(i)   = value(biomass(1)(nyr+1));
-                      p_N(i) = value(numbers(1)(nyr+1));
-                }
-<<<<<<< HEAD
-
-=======
-                
->>>>>>> fix_rinit_ro_dd
+    //for nyr + 1 use values projected using the actual catch
+    if(i==nyr+1) {
+      p_bt(i)   = value(biomass(1)(nyr+1));
+      p_N(i) = value(numbers(1)(nyr+1));
+    }
 		//numbers and biomass
 		//Update biomass and numbers
 		if(i>nyr+1) {
@@ -6115,13 +6098,8 @@ FUNCTION void projection_model_dd(const double& tac)
 	}
 
 
-<<<<<<< HEAD
 	//_S= Short: Start and end year in pfc file
 	//_L=Long: Start and end year in pfc file
-=======
-	//_S= Short: Start and end year in pfc file 
-	//_L=Long: Start and end year in pfc file 
->>>>>>> fix_rinit_ro_dd
 
 	// QUANTITIES NEEDED FOR DECISION TABLE
 	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE
@@ -6135,11 +6113,7 @@ FUNCTION void projection_model_dd(const double& tac)
 		}
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
     write_proj_output_dd(ofsmcmc, tac, nyr, pyr,
-<<<<<<< HEAD
                          p_bt, p_ft, fmsy, bmsy, sbo, minb,
-=======
-                         p_bt, p_ft, fmsy, bmsy, minb,
->>>>>>> fix_rinit_ro_dd
                          meanbshort,
                          meanblong,
                          meanfshort,
@@ -6160,11 +6134,7 @@ FUNCTION void projection_model_dd(const double& tac)
     }
     ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
     write_proj_output_dd(ofsmpd, tac, nyr, pyr,
-<<<<<<< HEAD
                          p_bt, p_ft, fmsy, bmsy, sbo, minb,
-=======
-                         p_bt, p_ft, fmsy, bmsy, minb,
->>>>>>> fix_rinit_ro_dd
                          meanbshort,
                          meanblong,
                          meanfshort,

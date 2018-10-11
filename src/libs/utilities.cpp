@@ -141,12 +141,12 @@ void write_proj_output_dd(ofstream &ofsP,
                           double meanflong){
   // Write the projection output to the file for delay difference model (PCod 2018)
   ofsP<<tac                        <<",";
-  ofsP<<p_bt(pyr-1)                <<",";
+  ofsP<<p_bt(nyr+1)               <<",";
   ofsP<<p_bt(pyr)                  <<",";
-  ofsP<<p_bt(pyr)/p_bt(pyr-1)      <<",";
-  ofsP<<p_ft(pyr-2)                <<",";
+  ofsP<<p_bt(pyr)/p_bt(nyr+1 )      <<",";
+  ofsP<<p_ft(nyr)                <<",";
   ofsP<<p_ft(pyr-1)                <<",";
-  ofsP<<p_ft(pyr-1)/p_ft(pyr-2)    <<",";
+  ofsP<<p_ft(pyr-1)/p_ft(nyr)    <<",";
 
 	// MSY based ref points
   ofsP<<bmsy                       <<",";

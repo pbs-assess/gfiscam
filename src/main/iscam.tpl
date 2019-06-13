@@ -5549,6 +5549,33 @@ FUNCTION mcmc_output
     }
     of7<<'\n';
 
+    ofstream of8("iscam_Na1951_mcmc.csv");
+    iter = 1;
+    for( int ag=1;ag <= n_ags; ag++)
+	    for( int age = sage; age <= nage; age++){
+	    	if(iter == 1){
+	    		of8<<"N_ag"<<ag<<"_age"<<age<<"_1951";
+	    	} else {
+	    		of8<<",N_ag"<<ag<<"_age"<<age<<"_1951";
+	    	}
+	    	iter++;
+	    }
+    of8<<"\n";
+
+    ofstream of9("iscam_Nage2t_mcmc.csv");
+    iter = 1;
+    for( int ag=1;ag <= n_ags; ag++)
+	    for( int t = syr; t <= nyr + 1; t++){
+	    	if(iter == 1){
+	    		of9<<"N_ag"<<ag<<"_age2_t"<<t;
+	    	} else {
+	    		of9<<",N_ag"<<ag<<"_age2_t"<<t;
+	    	}
+	    	iter++;
+	    }
+    of9<<"\n";
+
+
   }
 
   // Leading parameters & reference points
@@ -5732,6 +5759,33 @@ FUNCTION mcmc_output
   }
   of7<<'\n';
 
+  // Output Nage1951 (added for MSE conditioning)
+	ofstream of8("iscam_Na1951_mcmc.csv",ios::app);
+	iter = 1;
+	for( int ag=1;ag <= n_ags; ag++)
+		for( int age=sage;age<=nage;age++){
+			if(iter == 1){
+				of8<<N(ag,syr,age);
+			} else {
+				of8<<","<<N(ag,syr,age);
+			}
+			iter++;
+		}
+	of8<<"\n";
+
+	ofstream of9("iscam_Nage2t_mcmc.csv",ios::app);
+    iter = 1;
+    for( int ag=1;ag <= n_ags; ag++)
+	    for( int t = syr; t <= nyr+1; t++){
+	    	if(iter == 1){
+	    		of9<<N(ag,t,sage);
+	    	} else {
+	    		of9<<"," << N(ag,t,sage);
+	    	}
+	    	iter++;
+	    }
+    of9<<"\n";
+
   ofs.flush();
   of1.flush();
   of2.flush();
@@ -5740,6 +5794,8 @@ FUNCTION mcmc_output
   of5.flush();
   of6.flush();
   of7.flush();
+  of8.flush();
+  of9.flush();
 
  //RF:: March 17 2015. RF re-instated projection_model for Arrowtooth Flounder assessment. NOT IMPLEMENTED FOR MULTIPLE AREA/GROUPS
  // CW: Took this out while testing  the multiple area delaydiff

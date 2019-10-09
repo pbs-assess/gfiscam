@@ -2300,6 +2300,7 @@ FUNCTION calcNumbersAtAge
 		}
 		N(ig)(syr)(sage,nage) = 1./nsex * mfexp(tr);
 		log_rt(ih)(syr-nage+sage,syr) = tr.shift(syr-nage+sage);
+
 		for(i=syr;i<=nyr;i++)
 		{
 			if( i>syr )
@@ -2319,7 +2320,6 @@ FUNCTION calcNumbersAtAge
 			for(kgear=1; kgear<=ngear; kgear++) vbt(g)(kgear)(i) = sum(elem_prod(elem_prod(N(ig)(i),d3_wt_avg(ig)(i)), mfexp(log_sel(kgear)(ig)(i))));
 		}
 		N(ig)(nyr+1,sage) = 1./nsex * mfexp( log_avgrec(ih));	 //No deviation
-
 		//bt(g)(nyr+1) += N(ig)(nyr+1) * d3_wt_avg(ig)(nyr+1);
 		bt(g)(nyr+1) = sum(elem_prod(N(ig)(nyr+1),d3_wt_avg(ig)(nyr+1)));
 		//vulnerable biomass to all gears //Added by RF March 19 2015
@@ -5902,27 +5902,24 @@ FUNCTION void projection_model(const double& tac);
   }
   /* Fill arrays with historical values */
   dvector p_sbt(syr,pyr+1);
-  dvector  p_rt(syr+sage,pyr);
   dvector  p_ct(1,ngear);
   dmatrix  p_ft(nyr,pyr+1,1,ngear);
   dmatrix   p_N(syr,pyr+2,sage,nage);
   dmatrix   p_Z(syr,pyr+1,sage,nage);
   p_N.initialize();
   p_sbt.initialize();
-  p_rt.initialize();
   p_Z.initialize();
   p_ct.initialize();
   p_ft.initialize();
+
   //The main model already does a projection to nyr+1
   //but want to draw an average recruitment for projection rather than highly uncertain estimate
   for(i = syr; i<=nyr; i++){
    p_N(i) = value(N(1)(i));
-   p_sbt(i) = value(sbt(1)(i));
+   p_sbt(i) =  value(sbt(1)(i));
    p_Z(i) =  value(Z(1)(i));
-   if(i >= syr + sage){
-     p_rt(i) = value(rt(1)(i));
-   }
   }
+
   /* Selectivity and dAllocation to gears */
   dmatrix va_bar(1,ngear,sage,nage);
   for(k=1;k<=ngear;k++){
@@ -5955,19 +5952,16 @@ FUNCTION void projection_model(const double& tac);
     // note the random number seed is repeated for each tac level.
     //NOTE that this treatment of rec devs is different from historical model
     double  xx = randn(nf+i)*tau;
-    if(i>=nyr){
-      double rx = 1;
+    if(i>=syr+sage-1){
+      double rt = 1;
       double et = p_sbt(i-sage+1);  //lagged spawning biomass  (+1 because we want recruits for year i+1)
       if(d_iscamCntrl(2)==1){      // Beverton-Holt model
-        rx = so * et / (1. + beta * et);
+        rt=(so*et/(1.+beta*et));
       }
       if(d_iscamCntrl(2)==2){      // Ricker model
-        rx = so * et * exp(-beta * et);
+        rt=(so*et*exp(-beta*et));
       }
-      if(i <= pyr){
-        p_rt(i) = rx;
-      }
-      p_N(i + 1, sage) = rx * exp(xx - 0.5 * tau * tau);  //Next year's recruits
+      p_N(i+1,sage)=rt*exp(xx-0.5*tau*tau);  //Next year's recruits
     }
     /* Update numbers at age in future years*/
     //Next year's numbers
@@ -6000,32 +5994,15 @@ FUNCTION void projection_model(const double& tac);
    if(nf==1 && runNo==1){
     LOG<<"Running MCMC projections\n";
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-    write_proj_headers(ofsmcmc,
-                       syr,
-                       nyr,
+    write_proj_headers(ofsmcmc, syr, nyr,
                        !d_iscamCntrl(13),
                        d_iscamCntrl(13) && d_iscamCntrl(20));
     ofsmcmc.flush();
    }
    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-   write_proj_output(ofsmcmc,
-                     syr,
-                     nyr,
-                     nage,
-                     tac,
-                     pyr,
-                     p_sbt,
-                     p_rt,
-                     p_ft,
-                     p_N,
-                     M,
-                     ma,
-                     dWt_bar,
-                     ft(1),
-                     value(sbo(1)),
-                     fmsy,
-                     bmsy,
-                     !d_iscamCntrl(13),
+   write_proj_output(ofsmcmc, syr, nyr, nage, tac, pyr,
+                     p_sbt, p_ft, p_N, M, ma, dWt_bar, ft(1),
+                     value(sbo(1)), fmsy, bmsy, !d_iscamCntrl(13),
                      d_iscamCntrl(13) && d_iscamCntrl(20));
 
    ofsmcmc.flush();

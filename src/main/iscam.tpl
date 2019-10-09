@@ -5902,12 +5902,14 @@ FUNCTION void projection_model(const double& tac);
   }
   /* Fill arrays with historical values */
   dvector p_sbt(syr,pyr+1);
+  dvector p_rt(syr+sage,pyr);
   dvector  p_ct(1,ngear);
   dmatrix  p_ft(nyr,pyr+1,1,ngear);
   dmatrix   p_N(syr,pyr+2,sage,nage);
   dmatrix   p_Z(syr,pyr+1,sage,nage);
   p_N.initialize();
   p_sbt.initialize();
+  p_rt.initialize();
   p_Z.initialize();
   p_ct.initialize();
   p_ft.initialize();
@@ -5917,6 +5919,9 @@ FUNCTION void projection_model(const double& tac);
   for(i = syr; i<=nyr; i++){
    p_N(i) = value(N(1)(i));
    p_sbt(i) =  value(sbt(1)(i));
+   if(i >= syr + sage){
+     p_rt(i) = value(rt(1)(i));
+   }
    p_Z(i) =  value(Z(1)(i));
   }
 
@@ -5961,6 +5966,9 @@ FUNCTION void projection_model(const double& tac);
       if(d_iscamCntrl(2)==2){      // Ricker model
         rt=(so*et*exp(-beta*et));
       }
+      if(i <= pyr){
+        p_rt(i) = rt;
+      }
       p_N(i+1,sage)=rt*exp(xx-0.5*tau*tau);  //Next year's recruits
     }
     /* Update numbers at age in future years*/
@@ -5994,15 +6002,32 @@ FUNCTION void projection_model(const double& tac);
    if(nf==1 && runNo==1){
     LOG<<"Running MCMC projections\n";
     ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-    write_proj_headers(ofsmcmc, syr, nyr,
+    write_proj_headers(ofsmcmc,
+                       syr,
+                       nyr,
                        !d_iscamCntrl(13),
                        d_iscamCntrl(13) && d_iscamCntrl(20));
     ofsmcmc.flush();
    }
    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-   write_proj_output(ofsmcmc, syr, nyr, nage, tac, pyr,
-                     p_sbt, p_ft, p_N, M, ma, dWt_bar, ft(1),
-                     value(sbo(1)), fmsy, bmsy, !d_iscamCntrl(13),
+   write_proj_output(ofsmcmc,
+                     syr,
+                     nyr,
+                     nage,
+                     tac,
+                     pyr,
+                     p_sbt,
+                     p_rt,
+                     p_ft,
+                     p_N,
+                     M,
+                     ma,
+                     dWt_bar,
+                     ft(1),
+                     value(sbo(1)),
+                     fmsy,
+                     bmsy,
+                     !d_iscamCntrl(13),
                      d_iscamCntrl(13) && d_iscamCntrl(20));
 
    ofsmcmc.flush();

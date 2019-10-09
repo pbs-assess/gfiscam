@@ -89,6 +89,8 @@ void write_proj_headers(ofstream &ofsP,
   ofsP<<"TAC"                    <<",";
   ofsP<<"B"<<nyr+1               <<",";
   ofsP<<"B"<<nyr+2               <<",";
+  ofsP<<"R"<<nyr                 <<",";
+  ofsP<<"R"<<nyr+1               <<",";
   if(include_sbo){
     ofsP<<"B0"                   <<",";
     ofsP<<"04B0"                 <<",";
@@ -181,6 +183,7 @@ void write_proj_output(ofstream &ofsP,
                        double tac,
                        int pyr,
                        dvector p_sbt,
+                       dvector p_rt,
                        dmatrix p_ft,
                        dmatrix p_N,
                        dvar3_array M,
@@ -209,6 +212,8 @@ void write_proj_output(ofstream &ofsP,
   ofsP<<tac                        <<",";
   ofsP<<p_sbt(pyr)                 <<",";
   ofsP<<p_sbt(pyr+1)               <<",";
+  ofsP<<p_rt(pyr-1)                <<",";
+  ofsP<<p_rt(pyr)                  <<",";
   if(include_sbo){
     ofsP<<sbo                      <<",";
     ofsP<<0.4*sbo                  <<",";

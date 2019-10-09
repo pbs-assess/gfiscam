@@ -5929,32 +5929,29 @@ FUNCTION void projection_model(const double& tac);
     p_Z(i) =  value(Z(1)(i));
   }
 
-  /* Selectivity and dAllocation to gears */
+  // Selectivity and dAllocation to gears
   dmatrix va_bar(1, ngear, sage, nage);
   for(k = 1; k <= ngear; k++){
     p_ct(k) = dAllocation(k) * tac;
     va_bar(k) = exp(value(log_sel(k)(1)(nyr)));
   }
 
-  /* Simulate population into the future under constant tac policy. */
-  for(i = nyr-1; i <= pyr + 1; i++){
-    //ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
+  // Simulate population into the future under constant tac policy
+  for(i = nyr - 1; i <= pyr + 1; i++){
+    // ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
     if(i > nyr){
-      // get_ft is defined in the Baranov.cpp file
-      // average weight is calculated for all area/groups but projections are currently only implemented for n_ags=1
-      p_ft(i) = cBaranov.getFishingMortality(p_ct,M_bar, va_bar, p_N(i),dWt_bar(1));
+      // average weight is calculated for all area/groups but projections are currently
+      // only implemented for n_ags=1
+      p_ft(i) = cBaranov.getFishingMortality(p_ct,
+                                             M_bar,
+                                             va_bar,
+                                             p_N(i),
+                                             dWt_bar(1));
       // calculate total mortality in future years
       p_Z(i) = M_bar;
       for(k = 1; k <= ngear; k++){
         p_Z(i) += p_ft(i,k) * va_bar(k);
       }
-    }
-
-    //Overwrite sbt(nyr) so that it does not include estimated Rt(nyr), which is highly uncertain
-    //This will only be different from sbt(nyr) in the main model if recruits contribute to the spawning population, which is rare
-    //d_iscamCntrl(13) is defined as: fraction of total mortality that takes place prior to spawning
-    if(i >= nyr){
-      p_sbt(i) = elem_prod(p_N(i), exp(-p_Z(i) * d_iscamCntrl(13))) * fa_bar;
     }
 
     // sage recruits with random deviate xx
@@ -5980,11 +5977,20 @@ FUNCTION void projection_model(const double& tac);
       p_N(i+1,sage) = rt * exp(xx - 0.5 * tau * tau);
     }
     /* Update numbers at age in future years*/
-    //Next year's numbers
-    p_N(i + 1)(sage + 1, nage) =++ elem_prod(p_N(i)(sage, nage - 1),exp(-p_Z(i)(sage, nage - 1)));
+    // Next year's numbers
+    p_N(i + 1)(sage + 1, nage) = ++elem_prod(p_N(i)(sage, nage - 1),
+                                             exp(-p_Z(i)(sage, nage - 1)));
     p_N(i + 1, nage) += p_N(i, nage) * exp(-p_Z(i, nage));
 
-    //Predicted catch for checking calculations    (RF tested this March 17, 2015)
+    // Overwrite sbt(pyr and pyr + 1) so that they do not include estimated recruitment from the
+    // historical model, which is highly uncertain due to inclusion of estimated recruitment
+    // deviations.
+    // d_iscamCntrl(13) is the fraction of total mortality that takes place prior to spawning
+    if(i >= nyr && i <= pyr){
+      p_sbt(i + 1) = elem_prod(p_N(i), exp(-p_Z(i) * d_iscamCntrl(13))) * fa_bar;
+    }
+
+    // Predicted catch for checking calculations (RF tested this March 17, 2015)
     //if(i > nyr){
     //        LOG<<p_ft<<'\n';
     // for(k=1;k<=ngear;k++)
@@ -5995,7 +6001,7 @@ FUNCTION void projection_model(const double& tac);
     //  LOG<<"gear = "<<k<<" tac = "<<tac<<"\t ct = "<<ctest<<'\n';
     // }
     //}
-  } //end year loop
+  }
 
   // write_proj_headers and write_proj_output are in include/utilities.h
   // ofsmcmc object is in libs/utilities.cpp

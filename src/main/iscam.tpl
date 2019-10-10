@@ -2244,29 +2244,21 @@ FUNCTION calcTotalMortality
   }
 
 
-  	/**
-  	Purpose: This function initializes the numbers-at-age matrix in syr
-  	         based on log_rinit and log_init_rec_devs, the annual recruitment
-  	         based on log_rbar and log_rec_devs, and updates the number-at-age
-  	         over time based on the survival rate calculated in calcTotalMortality.
+  /*
+  Purpose:
+    This function initializes the numbers-at-age matrix in syr
+    based on log_rinit and log_init_rec_devs, the annual recruitment
+    based on log_rbar and log_rec_devs, and updates the number-at-age
+    over time based on the survival rate calculated in calcTotalMortality.
 
-  	Author: Steven Martell
-
-  	Arguments:
-  		None
-
-  	NOTES:
-		- Aug 9, 2012.  Made a change here to initialize the numbers
-		  at age in syr using the natural mortality rate at age in syr.
-		  Prior to this the average (m_bar) rate was used, since this
-		  has now changed with new projection control files.  Should only
-		  affect models that were using time varying natural mortality.
-  		- d_iscamCntrl(5) is a flag to start at unfished conditions, so set N(syr,sage) = ro
-
-  	TODO list:
-  	[ ] - Restrict log_avgrec and rec_devs to area and group dimensions (remove sex).
-  	[ ] - Initialize from unfished conditions (d_iscamCntrl 5 flag is true then rt(syr) = ro)
-  	*/
+  Notes:
+    - Aug 9, 2012.  Made a change here to initialize the numbers
+      at age in syr using the natural mortality rate at age in syr.
+      Prior to this the average (m_bar) rate was used, since this
+      has now changed with new projection control files.  Should only
+      affect models that were using time varying natural mortality.
+    - d_iscamCntrl(5) is a flag to start at unfished conditions, so set N(syr,sage) = ro
+  */
 FUNCTION calcNumbersAtAge
   int ig, ih, kgear;
   N.initialize();

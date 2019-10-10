@@ -2315,147 +2315,108 @@ FUNCTION calcNumbersAtAge
   }
   if(verbose)LOG<<"**** Ok after calcNumbersAtAge ****\n";
 
-  	/**
-  	Purpose:  This function calculates the predicted age-composition samples (A) for
-  	          both directed commercial fisheries and survey age-composition data. For
-  	          all years of data specified in the A matrix, calculated the predicted
-  	          proportions-at-age in the sampled catch-at-age.  If no catch-age data exist
-  	          for a particular year i, for gear k (i.e. no directed fishery or from a
-  	          survey sample process that does not have an appreciable F), the calculate
-  	          the predicted proportion based on log(N) + log_sel(group,gear,year)
-  	Author: Steven Martell
-
-  	Arguments:
-  		None
-
-  	NOTES:
-  		- Adapted from iSCAM 1.5.
-  		- No longer using ragged arrays for gear, the ragged matrix is indexed by:
-  		  year gear area, group, sex | age columns
-  		- For the residuals, note that each gear is weigthed by the conditional MLE
-  		  of the variance.
-
-  	TODO list:
-  	[x] - Merge redundant code from calcCatchAtAge
-  	[*] - Add case where Chat data do not exsist.
-	[x] - Calculate residuals A_nu; gets done automatically in dmvlogistic
-	[?] - add plus group if n_A_nage < nage;  Aug 7, 2013
-
-  	*/
-
+  /*
+    Purpose:
+      This function calculates the predicted age-composition samples (A) for
+      both directed commercial fisheries and survey age-composition data. For
+      all years of data specified in the A matrix, calculated the predicted
+      proportions-at-age in the sampled catch-at-age.  If no catch-age data exist
+      for a particular year i, for gear k (i.e. no directed fishery or from a
+      survey sample process that does not have an appreciable F), the calculate
+      the predicted proportion based on log(N) + log_sel(group,gear,year)
+    Notes:
+      - Adapted from iSCAM 1.5.
+      - No longer using ragged arrays for gear, the ragged matrix is indexed by:
+        year gear area, group, sex | age columns
+      - For the residuals, note that each gear is weigthed by the conditional MLE
+        of the variance.
+  */
 FUNCTION calcComposition
-  {
-  	int ii,ig,kk;
-    ig = 0;
-  	dvar_vector va(sage,nage);
-  	dvar_vector fa(sage,nage);
-  	dvar_vector sa(sage,nage);
-  	dvar_vector za(sage,nage);
-  	dvar_vector ca(sage,nage);
-  	dvar_vector na(sage,nage);
-  	A_hat.initialize();
+  int ii, ig, kk;
+  ig = 0;
+  dvar_vector va(sage, nage);
+  dvar_vector fa(sage, nage);
+  dvar_vector sa(sage, nage);
+  dvar_vector za(sage, nage);
+  dvar_vector ca(sage, nage);
+  dvar_vector na(sage, nage);
+  A_hat.initialize();
 
-  	 for(kk=1;kk<=nAgears;kk++)
-  	 {
-  	 	for(ii=1;ii<=n_A_nobs(kk);ii++)
-  	 	{
-	  		i = d3_A(kk)(ii)(n_A_sage(kk)-5);
-	  		k = d3_A(kk)(ii)(n_A_sage(kk)-4);
-	  		f = d3_A(kk)(ii)(n_A_sage(kk)-3);
-	  		g = d3_A(kk)(ii)(n_A_sage(kk)-2);
-	  		h = d3_A(kk)(ii)(n_A_sage(kk)-1);
+  for(kk = 1; kk <= nAgears; kk++){
+    for(ii = 1; ii <= n_A_nobs(kk); ii++){
+      i = d3_A(kk)(ii)(n_A_sage(kk) - 5);
+      k = d3_A(kk)(ii)(n_A_sage(kk) - 4);
+      f = d3_A(kk)(ii)(n_A_sage(kk) - 3);
+      g = d3_A(kk)(ii)(n_A_sage(kk) - 2);
+      h = d3_A(kk)(ii)(n_A_sage(kk) - 1);
 
-	  		// | trap for retrospecitve analysis.
-	  		if(i < syr) continue;
-	  		if(i > nyr) continue;
+      // trap for retrospecitve analysis.
+      if(i < syr) continue;
+      if(i > nyr) continue;
 
-	  		if( h )  // age comps are sexed (h > 0)
-	  		{
-				ig = pntr_ags(f,g,h);
-				va = mfexp(log_sel(k)(ig)(i));
-				za = Z(ig)(i);
-				sa = S(ig)(i);
-				na = N(ig)(i);
-				if( ft(ig)(k)(i)==0 )
-				{
+      if(h){
+        // age comps are sexed (h > 0)
+        ig = pntr_ags(f, g, h);
+        va = mfexp(log_sel(k)(ig)(i));
+        za = Z(ig)(i);
+        sa = S(ig)(i);
+        na = N(ig)(i);
+        if(ft(ig)(k)(i) == 0){
           fa = va;
-				}
-				else
-				{
-					fa = ft(ig)(k)(i) * va;
-				}
+        }else{
+          fa = ft(ig)(k)(i) * va;
+        }
         ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
-				//A_hat(kk)(ii) = ca(n_A_sage(kk),n_A_nage(kk));
-
-				// | +group if n_A_nage(kk) < nage
-				//if( n_A_nage(kk) < nage )
-				//{
-				//	A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
-				//}
-	  		}
-	  		else if( !h )  // age-comps are unsexed
-	  		{
-	  			for(h=1;h<=nsex;h++)
-	  			{
-					ig = pntr_ags(f,g,h);
-					va = mfexp(log_sel(k)(ig)(i));
-					za = Z(ig)(i);
-					sa = S(ig)(i);
-					na = N(ig)(i);
-					if( ft(ig)(k)(i)==0 )
-					{
+        //  A_hat(kk)(ii) = ca(n_A_sage(kk),n_A_nage(kk));
+        //    +group if n_A_nage(kk) < nage
+        //
+        //  if(n_A_nage(kk) < nage){
+        //    A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
+        //  }
+      }else{
+        for(h = 1; h <= nsex; h++){
+          ig = pntr_ags(f,g,h);
+          va = mfexp(log_sel(k)(ig)(i));
+          za = Z(ig)(i);
+          sa = S(ig)(i);
+          na = N(ig)(i);
+          if(ft(ig)(k)(i) == 0){
             fa = va;
-					}
-					else
-					{
-						fa = ft(ig)(k)(i) * va;
-					}
+          }else{
+            fa = ft(ig)(k)(i) * va;
+          }
           ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
-					//A_hat(kk)(ii) += ca(n_A_sage(kk),n_A_nage(kk));
-
-					// | +group if n_A_nage(kk) < nage
-					//if( n_A_nage(kk) < nage )
-					//{
-					//	A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
-					//}
-		  		}
-	  		}
-
-	  		// This is the age-composition
-	  		if( n_ageFlag(kk) )
-	  		{
-	  			A_hat(kk)(ii) = ca(n_A_sage(kk),n_A_nage(kk));
-	  			if( n_A_nage(kk) < nage )
-				{
-					A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
-				}
-	  		}
-	  		else
-	  		{
-	  			/*
-					This the catch-at-length composition.
-					Pseudocode:
-					-make an ALK
-					-Ahat = ca * ALK
-	  			*/
-	  			dvar_vector mu = d3_len_age(ig)(i);
-				dvar_vector sig= 0.1 * mu;
-				dvector x(n_A_sage(kk),n_A_nage(kk));
-				x.fill_seqadd(n_A_sage(kk),1);
-
-				dvar_matrix alk = ALK(mu,sig,x);
-
-	  			A_hat(kk)(ii) = ca * alk;
-	  		}
-	  		A_hat(kk)(ii) /= sum( A_hat(kk)(ii) );
-  	 	}
-  	}
-
-	if(verbose){
-    LOG<<"**** Ok after calcComposition ****\n";
-  }
-
-  }
+          //  A_hat(kk)(ii) += ca(n_A_sage(kk),n_A_nage(kk));
+          //    +group if n_A_nage(kk) < nage
+          //  if(n_A_nage(kk) < nage){
+          //    A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
+          //  }
+        }
+      }
+      // This is the age-composition
+      if(n_ageFlag(kk)){
+        A_hat(kk)(ii) = ca(n_A_sage(kk), n_A_nage(kk));
+        if(n_A_nage(kk) < nage){
+          A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
+        }
+      }else{
+        /*
+          This the catch-at-length composition.
+          Pseudocode:
+          -make an ALK
+          -Ahat = ca * ALK
+        */
+        dvar_vector mu = d3_len_age(ig)(i);
+        dvar_vector sig = 0.1 * mu;
+        dvector x(n_A_sage(kk), n_A_nage(kk));
+        x.fill_seqadd(n_A_sage(kk), 1);
+        dvar_matrix alk = ALK(mu,sig,x);
+        A_hat(kk)(ii) = ca * alk;
+      }
+      A_hat(kk)(ii) /= sum( A_hat(kk)(ii));
+    }
+   }
+   if(verbose)LOG<<"**** Ok after calcComposition ****\n";
 
 FUNCTION calcTotalCatch
   {

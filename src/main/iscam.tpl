@@ -5813,7 +5813,9 @@ FUNCTION void projection_model(const double& tac);
   ** NOTES **
   * Projections are based on average natural mortality and fecundity.
   * Selectivity is based on selectivity in terminal year.
-  * Average weight-at-age is based on mean weight in the last 5 years.
+  * Average weight-at-age is based on mean weight in the last N years,
+  *  where N is the difference in years given in items 3 and 4 of the projection
+  *  file control options "years for average fecundity/weight-at-age in projections"
   */
   static int runNo = 0;
   runNo ++;

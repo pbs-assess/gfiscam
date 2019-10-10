@@ -2268,65 +2268,59 @@ FUNCTION calcTotalMortality
   	[ ] - Initialize from unfished conditions (d_iscamCntrl 5 flag is true then rt(syr) = ro)
   	*/
 FUNCTION calcNumbersAtAge
-  {
-	int ig,ih, kgear;
-	N.initialize();
-	bt.initialize();
-	vbt.initialize();     //vulnerable biomass to all gears //Added by RF March 19 2015
+  int ig,ih, kgear;
+  N.initialize();
+  bt.initialize();
+  vbt.initialize();     //vulnerable biomass to all gears //Added by RF March 19 2015
 
-	for(ig=1;ig<=n_ags;ig++)
-	{
-		f  = n_area(ig);
-		g  = n_group(ig);
-		ih = pntr_ag(f,g);
-                dvar_vector lx(sage,nage);
-		dvar_vector tr(sage,nage);
-		lx(sage) = 1.0;
-		for(j=sage;j< nage;j++)
-		{
-			lx(j+1) = lx(j) * exp( -M(ig)(syr)(j) );
-		}
-		lx(nage) /= (1.-exp(-M(ig)(syr,nage)));
+  for(ig = 1; ig <= n_ags; ig++){
+    f  = n_area(ig);
+    g  = n_group(ig);
+    ih = pntr_ag(f, g);
+    dvar_vector lx(sage, nage);
+    dvar_vector tr(sage, nage);
+    lx(sage) = 1.0;
+    for(j = sage; j < nage; j++){
+      lx(j + 1) = lx(j) * exp(-M(ig)(syr)(j));
+    }
+    lx(nage) /= (1.-exp(-M(ig)(syr, nage)));
+    if(d_iscamCntrl(5)){
+      // initialize at unfished conditions.
+      tr =  log( ro(g) ) + log(lx);
+    }else{
+      tr(sage)        = ( log_avgrec(ih) + log_rec_devs(ih)(syr));
+      tr(sage+1,nage) = (log_recinit(ih) + init_log_rec_devs(ih));
+      tr(sage+1,nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
+    }
+    N(ig)(syr)(sage,nage) = 1./nsex * mfexp(tr);
+    log_rt(ih)(syr - nage + sage, syr) = tr.shift(syr - nage + sage);
+    for(i = syr; i <= nyr; i++){
+      if(i > syr){
+        log_rt(ih)(i) = (log_avgrec(ih) + log_rec_devs(ih)(i));
+        N(ig)(i,sage) = 1./nsex * mfexp(log_rt(ih)(i));
+      }
+      N(ig)(i + 1)(sage + 1, nage) = ++elem_prod(N(ig)(i)(sage, nage - 1),
+                                                 S(ig)(i)(sage, nage - 1));
+      N(ig)(i+1,nage) += N(ig)(i, nage) * S(ig)(i, nage);
+      // average biomass for group in year i
+      bt(g)(i) = sum(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)));
+      // Vulnerable biomass to all gears
+      for(kgear = 1; kgear <= ngear; kgear++){
+        vbt(g)(kgear)(i) = sum(elem_prod(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)),
+                                         mfexp(log_sel(kgear)(ig)(i))));
+      }
+    }
+    N(ig)(nyr + 1, sage) = 1./nsex * mfexp( log_avgrec(ih));
+    bt(g)(nyr+1) = sum(elem_prod(N(ig)(nyr+1),d3_wt_avg(ig)(nyr+1)));
+    // Vulnerable biomass to all gears //Added by RF March 19 2015
+    for(kgear = 1; kgear <= ngear; kgear++){
+      vbt(g)(kgear)(nyr + 1) = sum(elem_prod(elem_prod(N(ig)(nyr + 1),
+                                                       d3_wt_avg(ig)(nyr + 1)),
+                                             mfexp(log_sel(kgear)(ig)(nyr))));
+    }
+   }
+  if(verbose)LOG<<"**** Ok after calcNumbersAtAge ****\n";
 
-		if( d_iscamCntrl(5) ) // initialize at unfished conditions.
-		{
-			tr =  log( ro(g) ) + log(lx);
-		}
-		else if ( !d_iscamCntrl(5) )
-		{
-			tr(sage)        = ( log_avgrec(ih)+log_rec_devs(ih)(syr));
-			tr(sage+1,nage) = (log_recinit(ih)+init_log_rec_devs(ih));
-			tr(sage+1,nage) = tr(sage+1,nage)+log(lx(sage+1,nage));
-		}
-		N(ig)(syr)(sage,nage) = 1./nsex * mfexp(tr);
-		log_rt(ih)(syr-nage+sage,syr) = tr.shift(syr-nage+sage);
-
-		for(i=syr;i<=nyr;i++)
-		{
-			if( i>syr )
-			{
-				log_rt(ih)(i) = (log_avgrec(ih)+log_rec_devs(ih)(i));
-				N(ig)(i,sage) = 1./nsex * mfexp( log_rt(ih)(i) );
-			}
-
-			N(ig)(i+1)(sage+1,nage) =++elem_prod(N(ig)(i)(sage,nage-1)
-			                                     ,S(ig)(i)(sage,nage-1));
-			N(ig)(i+1,nage)        +=  N(ig)(i,nage)*S(ig)(i,nage);
-
-			// average biomass for group in year i
-			//bt(g)(i) += N(ig)(i) * d3_wt_avg(ig)(i);
-			bt(g)(i) = sum(elem_prod(N(ig)(i),d3_wt_avg(ig)(i)));  //RF changed this. CG said it's easier to understand than the overloaded += operator.
-			//vulnerable biomass to all gears //Added by RF March 19 2015
-			for(kgear=1; kgear<=ngear; kgear++) vbt(g)(kgear)(i) = sum(elem_prod(elem_prod(N(ig)(i),d3_wt_avg(ig)(i)), mfexp(log_sel(kgear)(ig)(i))));
-		}
-		N(ig)(nyr+1,sage) = 1./nsex * mfexp( log_avgrec(ih));	 //No deviation
-		//bt(g)(nyr+1) += N(ig)(nyr+1) * d3_wt_avg(ig)(nyr+1);
-		bt(g)(nyr+1) = sum(elem_prod(N(ig)(nyr+1),d3_wt_avg(ig)(nyr+1)));
-		//vulnerable biomass to all gears //Added by RF March 19 2015
-		for(kgear=1; kgear<=ngear; kgear++) vbt(g)(kgear)(nyr+1) = sum(elem_prod(elem_prod(N(ig)(nyr+1),d3_wt_avg(ig)(nyr+1)), mfexp(log_sel(kgear)(ig)(nyr))));      //use nyr selectivity
-	}
-	if(verbose)LOG<<"**** Ok after calcNumbersAtAge ****\n";
-  }
   	/**
   	Purpose:  This function calculates the predicted age-composition samples (A) for
   	          both directed commercial fisheries and survey age-composition data. For

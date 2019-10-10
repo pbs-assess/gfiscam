@@ -5828,7 +5828,7 @@ FUNCTION void projection_model(const double& tac);
   dvector fa_bar(sage, nage);
   dvector  M_bar(sage, nage);
   fa_bar = elem_prod(dWt_bar(1), ma(1));
-// See notes above about average fecundity
+  // See notes above about average fecundity
   M_bar  = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4))));
   M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
   // --derive stock re4cruitment parameters

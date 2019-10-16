@@ -7,7 +7,6 @@ dist:
 	-rm -rf ../build/dist/examples
 	-cp -rf ../examples ../build/dist/examples
 	-cp ../build/dist/bin/iscam.* ../build/dist/examples/arrowtooth-flounder
-	-cp ../build/dist/bin/iscam.* ../build/dist/examples/herringSOG
 	-cp ../build/dist/bin/iscam.* ../build/dist/examples/pacific-cod
 	-cp ../build/dist/bin/iscam.* ../build/dist/examples/petrale-sole
 
@@ -17,7 +16,6 @@ debug:
 	-rm -rf ../build/debug/examples
 	-cp -rf ../examples ../build/debug/examples
 	-cp ../build/debug/bin/iscam.* ../build/debug/examples/arrowtooth-flounder
-	-cp ../build/debug/bin/iscam.* ../build/debug/examples/herringSOG
 	-cp ../build/debug/bin/iscam.* ../build/debug/examples/pacific-cod
 	-cp ../build/debug/bin/iscam.* ../build/debug/examples/petrale-sole
 

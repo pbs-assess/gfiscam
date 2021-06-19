@@ -16,6 +16,7 @@ xtra_files/
 *.obj
 variance
 dist/
+iscam
 *.BAT
 build/
 src/main/iscam.cpp

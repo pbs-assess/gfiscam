@@ -384,16 +384,16 @@ DATA_SECTION
 
 
 		if(!mseFlag){
-     	  LOG<<"| ----------------------- |\n";
-		    LOG<<"| HEAD(dCatchData)        |\n";
-		    LOG<<"| ----------------------- |\n";
-        LOG<<dCatchData.sub(1,3)<<'\n';
-		    LOG<<"| ----------------------- |\n\n";
-		    LOG<<"| ----------------------- |\n";
-		    LOG<<"| TAIL(dCatchData)        |\n";
-		    LOG<<"| ----------------------- |\n";
-		    LOG<<dCatchData.sub(nCtNobs-3,nCtNobs)<<'\n';
-		    LOG<<"| ----------------------- |\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<"| HEAD(dCatchData)        |\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<dCatchData.sub(1,3)<<'\n';
+		  LOG<<"| ----------------------- |\n\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<"| TAIL(dCatchData)        |\n";
+		  LOG<<"| ----------------------- |\n";
+		  LOG<<dCatchData.sub(nCtNobs-3,nCtNobs)<<'\n';
+		  LOG<<"| ----------------------- |\n";
 		}
 
 
@@ -489,7 +489,7 @@ DATA_SECTION
   // The 5 in the next command is to remove the first 5 columns
   // from the age comp 'data' because they are not the actual ages,
   // but the header data.
-	init_3darray d3_A(1,nAgears,1,n_A_nobs,n_A_sage-5,n_A_nage);
+	init_3darray d3_A(1,nAgears,1,n_A_nobs,n_A_sage-6,n_A_nage);
 	3darray d3_A_obs(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage);
 	LOC_CALCS
 		if( n_A_nobs(nAgears) > 0)
@@ -499,10 +499,15 @@ DATA_SECTION
 				if(n_A_nobs(nAgears) > 3)
 				{
 					LOG<<"| ----------------------- |\n";
-					LOG<<"| TAIL(A)       |"<<'\n';
+					LOG<<"| HEAD(A)                 |"<<'\n';
+					LOG<<"| ----------------------- |\n";
+					LOG<<setw(4)<<d3_A(1).sub(1,3)<<'\n';
+					LOG<<"| ----------------------- |\n\n";
+					LOG<<"| ----------------------- |\n";
+					LOG<<"| TAIL(A)                 |"<<'\n';
 					LOG<<"| ----------------------- |\n";
 					LOG<<setw(4)<<d3_A(nAgears).sub(n_A_nobs(nAgears)-2,n_A_nobs(nAgears))<<'\n';
-					LOG<<"| ----------------------- |\n\n";
+					LOG<<"| ----------------------- |\n";
 				  }
 			}
 		}
@@ -548,7 +553,7 @@ DATA_SECTION
 	// |---------------------------------------------------------------------------------|
 	// | nMeanWt     - number of independent annual mean weight series
 	// | nMeanWtNobs - vector :: number of annual mean weight observations in each series
-  	init_int nMeanWt;
+	init_int nMeanWt;
 	init_ivector nMeanWtNobs(1,nMeanWt);
 	init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7);
 
@@ -789,23 +794,19 @@ DATA_SECTION
 		}
 
 	END_CALCS
-	// |---------------------------------------------------------------------------------|
-	// | END OF DATA FILE
-	// |---------------------------------------------------------------------------------|
-	// |
 	init_int eof;
+
 	LOC_CALCS
-
-	  if(eof==999){
-      	LOG<<" ______________________________ \n";
-     	LOG<<"|      END OF DATA SECTION     |\n";
-	    LOG<<"|______________________________|\n";
-	  }else{
-      	LOG<<"\n *** ERROR READING DATA *** \n\n";
-      	exit(1);
-	  }
-
+  if(eof==999){
+    LOG<<" ______________________________ \n";
+    LOG<<"|      END OF DATA SECTION     |\n";
+    LOG<<"|______________________________|\n";
+  }else{
+    LOG<<"\n *** ERROR READING DATA *** - eof value = "<<eof<<"\n\n";
+    exit(1);
+  }
 	END_CALCS
+
 	// |---------------------------------------------------------------------------------|
 	// | VARIABLES FOR MSY-BASED REFERENCE POINTS
 	// |---------------------------------------------------------------------------------|
@@ -816,12 +817,14 @@ DATA_SECTION
 	vector bmsy(1,ngroup);			//Spawning biomass at MSY
  // number Umsy;					//Exploitation rate at MSY
 	vector age_tau2(1,nAgears);	//MLE estimate of the variance for age comps
- // 	//catch-age for simulation model (could be declared locally 3d_array)
- // 	3darray d3C(1,ngear,syr,nyr,sage,nage);
+ //	//catch-age for simulation model (could be declared locally 3d_array)
+ //	3darray d3C(1,ngear,syr,nyr,sage,nage);
 
-
-
-
+	LOC_CALCS
+    LOG<<" ___________________________________\n";
+    LOG<<"|      START OF CONTROL SECTION     |\n";
+    LOG<<"|___________________________________|\n\n";
+	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | CONTROL FILE
 	// |---------------------------------------------------------------------------------|
@@ -844,22 +847,47 @@ DATA_SECTION
 	init_int npar;
 	init_matrix theta_control(1,npar,1,7);
 
-	vector   theta_ival(1,npar);
-	vector     theta_lb(1,npar);
-	vector     theta_ub(1,npar);
-	ivector   theta_phz(1,npar);
+	vector theta_ival(1,npar);
+	vector theta_lb(1,npar);
+	vector theta_ub(1,npar);
+	ivector theta_phz(1,npar);
 	ivector theta_prior(1,npar);
 	ivector ipar_vector(1,npar);
 	LOC_CALCS
-		theta_ival  = column(theta_control,1);
-		theta_lb    = column(theta_control,2);
-		theta_ub    = column(theta_control,3);
-		theta_phz   = ivector(column(theta_control,4));
+		theta_ival = column(theta_control,1);
+		theta_lb = column(theta_control,2);
+		theta_ub = column(theta_control,3);
+		theta_phz = ivector(column(theta_control,4));
 		theta_prior = ivector(column(theta_control,5));
 		ipar_vector(1,2) = ngroup;
 		ipar_vector(6,7) = ngroup;
-		ipar_vector(3)   = n_gs;
+		ipar_vector(3) = n_gs;
 		ipar_vector(4,5) = n_ag;
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| Initial values          |"<<'\n';
+		LOG<<"| ----------------------- |\n";
+		LOG<<theta_ival<<'\n';
+		LOG<<"| ----------------------- |\n\n";
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| Lower bounds            |"<<'\n';
+		LOG<<"| ----------------------- |\n";
+		LOG<<theta_lb<<'\n';
+		LOG<<"| ----------------------- |\n\n";
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| Upper bounds            |"<<'\n';
+		LOG<<"| ----------------------- |\n";
+		LOG<<theta_ub<<'\n';
+		LOG<<"| ----------------------- |\n\n";
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| Phase                   |"<<'\n';
+		LOG<<"| ----------------------- |\n";
+		LOG<<theta_phz<<'\n';
+		LOG<<"| ----------------------- |\n\n";
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| Prior type              |"<<'\n';
+		LOG<<"| ----------------------- |\n";
+		LOG<<theta_prior<<'\n';
+		LOG<<"| ----------------------- |\n\n";
 	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
@@ -869,40 +897,70 @@ DATA_SECTION
 
 	init_ivector nCompIndex(1,nAgears);
 	init_ivector nCompLikelihood(1,nAgears);
-	init_vector  dMinP(1,nAgears);
-	init_vector  dEps(1,nAgears);
+	init_vector dMinP(1,nAgears);
+	init_vector dEps(1,nAgears);
 	init_ivector nPhz_age_tau2(1,nAgears);
 	init_ivector nPhz_phi1(1,nAgears);
 	init_ivector nPhz_phi2(1,nAgears);
 	init_ivector nPhz_df(1,nAgears);
-	init_int check;
 	LOC_CALCS
-    // Apply effective sample size if multinomial likelihood
-    if(n_A_nobs(nAgears) > 0){
-      for(k=1;k<=nAgears;k++){
-		    dmatrix tmp = trans(trans(d3_A(k)).sub(n_A_sage(k),n_A_nage(k)));
-		    if(inp_nscaler(k) > 0){
-			    for(i = 1; i <= n_A_nobs(k); i++ ){
-            if(nCompLikelihood(k) == 2){
-              tmp(i) = tmp(i)/sum(tmp(i)) * inp_nscaler(k);
-            }else{
-              tmp(i) = tmp(i)/sum(tmp(i));
-            }
-				    d3_A_obs(k) = tmp;
-			    }
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| Gear indices            |"<<'\n';
+		LOG<<"| ----------------------- |\n";
+		LOG<<nCompIndex<<'\n';
+		LOG<<"| ----------------------- |\n\n";
+		LOG<<"| ----------------------- |\n";
+		LOG<<"| Likelihood types        |"<<'\n';
+		LOG<<"| ----------------------- |\n";
+		LOG<<nCompLikelihood<<'\n';
+		LOG<<"| ----------------------- |\n\n";
+		LOG<<"| -------------------------------------- |\n";
+		LOG<<"| Min props for agg and tail compression |"<<'\n';
+		LOG<<"| -------------------------------------- |\n";
+		LOG<<dMinP<<'\n';
+		LOG<<"| -------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Small consts to add to comps          |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<dEps<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Phases for log_age_tau2 estimation    |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<nPhz_age_tau2<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Phases for phi1 estimation            |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<nPhz_phi1<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Phases for phi2 estimation            |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<nPhz_phi2<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Phases for degrees of freedom         |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<nPhz_df<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+  // Apply effective sample size if multinomial likelihood
+  if(n_A_nobs(nAgears) > 0){
+    for(k=1;k<=nAgears;k++){
+      dmatrix tmp = trans(trans(d3_A(k)).sub(n_A_sage(k),n_A_nage(k)));
+      if(inp_nscaler(k) > 0){
+        for(i = 1; i <= n_A_nobs(k); i++ ){
+          if(nCompLikelihood(k) == 2){
+            tmp(i) = tmp(i)/sum(tmp(i)) * inp_nscaler(k);
+          }else{
+            tmp(i) = tmp(i)/sum(tmp(i));
+          }
+          d3_A_obs(k) = tmp;
         }
       }
     }
-		LOG<<"check is "<<check<<'\n';
-		if(check != -12345)
-		{
-			LOG<<"check is "<<check<<'\n';
-			LOG<<"Check integer for EOF, should be -12345.. = "<<check<<'\n';
-      LOG<<"Error reading composition controls\n";
-      exit(1);
-		}
+  }
 	END_CALCS
-
 
 	// |---------------------------------------------------------------------------------|
 	// | CONTROLS FOR SELECTIVITY OPTIONS
@@ -939,38 +997,92 @@ DATA_SECTION
 
 	init_matrix selex_controls(1,10,1,ngear);
 
-
-	ivector    isel_npar(1,ngear);
-	ivector    jsel_npar(1,ngear);
-	ivector    isel_type(1,ngear);
-	ivector      sel_phz(1,ngear);
+	ivector isel_npar(1,ngear);
+	ivector jsel_npar(1,ngear);
+	ivector isel_type(1,ngear);
+	ivector sel_phz(1,ngear);
 	ivector n_sel_blocks(1,ngear);
-	vector      ahat_agemin(1,ngear);
-	vector      ghat_agemax(1,ngear);
+	vector ahat_agemin(1,ngear);
+	vector ghat_agemax(1,ngear);
 	vector age_nodes(1,ngear);
-	vector  yr_nodes(1,ngear);
-	vector  lambda_1(1,ngear);
-	vector  lambda_2(1,ngear);
-	vector  lambda_3(1,ngear);
+	vector yr_nodes(1,ngear);
+	vector lambda_1(1,ngear);
+	vector lambda_2(1,ngear);
+	vector lambda_3(1,ngear);
 
 	LOC_CALCS
-		ahat_agemin      = selex_controls(2);
-		ghat_agemax      = selex_controls(3);
+		ahat_agemin = selex_controls(2);
+		ghat_agemax = selex_controls(3);
 		age_nodes = selex_controls(4);
-		yr_nodes  = selex_controls(5);
-		lambda_1  = selex_controls(7);
-		lambda_2  = selex_controls(8);
-		lambda_3  = selex_controls(9);
+		yr_nodes = selex_controls(5);
+		lambda_1 = selex_controls(7);
+		lambda_2 = selex_controls(8);
+		lambda_3 = selex_controls(9);
 
-		isel_type    = ivector(selex_controls(1));
-		sel_phz      = ivector(selex_controls(6));
+		isel_type = ivector(selex_controls(1));
+		sel_phz = ivector(selex_controls(6));
 		n_sel_blocks = ivector(selex_controls(10));
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Selectivity types                     |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<isel_type<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Age/length at 50% selectivity         |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<ahat_agemin<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| STD ot 50% selectivity                |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<ghat_agemax<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| No. age nodes for each gear           |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<age_nodes<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| No. year nodes for 2d spline          |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<yr_nodes<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Phase of estimation                   |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<sel_phz<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Penalty wt for 2nd differences        |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<lambda_1<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Penalty wt for dome-shaped            |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<lambda_2<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Penalty wt for time-varting selex     |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<lambda_3<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Number of selectivity blocks          |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<n_sel_blocks<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
 	END_CALCS
 
 	init_imatrix sel_blocks(1,ngear,1,n_sel_blocks);
 
 
 	LOC_CALCS
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Selectivity blocks                    |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<sel_blocks<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
 		// | COUNT THE NUMBER OF ESTIMATED SELECTIVITY PARAMETERS TO ESTIMATE
 		// | isel_npar number of columns for each gear.
 		// | jsel_npar number of rows for each gear.
@@ -1054,7 +1166,7 @@ DATA_SECTION
 		}
 	END_CALCS
 
- 	// |---------------------------------------------------------------------------------|
+	// |---------------------------------------------------------------------------------|
 	// | PRIOR FOR RELATIVE ABUNDANCE DATA
 	// |---------------------------------------------------------------------------------|
 	// | nits     -> number of relative abundance indices
@@ -1082,6 +1194,28 @@ DATA_SECTION
 	 init_int nMeanWtCV;
 	 init_vector weight_sig(1,nMeanWtCV);                        		       //END_RF_ADD
 
+	LOC_CALCS
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Number or surveys                     |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<nits<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| Prior type for Q                      |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<q_prior<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| mu_log_q for Prior                    |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<mu_log_q<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<"| sd_log_q for Prior                    |"<<'\n';
+		LOG<<"| ------------------------------------- |\n";
+		LOG<<sd_log_q<<'\n';
+		LOG<<"| ------------------------------------- |\n\n";
+	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | Miscellaneous controls                                                          |
 	// |---------------------------------------------------------------------------------|
@@ -1097,64 +1231,66 @@ DATA_SECTION
 	// | 10-> phase for estimating deviations in natural mortality.
 	// | 11-> std in natural mortality deviations.
 	// | 12-> number of estimated nodes for deviations in natural mortality
-  // | 13-> fraction of total mortality that takes place prior to spawning
-  // |       NOT IMPLEMENTED IN DELAY DIFFERENCE MODEL
-  // |       If this is greater than 0, the "slow" fmsy routine will
-  // |       be used instead of the newton-rhapson routine. The MSY-
-  // |       based reference points in the report file will reflect this.
-  // |       If greater than 0, a file called TEST_frp.rep will be produced.
+	// | 13-> fraction of total mortality that takes place prior to spawning
+	// |      NOT IMPLEMENTED IN DELAY DIFFERENCE MODEL
+	// |      If this is greater than 0, the "slow" fmsy routine will
+	// |      be used instead of the newton-rhapson routine. The MSY-
+	// |      based reference points in the report file will reflect this.
+	// |      If greater than 0, a file called TEST_frp.rep will be produced.
 	// | 14-> number of prospective years to start estimation from syr.
 	// | 15-> switch for generating selex based on IFD and cohort biomass
-  // | 16-> toggle to fit to annual mean weights for commercial catch
-  // | 17-> toggle to perform "slow" fmsy test (runs model out 100 years)
-  // |       this produces a file called TEST_frp.rep.
-  // | 18-> precision for F for the "slow" fmsy calculations (only used if
-  // |       control 18 is 1). This must be a maximum of 0.0001 or the
-  // |       program will stop.
-  // | 19-> maximum F for the "slow" fmsy calculations (only used if
-  // |       control 18 is 1). If this is greater than 1, a warning will
-  // |       be issued because it will take a long time to run.
-  // | 20-> Report b0 only in mcmc calculations even if the "slow" msy
-  // |       routine was run. MSY-based reference points will not be
-  // |       output for MCMCs. This control only matters if control 13
-  // |       is greater than 0.
-
+	// | 16-> toggle to fit to annual mean weights for commercial catch
+	// | 17-> toggle to perform "slow" fmsy test (runs model out 100 years)
+	// |      this produces a file called TEST_frp.rep.
+	// | 18-> precision for F for the "slow" fmsy calculations (only used if
+	// |      control 18 is 1). This must be a maximum of 0.0001 or the
+	// |      program will stop.
+	// | 19-> maximum F for the "slow" fmsy calculations (only used if
+	// |      control 18 is 1). If this is greater than 1, a warning will
+	// |      be issued because it will take a long time to run.
+	// | 20-> Report b0 only in mcmc calculations even if the "slow" msy
+	// |      routine was run. MSY-based reference points will not be
+	// |      output for MCMCs. This control only matters if control 13
+	// |      is greater than 0.
 
 	init_vector d_iscamCntrl(1,20);
 	int verbose;
 	init_int eofc;
 	LOC_CALCS
-    if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(18) > 0.0001){
-      cerr<<"Error - you have set the precision for the slow msy calculations"
-        " too high. The maximum is 0.0001.\n";
-      exit(1);
+  if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(18) > 0.0001){
+    cerr<<"Error - you have set the precision for the slow msy calculations"
+    " too high. The maximum is 0.0001.\n";
+    exit(1);
+  }
+  if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(18) < 0.000001){
+    cout<<"Warning - you have set the precision for the slow msy"
+    " below 0.000001. This may cause the program to run for a longer time.\n";
+  }
+  if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(19) > 1){
+    cout<<"Warning - you have set the maximum F value above 1. This may cause"
+    " the program to run for a longer time.\n";
+  }
+  verbose = d_iscamCntrl(1);
+  LOG<<"| ------------------------------------- |\n";
+  LOG<<"| Micellaneous controls                 |"<<'\n';
+  LOG<<"| ------------------------------------- |\n";
+  for(int i=1; i<=d_iscamCntrl.size();i++){
+    LOG<<"#"<<i<<" = "<<d_iscamCntrl(i)<<'\n';
+  }
+  LOG<<"| ------------------------------------- |\n";
+  for(int ig=1;ig<=n_ags;ig++){
+    for(int i = syr; i <= nyr; i++){
+      d3_wt_mat(ig)(i) = pow(d3_wt_mat(ig)(i),d_iscamCntrl(6));
     }
-    if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(18) < 0.000001){
-      cout<<"Warning - you have set the precision for the slow msy calculations"
-        " below 0.000001. This may cause the program to run for a longer time.\n";
-    }
-    if((d_iscamCntrl(13) || d_iscamCntrl(18)) && d_iscamCntrl(19) > 1){
-      cout<<"Warning - you have set the maximum F value above 1. This may cause"
-        " the program to run for a longer time.\n";
-    }
-		verbose = d_iscamCntrl(1);
-		if(verbose) LOG<<d_iscamCntrl;
-		for(int ig=1;ig<=n_ags;ig++)
-		{
-			for(int i = syr; i <= nyr; i++)
-			{
-				d3_wt_mat(ig)(i) = pow(d3_wt_mat(ig)(i),d_iscamCntrl(6));
-			}
-		}
-
-		if(eofc==999){
-      LOG<<" ______________________________ \n";
-	    LOG<<"|     END OF CONTROL FILE      |\n";
-	    LOG<<"|______________________________|\n";
-		}else{
-			LOG<<"\n ***** ERROR READING CONTROL FILE ***** \n";
-      exit(1);
-		}
+  }
+  if(eofc == 999){
+    LOG<<" ______________________________ \n";
+    LOG<<"|     END OF CONTROL FILE      |\n";
+    LOG<<"|______________________________|\n";
+  }else{
+    LOG<<"\n ***** ERROR READING CONTROL FILE ***** \n";
+    exit(1);
+  }
 	END_CALCS
 
 	int nf;
@@ -1283,9 +1419,6 @@ DATA_SECTION
     }
 	END_CALCS
 
-	!! LOG<<n_saa<<'\n';
-	!! LOG<<n_naa<<'\n';
-
 	// |---------------------------------------------------------------------------------|
 	// | MANAGEMENT STRATEGY EVALUATION INPUTS
 	// |---------------------------------------------------------------------------------|
@@ -1299,10 +1432,6 @@ DATA_SECTION
 	//		exit(1);
 	//	}
 	//END_CALCS
-
-
-	// END OF DATA_SECTION
-	!! if(verbose) LOG<<"||-- END OF DATA_SECTION --||\n";
 
 	// |--------------------------------------|
 	// | Friend Class Operating Model for MSE |
@@ -1630,59 +1759,49 @@ PRELIMINARY_CALCS_SECTION
 		simulationModel(rseed);
 	}
 
-	if(verbose) LOG<<"||-- END OF PRELIMINARY_CALCS_SECTION --||\n";
-
 RUNTIME_SECTION
-    maximum_function_evaluations 2000,  2000,   2000, 25000, 25000
-    convergence_criteria        0.01, 0.01, 1.e-3, 1.e-4, 1.e-5
+    maximum_function_evaluations 2000, 2000, 2000, 25000, 25000
+    convergence_criteria 0.01, 0.01, 1.e-3, 1.e-4, 1.e-5
 
 
 PROCEDURE_SECTION
 
-	if(!delaydiff){
-		if(d_iscamCntrl(5)==2) d_iscamCntrl(5)=0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
-
-
-		initParameters();
-		calcSelectivities(isel_type);
-		calcTotalMortality();
-		calcNumbersAtAge();
-		calcTotalCatch();
-		calcComposition();
-		calcSurveyObservations();
-		calcStockRecruitment();
-		calcAnnualMeanWeight();
-
-	}
-
 	if(delaydiff){
-		initParameters();
-		calcTotalMortality_deldiff();
-		calcNumbersBiomass_deldiff();
-		calcFisheryObservations_deldiff();
-		calcSurveyObservations_deldiff();
-		calcStockRecruitment_deldiff();
-		calcAnnualMeanWeight_deldiff(); //RF added this for P cod - only gets added to objective function if cntrl(15)==1
+	  initParameters();
+	  calcTotalMortality_deldiff();
+	  calcNumbersBiomass_deldiff();
+	  calcFisheryObservations_deldiff();
+	  calcSurveyObservations_deldiff();
+	  calcStockRecruitment_deldiff();
+	  calcAnnualMeanWeight_deldiff(); //RF added this for P cod - only gets added to objective function if cntrl(15)==1
+	}else{
+	  if(d_iscamCntrl(5)==2) d_iscamCntrl(5)=0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
+	  initParameters();
+	  calcSelectivities(isel_type);
+	  calcTotalMortality();
+	  calcNumbersAtAge();
+	  calcTotalCatch();
+	  calcComposition();
+	  calcSurveyObservations();
+	  calcStockRecruitment();
+	  calcAnnualMeanWeight();
 	}
 
 	calcObjectiveFunction();
-	if(sd_phase())
-	{
-		calcSdreportVariables();
+	if(sd_phase()){
+	  calcSdreportVariables();
 	}
-	if(mc_phase())
-	{
-		mcmcPhase=1;
+	if(mc_phase()){
+	  mcmcPhase=1;
 	}
-	if(mceval_phase())
-	{
-		mcmcEvalPhase=1;
-		mcmc_output();
-    LOG<<"Running mceval phase\n";
+	if(mceval_phase()){
+	  mcmcEvalPhase=1;
+	  mcmc_output();
+	  LOG<<"Running mceval phase\n";
 	}
 	if(verbose){
-    LOG<<"End of main function calls\n";
-  }
+	  LOG<<"End of main function calls\n";
+	}
 
 FUNCTION void calcSdreportVariables()
   {

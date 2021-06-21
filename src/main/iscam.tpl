@@ -2798,225 +2798,160 @@ FUNCTION calcNumbersBiomass_deldiff
 	  exit(1);
 	*/
 
+	/*
+	  Purpose: This function calculates commertial catches for each year, gear and area*group*sex.
+	  NOTES:
+	  TODO list:
+	*/
 FUNCTION calcFisheryObservations_deldiff
-	{
-
-		/**
-  	Purpose: This function calculates commertial catches for each year, gear and area*group*sex.
-  	Author: Catarina Wor - Adapted from Steven Martell and Robyn Forrest work
-
-  	Arguments:
-  		None
-
-  	NOTES:
-
-  	TODO list:
-
-  	*/
-
-		int i,k,f,g,h,l,ig,ii;
-
-		ct.initialize();
-		eta.initialize();
-		double d_ct;
-
-	for(ii=1;ii<=nCtNobs;ii++)
-	{
-		i    = dCatchData(ii,1);
-		k    = dCatchData(ii,2);
-		f    = dCatchData(ii,3);
-		g    = dCatchData(ii,4);
-		h    = dCatchData(ii,5);
-		l    = dCatchData(ii,6);
-		d_ct = dCatchData(ii,7);
-
-  		// | trap for retro year
-  		if( i<syr ) continue;
-  		if( i>nyr ) continue;
-
-  		switch(l)
-		{
-			case 1:  // catch in weight
-				if( h )
-				{
-					ig     = pntr_ags(f,g,h);
-					ct(ii) = biomass(ig,i)*(1-mfexp(-M_dd(ig,i)-ft(ig)(k)(i)))*(ft(ig)(k)(i)/(M_dd(ig,i) + ft(ig)(k)(i)));
-				}
-				else if( !h )
-				{
-					for(h=1;h<=nsex;h++)
-					{
-						ig     = pntr_ags(f,g,h);
-						ct(ii) += biomass(ig,i)*(1-mfexp(-M_dd(ig,i)-ft(ig)(k)(i)))*(ft(ig)(k)(i)/(M_dd(ig,i) + ft(ig)(k)(i)));
-					}
-				}
-			break;
-
-			case 2:	//catch in numbers
-				if( h )
-				{
-					ig     = pntr_ags(f,g,h);
-					ct(ii) = numbers(ig,i)*(1-mfexp(-M_dd(ig,i)-ft(ig)(k)(i)))*(ft(ig)(k)(i)/(M_dd(ig,i) + ft(ig)(k)(i)));
-				}
-				else if( !h )
-				{
-					for(h=1;h<=nsex;h++)
-					{
-						ig     = pntr_ags(f,g,h);
-						ct(ii) += numbers(ig,i)*(1-mfexp(-M_dd(ig,i)-ft(ig)(k)(i)))*(ft(ig)(k)(i)/(M_dd(ig,i) + ft(ig)(k)(i)));
-					}
-				}
-
-			break;
-
-			case 3:	//roe - NOT IMPLEMENTED FOR DELAY DIFFERENCE MODEL
-						LOG<<"WARNING: CATCH TYPE 3 (ROE FISHERY) NOT IMPLEMENTED FOR DELAY DIFFERENCE MODEL:"<<'\n';
-						LOG<<"USE THE AGE-STRUCTURED MODEL - TERMINATING PROGRAM"<<'\n'; exit(1);
-			break;
-
-		}
-
-		// | catch residual
-		eta(ii) = log(d_ct+TINY) - log(ct(ii)+TINY);
-		//eta(ii) = log(d_ct) - log(ct(ii));
+	int i, k, f, g, h, l, ig, ii;
+	ct.initialize();
+	eta.initialize();
+	double d_ct;
+	for(ii=1;ii<=nCtNobs;ii++){
+	  i = dCatchData(ii,1);
+	  k = dCatchData(ii,2);
+	  f = dCatchData(ii,3);
+	  g = dCatchData(ii,4);
+	  h = dCatchData(ii,5);
+	  l = dCatchData(ii,6);
+	  d_ct = dCatchData(ii,7);
+	  // | trap for retro year
+	  if(i<syr)
+	    continue;
+	  if(i>nyr)
+	    continue;
+	  switch(l){
+	    case 1: // catch in weight
+	      if(h){
+	        ig = pntr_ags(f,g,h);
+	        ct(ii) = biomass(ig,i) * (1 - mfexp(-M_dd(ig,i) - ft(ig)(k)(i))) * (ft(ig)(k)(i) /
+	                 (M_dd(ig,i) + ft(ig)(k)(i)));
+	      }else{
+	        for(h=1;h<=nsex;h++){
+	          ig = pntr_ags(f,g,h);
+	          ct(ii) += biomass(ig,i) * (1 - mfexp(-M_dd(ig,i) - ft(ig)(k)(i))) * (ft(ig)(k)(i) /
+	                    (M_dd(ig,i) + ft(ig)(k)(i)));
+	        }
+	      }
+	      break;
+	    case 2: //catch in numbers
+	      if(h){
+	        ig = pntr_ags(f,g,h);
+	        ct(ii) = numbers(ig,i) * (1 - mfexp(-M_dd(ig,i) - ft(ig)(k)(i))) * (ft(ig)(k)(i) /
+	                 (M_dd(ig,i) + ft(ig)(k)(i)));
+	      }else{
+	        for(h=1;h<=nsex;h++){
+	          ig = pntr_ags(f,g,h);
+	          ct(ii) += numbers(ig,i) * (1 - mfexp(-M_dd(ig,i) - ft(ig)(k)(i))) * (ft(ig)(k)(i) /
+	                    (M_dd(ig,i) + ft(ig)(k)(i)));
+	        }
+	      }
+	      break;
+	    case 3: //roe - NOT IMPLEMENTED FOR DELAY DIFFERENCE MODEL
+	      LOG<<"WARNING: CATCH TYPE 3 (ROE FISHERY) NOT IMPLEMENTED FOR DELAY DIFFERENCE MODEL:"<<'\n';
+	      LOG<<"USE THE AGE-STRUCTURED MODEL - TERMINATING PROGRAM"<<'\n'; exit(1);
+	      break;
+	  }
+	  // | catch residual
+	  eta(ii) = log(d_ct+TINY) - log(ct(ii)+TINY);
+	  //eta(ii) = log(d_ct) - log(ct(ii));
 	}
-
 	if(verbose){
-    	LOG<<"**** Ok after calcFisheryObservations_deldiff ****\n";
-  	}
-
-        /*
-        LOG<<"eta is "<<eta<<'\n';
-  	LOG<<"ft is "<<ft<<'\n';
-  	LOG<<"ct is "<<ct<<'\n';
-  	LOG<<"TINY is "<<TINY<<'\n';
-	LOG<<"**** Ok after calcFisheryObservations_deldiff ****"<<'\n';
-	exit(1);
+	  LOG<<"**** Ok after calcFisheryObservations_deldiff ****\n";
+	}
+	/*
+	  LOG<<"eta is "<<eta<<'\n';
+	  LOG<<"ft is "<<ft<<'\n';
+	  LOG<<"ct is "<<ct<<'\n';
+	  LOG<<"TINY is "<<TINY<<'\n';
+	  LOG<<"**** Ok after calcFisheryObservations_deldiff ****"<<'\n';
+	  exit(1);
 	*/
 
-	}
-
+	/*
+	  Purpose: This function calculates predicted survey observations for each year and area*sex*group.  Z
+	  NOTES:
+	  TODO list:
+	*/
 FUNCTION calcSurveyObservations_deldiff
-	{
-
-		/**
-  	Purpose: This function calculates predicted survey observations for each year and area*sex*group.  Z
-  	Author: Catarina Wor - Adapted from Steven Martell and Robyn Forrest work
-
-  	Arguments:
-  		None
-
-  	NOTES:
-
-  	TODO list:
-
-  	*/
-
-		int ii,kk,ig,nz;
-		double di;
-		dvariable ftmp;
-
-
-		epsilon.initialize();
-		it_hat.initialize();
-
-		for(kk=1;kk<=nItNobs;kk++)
-		{
-			dvar_vector V(1,n_it_nobs(kk));
-			V.initialize();
-			nz = 0;
-			int iz=1;  // index for first year of data for prospective analysis.
-			for(ii=1;ii<=n_it_nobs(kk);ii++)
-			{
-				i    = d3_survey_data(kk)(ii)(1);
-				k    = d3_survey_data(kk)(ii)(3);
-				f    = d3_survey_data(kk)(ii)(4);
-				g    = d3_survey_data(kk)(ii)(5);
-				h    = d3_survey_data(kk)(ii)(6);
-				di   = d3_survey_data(kk)(ii)(8);
-
-
-				// | trap for retrospective nyr change
-				if( i < syr )
-				{
-					iz ++;
-					nz ++;
-					continue;
-				}
-
-				if( i > nyr ) continue;
-
-				nz ++;  // counter for number of observations.
-
-
-				// h ==0?h=1:NULL;
-				//Na.initialize();
-				for(h=1;h<=nsex;h++)
-				{
-					ig  = pntr_ags(f,g,h);
-
-					dvariable z = ft(ig)(k)(i)+M_dd(ig,i);
-					dvariable Np = numbers(ig,i) * exp( -z * di);
-					dvariable Bp = biomass(ig,i) * exp( -z * di);
-
-
-					switch(n_survey_type(kk))
-					{
-						case 1:
-							V(ii) +=Np;
-						break;
-						case 2:
-							V(ii) += Bp;
-						break;
-						case 3:
-							V(ii) += Bp;
-						break;
-					}
-				}
-
-			} // end of ii loop
-
-			dvector     it 	= trans(d3_survey_data(kk))(2)(iz,nz);
-			dvector     wt 	= trans(d3_survey_data(kk))(7)(iz,nz);
-		         wt 	= wt/sum(wt);
-
-			dvar_vector zt 	= log(it) - log(V(iz,nz));
-			dvariable 	zbar = sum(elem_prod(zt,wt));
-			//dvariable 	zbar = mean(zt); RFUpdate: this old weighting may have been incorrect but check above line with CW
-			q(kk) = mfexp(zbar);
-
-
-		// | survey residuals
-		epsilon(kk).sub(iz,nz) = zt - zbar;
-		it_hat(kk).sub(iz,nz) = q(kk) * V(iz,nz);
-
-		// | SPECIAL CASE: penalized random walk in q.
-		if( q_prior(kk)==2 )
-		{
-			epsilon(kk).initialize();
-			dvar_vector fd_zt     = first_difference(zt);
-			dvariable  zw_bar     = sum(elem_prod(fd_zt,wt(iz,nz-1)));
-			epsilon(kk).sub(iz,nz-1) = fd_zt - zw_bar;
-			qt(kk)(iz) = exp(zt(iz));
-			for(ii=iz+1;ii<=nz;ii++)
-			{
-				qt(kk)(ii) = qt(kk)(ii-1) * exp(fd_zt(ii-1));
-			}
-			it_hat(kk).sub(iz,nz) = elem_prod(qt(kk)(iz,nz),V(iz,nz));
-		}
+	int ii, kk, ig, nz;
+	double di;
+	dvariable ftmp;
+	epsilon.initialize();
+	it_hat.initialize();
+	for(kk=1;kk<=nItNobs;kk++){
+	  dvar_vector V(1,n_it_nobs(kk));
+	  V.initialize();
+	  nz = 0;
+	  int iz = 1; // index for first year of data for prospective analysis.
+	  for(ii=1;ii<=n_it_nobs(kk);ii++){
+	    i = d3_survey_data(kk)(ii)(1);
+	    k = d3_survey_data(kk)(ii)(3);
+	    f = d3_survey_data(kk)(ii)(4);
+	    g = d3_survey_data(kk)(ii)(5);
+	    h = d3_survey_data(kk)(ii)(6);
+	    di = d3_survey_data(kk)(ii)(8);
+	    // | trap for retrospective nyr change
+	    if(i < syr){
+	      iz ++;
+	      nz ++;
+	      continue;
+	    }
+	    if(i > nyr)
+	      continue;
+	    nz ++; // counter for number of observations.
+	    for(h=1;h<=nsex;h++){
+	      ig  = pntr_ags(f,g,h);
+	      dvariable z = ft(ig)(k)(i)+M_dd(ig,i);
+	      dvariable Np = numbers(ig,i) * exp( -z * di);
+	      dvariable Bp = biomass(ig,i) * exp( -z * di);
+	      switch(n_survey_type(kk)){
+	        case 1:
+	          V(ii) += Np;
+	          break;
+	        case 2:
+	          V(ii) += Bp;
+	          break;
+	        case 3:
+	          V(ii) += Bp;
+	        break;
+	      }
+	    }
+	  }
+	  dvector it = trans(d3_survey_data(kk))(2)(iz,nz);
+	  dvector wt = trans(d3_survey_data(kk))(7)(iz,nz);
+	  wt = wt / sum(wt);
+	  dvar_vector zt = log(it) - log(V(iz,nz));
+	  dvariable zbar = sum(elem_prod(zt,wt));
+	  //dvariable zbar = mean(zt); RFUpdate: this old weighting may have been incorrect but check above line with CW
+	  q(kk) = mfexp(zbar);
+	  // | survey residuals
+	  epsilon(kk).sub(iz,nz) = zt - zbar;
+	  it_hat(kk).sub(iz,nz) = q(kk) * V(iz,nz);
+	  // | SPECIAL CASE: penalized random walk in q.
+	  if(q_prior(kk) == 2){
+	    epsilon(kk).initialize();
+	    dvar_vector fd_zt = first_difference(zt);
+	    dvariable zw_bar = sum(elem_prod(fd_zt,wt(iz,nz-1)));
+	    epsilon(kk).sub(iz,nz-1) = fd_zt - zw_bar;
+	    qt(kk)(iz) = exp(zt(iz));
+	    for(ii=iz+1;ii<=nz;ii++){
+	      qt(kk)(ii) = qt(kk)(ii-1) * exp(fd_zt(ii-1));
+	    }
+	    it_hat(kk).sub(iz,nz) = elem_prod(qt(kk)(iz,nz),V(iz,nz));
+	  }
 	}
 
-        /*
-  	LOG<<"q is  "<<q<<'\n';
-  	LOG<<"epsilon is  "<<epsilon<<'\n';
-  	LOG<<"it_hat is  "<<it_hat<<'\n';
-  	exit(1);
-        */
-        if(verbose){
-    		LOG<<"**** Ok after calcSurveyObservations_deldiff ****\n";
-  	}
-
-     }
+	/*
+	  LOG<<"q is  "<<q<<'\n';
+	  LOG<<"epsilon is  "<<epsilon<<'\n';
+	  LOG<<"it_hat is  "<<it_hat<<'\n';
+	  exit(1);
+	*/
+	if(verbose){
+	  LOG<<"**** Ok after calcSurveyObservations_deldiff ****\n";
+	}
 
 FUNCTION calcStockRecruitment_deldiff
 	{

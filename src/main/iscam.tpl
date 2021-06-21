@@ -1961,81 +1961,65 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	  LOG<<"**** Ok after calcSelectivities ****\n";
 	}
 
-  	/**
-  	Purpose: This function calculates fishing mortality, total mortality and annual
-  	         surivival rates S=exp(-Z) for each age and year based on fishing mortality
-  	         and selectivity coefficients.  Z also is updated with time-varying
-  	         natural mortality rates if specificed by user.
-  	Author: Steven Martell
-
-  	Arguments:
-  		None
-
-  	NOTES:
-  		- Jan 5, 2012 Added catch_type to allow for catch in numbers, weight or spawn.
-          In the case of spawn on kelp (roe fisheries), the Fishing mortality does not
-          occur on the adult component.
-        - Added if(catch_type(k)!=3) //exclude roe fisheries
-  		- F(group,year,age)
-  		- Exclude type = 3, roe fisheries harvesting eggs only, not adults.
-		- if dCatchData$sex is male & female combined, then allocate to both sexes.
-
-  	TODO list:
-  	[*] Dec 24, 2010.  Adding time-varying natural mortality.
-  	[*] May 20, 2011.  Add cubic spline to the time-varying natural mortality.
-	[ ] Calculate average M for reference point calculations based on pfc file.
-	[ ] April 16, 2014. Adjust ft_count for retrospective and prospective analyses.
-  	*/
+	/*
+	  Purpose: This function calculates fishing mortality, total mortality and annual
+	    surivival rates S=exp(-Z) for each age and year based on fishing mortality
+	    and selectivity coefficients.  Z also is updated with time-varying
+	    natural mortality rates if specificed by user.
+	  NOTES:
+	-   Jan 5, 2012 Added catch_type to allow for catch in numbers, weight or spawn.
+	    In the case of spawn on kelp (roe fisheries), the Fishing mortality does not
+	      occur on the adult component.
+	    Added if(catch_type(k)!=3) //exclude roe fisheries
+	    - F(group,year,age)
+	    - Exclude type = 3, roe fisheries harvesting eggs only, not adults.
+	    - if dCatchData$sex is male & female combined, then allocate to both sexes.
+	  TODO list:
+	    [*] Dec 24, 2010.  Adding time-varying natural mortality.
+	    [*] May 20, 2011.  Add cubic spline to the time-varying natural mortality.
+	    [ ] Calculate average M for reference point calculations based on pfc file.
+	    [ ] April 16, 2014. Adjust ft_count for retrospective and prospective analyses.
+	*/
 FUNCTION calcTotalMortality
-  {
-
-	int ig,ii,i,k,l;
+	int ig, ii, i, k, l;
 	int ft_counter = 0;
 	dvariable ftmp;
 	F.initialize();
 	ft.initialize();
-
-
 	// |---------------------------------------------------------------------------------|
 	// | FISHING MORTALITY
 	// |---------------------------------------------------------------------------------|
 	// |
-       	for(ig=1;ig<=nCtNobs;ig++)
-	{
-		i  = dCatchData(ig)(1);	 //year
-		k  = dCatchData(ig)(2);  //gear
-		f  = dCatchData(ig)(3);  //area
-		g  = dCatchData(ig)(4);  //group
-		h  = dCatchData(ig)(5);  //sex
-		l  = dCatchData(ig)(6);  //type
-		if( i < syr ) continue;
-		if( i > nyr ) continue;
-		ft_counter ++;
-		if( h )
-		{
-			ii = pntr_ags(f,g,h);
-			ftmp = mfexp(log_ft_pars(ft_counter));
-			ft(ii)(k,i) = ftmp;
-			if( l != 3 )
-			{
-				F(ii)(i) += ftmp*mfexp(log_sel(k)(ii)(i));
-			}
-		}
-		else if( !h ) // h=0 case for asexual catch
-		{
-			for(h=1;h<=nsex;h++)
-			{
-				ii = pntr_ags(f,g,h);
-				ftmp = mfexp(log_ft_pars(ft_counter));
-				ft(ii)(k,i) = ftmp;
-				if( l != 3 )
-				{
-					F(ii)(i) += ftmp*mfexp(log_sel(k)(ii)(i));
-				}
-			}
-		}
+	for(ig=1;ig<=nCtNobs;ig++){
+	  i = dCatchData(ig)(1); //year
+	  k = dCatchData(ig)(2); //gear
+	  f = dCatchData(ig)(3); //area
+	  g = dCatchData(ig)(4); //group
+	  h = dCatchData(ig)(5); //sex
+	  l = dCatchData(ig)(6); //type
+	  if(i < syr)
+	    continue;
+	  if(i > nyr)
+	    continue;
+	  ft_counter++;
+	  if(h){
+	    ii = pntr_ags(f,g,h);
+	    ftmp = mfexp(log_ft_pars(ft_counter));
+	    ft(ii)(k,i) = ftmp;
+	    if(l != 3){
+	      F(ii)(i) += ftmp*mfexp(log_sel(k)(ii)(i));
+	    }
+	  }else{ // h=0 case for asexual catch
+	    for(h=1;h<=nsex;h++){
+	      ii = pntr_ags(f,g,h);
+	      ftmp = mfexp(log_ft_pars(ft_counter));
+	      ft(ii)(k,i) = ftmp;
+	      if(l != 3){
+	        F(ii)(i) += ftmp*mfexp(log_sel(k)(ii)(i));
+	      }
+	    }
+	  }
 	}
-
 
 	// |---------------------------------------------------------------------------------|
 	// | NATURAL MORTALITY
@@ -2043,385 +2027,332 @@ FUNCTION calcTotalMortality
 	// | - uses cubic spline to interpolate time-varying natural mortality
 	M.initialize();
 	log_m_devs.initialize();
-
-	for(ig=1;ig<=n_ags;ig++)
-	{
-		g = n_group(ig);
-		h = n_sex(ig);
-		M(ig) = m( pntr_gs(g,h) );
-
-		if( active( log_m_nodes) )
-		{
-			int nodes = size_count(log_m_nodes);
-			dvector im(1,nodes);
-			dvector fm(syr+1,nyr);
-			im.fill_seqadd(0,1./(nodes-1));
-			fm.fill_seqadd(0,1./(nyr-syr));
-			vcubic_spline_function m_spline(im,log_m_nodes);
-			log_m_devs = m_spline( fm );
-		}
-
-		for(i=syr+1; i<=nyr; i++)
-		{
-			M(ig)(i) = M(ig)(i-1) * mfexp(log_m_devs(i));
-		}
-		// TODO fix for reference point calculations
-		// m_bar = mean( M_tot.sub(pf_cntrl(1),pf_cntrl(2)) );
+	for(ig=1;ig<=n_ags;ig++){
+	  g = n_group(ig);
+	  h = n_sex(ig);
+	  M(ig) = m(pntr_gs(g,h));
+	  if(active(log_m_nodes)){
+	    int nodes = size_count(log_m_nodes);
+	    dvector im(1,nodes);
+	    dvector fm(syr+1,nyr);
+	    im.fill_seqadd(0, 1. / (nodes - 1));
+	    fm.fill_seqadd(0, 1. / (nyr - syr));
+	    vcubic_spline_function m_spline(im,log_m_nodes);
+	    log_m_devs = m_spline(fm);
+	  }
+	  for(i=syr+1; i<=nyr; i++){
+	    M(ig)(i) = M(ig)(i-1) * mfexp(log_m_devs(i));
+	  }
+	  // TODO fix for reference point calculations
+	  // m_bar = mean( M_tot.sub(pf_cntrl(1),pf_cntrl(2)) );
 	}
 
 	// |---------------------------------------------------------------------------------|
 	// | TOTAL MORTALITY
 	// |---------------------------------------------------------------------------------|
 	// |
-
-	  for(ig=1;ig<=n_ags;ig++)
-	{
-		Z(ig) = M(ig) + F(ig);
-		S(ig) = mfexp(-Z(ig));
+	for(ig=1;ig<=n_ags;ig++){
+	  Z(ig) = M(ig) + F(ig);
+	  S(ig) = mfexp(-Z(ig));
 	}
 
 	if(verbose){
-    LOG<<"**** OK after calcTotalMortality ****\n";
-  }
-  }
+	  LOG<<"**** OK after calcTotalMortality ****\n";
+	}
 
 
-  /*
-  Purpose:
-    This function initializes the numbers-at-age matrix in syr
-    based on log_rinit and log_init_rec_devs, the annual recruitment
-    based on log_rbar and log_rec_devs, and updates the number-at-age
-    over time based on the survival rate calculated in calcTotalMortality.
+	/*
+	  Purpose:
+	    This function initializes the numbers-at-age matrix in syr
+	    based on log_rinit and log_init_rec_devs, the annual recruitment
+	    based on log_rbar and log_rec_devs, and updates the number-at-age
+	    over time based on the survival rate calculated in calcTotalMortality.
 
-  Notes:
-    - Aug 9, 2012.  Made a change here to initialize the numbers
-      at age in syr using the natural mortality rate at age in syr.
-      Prior to this the average (m_bar) rate was used, since this
-      has now changed with new projection control files.  Should only
-      affect models that were using time varying natural mortality.
-    - d_iscamCntrl(5) is a flag to start at unfished conditions, so set N(syr,sage) = ro
-  */
+	  Notes:
+	    - Aug 9, 2012.  Made a change here to initialize the numbers
+	      at age in syr using the natural mortality rate at age in syr.
+	      Prior to this the average (m_bar) rate was used, since this
+	      has now changed with new projection control files.  Should only
+	      affect models that were using time varying natural mortality.
+	    - d_iscamCntrl(5) is a flag to start at unfished conditions, so set N(syr,sage) = ro
+	*/
 FUNCTION calcNumbersAtAge
-  int ig, ih, kgear;
-  N.initialize();
-  bt.initialize();
-  // Vulnerable biomass to all gears
-  vbt.initialize();
-
-  for(ig = 1; ig <= n_ags; ig++){
-    f = n_area(ig);
-    g = n_group(ig);
-    ih = pntr_ag(f, g);
-    dvar_vector lx(sage, nage);
-    dvar_vector tr(sage, nage);
-    lx(sage) = 1.0;
-    for(j = sage; j < nage; j++){
-      lx(j + 1) = lx(j) * exp(-M(ig)(syr)(j));
-    }
-    lx(nage) /= (1. - exp(-M(ig)(syr, nage)));
-    if(d_iscamCntrl(5)){
-      // initialize at unfished conditions.
-      tr =  log(ro(g)) + log(lx);
-    }else{
-      tr(sage)        = ( log_avgrec(ih) + log_rec_devs(ih)(syr));
-      tr(sage+1,nage) = (log_recinit(ih) + init_log_rec_devs(ih));
-      tr(sage+1,nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
-    }
-    N(ig)(syr)(sage,nage) = 1./nsex * mfexp(tr);
-    log_rt(ih)(syr - nage + sage, syr) = tr.shift(syr - nage + sage);
-    for(i = syr; i <= nyr; i++){
-      if(i > syr){
-        log_rt(ih)(i) = (log_avgrec(ih) + log_rec_devs(ih)(i));
-        N(ig)(i, sage) = 1./nsex * mfexp(log_rt(ih)(i));
-      }
-      N(ig)(i + 1)(sage + 1, nage) = ++elem_prod(N(ig)(i)(sage, nage - 1),
-                                                 S(ig)(i)(sage, nage - 1));
-      N(ig)(i+1, nage) += N(ig)(i, nage) * S(ig)(i, nage);
-      // average biomass for group in year i
-      bt(g)(i) = sum(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)));
-      // Vulnerable biomass to all gears
-      for(kgear = 1; kgear <= ngear; kgear++){
-        vbt(g)(kgear)(i) = sum(elem_prod(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)),
-                                         mfexp(log_sel(kgear)(ig)(i))));
-      }
-    }
-    N(ig)(nyr + 1, sage) = 1./nsex * mfexp( log_avgrec(ih));
-    bt(g)(nyr+1) = sum(elem_prod(N(ig)(nyr+1),
-                                 d3_wt_avg(ig)(nyr+1)));
-    // Vulnerable biomass to all gears
-    for(kgear = 1; kgear <= ngear; kgear++){
-      vbt(g)(kgear)(nyr + 1) = sum(elem_prod(elem_prod(N(ig)(nyr + 1),
-                                                       d3_wt_avg(ig)(nyr + 1)),
-                                             mfexp(log_sel(kgear)(ig)(nyr))));
-    }
-  }
-  if(verbose)LOG<<"**** Ok after calcNumbersAtAge ****\n";
-
-  /*
-    Purpose:
-      This function calculates the predicted age-composition samples (A) for
-      both directed commercial fisheries and survey age-composition data. For
-      all years of data specified in the A matrix, calculated the predicted
-      proportions-at-age in the sampled catch-at-age.  If no catch-age data exist
-      for a particular year i, for gear k (i.e. no directed fishery or from a
-      survey sample process that does not have an appreciable F), the calculate
-      the predicted proportion based on log(N) + log_sel(group,gear,year)
-    Notes:
-      - Adapted from iSCAM 1.5.
-      - No longer using ragged arrays for gear, the ragged matrix is indexed by:
-        year gear area, group, sex | age columns
-      - For the residuals, note that each gear is weigthed by the conditional MLE
-        of the variance.
-  */
-FUNCTION calcComposition
-  int ii, ig, kk;
-  ig = 0;
-  dvar_vector va(sage, nage);
-  dvar_vector fa(sage, nage);
-  dvar_vector sa(sage, nage);
-  dvar_vector za(sage, nage);
-  dvar_vector ca(sage, nage);
-  dvar_vector na(sage, nage);
-  A_hat.initialize();
-
-  for(kk = 1; kk <= nAgears; kk++){
-    for(ii = 1; ii <= n_A_nobs(kk); ii++){
-      i = d3_A(kk)(ii)(n_A_sage(kk) - 5);
-      k = d3_A(kk)(ii)(n_A_sage(kk) - 4);
-      f = d3_A(kk)(ii)(n_A_sage(kk) - 3);
-      g = d3_A(kk)(ii)(n_A_sage(kk) - 2);
-      h = d3_A(kk)(ii)(n_A_sage(kk) - 1);
-
-      // trap for retrospecitve analysis.
-      if(i < syr) continue;
-      if(i > nyr) continue;
-
-      if(h){
-        // age comps are sexed (h > 0)
-        ig = pntr_ags(f, g, h);
-        va = mfexp(log_sel(k)(ig)(i));
-        za = Z(ig)(i);
-        sa = S(ig)(i);
-        na = N(ig)(i);
-        if(ft(ig)(k)(i) == 0){
-          fa = va;
-        }else{
-          fa = ft(ig)(k)(i) * va;
-        }
-        ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
-        //  A_hat(kk)(ii) = ca(n_A_sage(kk),n_A_nage(kk));
-        //    +group if n_A_nage(kk) < nage
-        //
-        //  if(n_A_nage(kk) < nage){
-        //    A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
-        //  }
-      }else{
-        for(h = 1; h <= nsex; h++){
-          ig = pntr_ags(f,g,h);
-          va = mfexp(log_sel(k)(ig)(i));
-          za = Z(ig)(i);
-          sa = S(ig)(i);
-          na = N(ig)(i);
-          if(ft(ig)(k)(i) == 0){
-            fa = va;
-          }else{
-            fa = ft(ig)(k)(i) * va;
-          }
-          ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
-          //  A_hat(kk)(ii) += ca(n_A_sage(kk),n_A_nage(kk));
-          //    +group if n_A_nage(kk) < nage
-          //  if(n_A_nage(kk) < nage){
-          //    A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
-          //  }
-        }
-      }
-      // This is the age-composition
-      if(n_ageFlag(kk)){
-        A_hat(kk)(ii) = ca(n_A_sage(kk), n_A_nage(kk));
-        if(n_A_nage(kk) < nage){
-          A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
-        }
-      }else{
-        /*
-          This the catch-at-length composition.
-          Pseudocode:
-          -make an ALK
-          -Ahat = ca * ALK
-        */
-        dvar_vector mu = d3_len_age(ig)(i);
-        dvar_vector sig = 0.1 * mu;
-        dvector x(n_A_sage(kk), n_A_nage(kk));
-        x.fill_seqadd(n_A_sage(kk), 1);
-        dvar_matrix alk = ALK(mu,sig,x);
-        A_hat(kk)(ii) = ca * alk;
-      }
-      A_hat(kk)(ii) /= sum( A_hat(kk)(ii));
-    }
-   }
-   if(verbose)LOG<<"**** Ok after calcComposition ****\n";
-
-FUNCTION calcTotalCatch
-  {
-  	/*
-  	Purpose:  This function calculates the total catch.
-  	Dependencies: Must call calcCatchAtAge function first.
-  	Author: Steven Martell
-
-  	Arguments:
-  		None
-
-  	NOTES:
-
-
-  	TODO list:
-  	[ ] get rid of the obs_ct, ct, eta array structures, inefficient, better to use
-  	    a matrix, then cbind the predicted catch and residuals for report. (ie. an R
-  	    data.frame structure and use melt to ggplot for efficient plots.)
-  	*/
-  	int ii,l,ig;
-  	double d_ct;
-
-  	ct.initialize();
-  	eta.initialize();
-
-  	dvar_vector     fa(sage,nage);
-  	dvar_vector     ca(sage,nage);
-  	dvar_vector     sa(sage,nage);
-  	dvar_vector     za(sage,nage);
-
-
-
-  	for(ii=1;ii<=nCtNobs;ii++)
-	{
-		i    = dCatchData(ii,1);
-		k    = dCatchData(ii,2);
-		f    = dCatchData(ii,3);
-		g    = dCatchData(ii,4);
-		h    = dCatchData(ii,5);
-		l    = dCatchData(ii,6);
-		d_ct = dCatchData(ii,7);
-
-  		// | trap for retro year
-  		if( i<syr ) continue;
-  		if( i>nyr ) continue;
-
-
-		switch(l)
-		{
-			case 1:  // catch in weight
-				if( h )
-				{
-					ig     = pntr_ags(f,g,h);
-					fa     = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
-					za     = Z(ig)(i);
-					sa     = S(ig)(i);
-					ca     = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
-					ct(ii) = ca * d3_wt_avg(ig)(i);
-				}
-				else if( !h )
-				{
-					for(h=1;h<=nsex;h++)
-					{
-						ig     = pntr_ags(f,g,h);
-						fa     = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
-						za     = Z(ig)(i);
-						sa     = S(ig)(i);
-						ca     = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
-						ct(ii)+= ca * d3_wt_avg(ig)(i);
-					}
-				}
-			break;
-
-			case 2:  // catch in numbers
-				if( h )
-				{
-					ig     = pntr_ags(f,g,h);
-					fa     = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
-					za     = Z(ig)(i);
-					sa     = S(ig)(i);
-					ca     = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
-					ct(ii) = sum( ca );
-				}
-				else if( !h )
-				{
-					for(h=1;h<=nsex;h++)
-					{
-						ig     = pntr_ags(f,g,h);
-						fa     = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
-						za     = Z(ig)(i);
-						sa     = S(ig)(i);
-						ca     = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
-						ct(ii)+= sum( ca );
-					}
-				}
-			break;
-
-			case 3:  // roe fisheries, special case
-				if( h )
-				{
-					ig            = pntr_ags(f,g,h);
-					dvariable ssb = N(ig)(i) * d3_wt_mat(ig)(i);
-					ct(ii)        = (1.-exp(-ft(ig)(k)(i))) * ssb;
-				}
-				else if( !h )
-				{
-					for(h=1;h<=nsex;h++)
-					{
-						ig            = pntr_ags(f,g,h);
-						dvariable ssb = N(ig)(i) * d3_wt_mat(ig)(i);
-						ct(ii)       += (1.-exp(-ft(ig)(k)(i))) * ssb;
-					}
-				}
-			break;
-		}	// end of switch
-
-		// | catch residual
-		eta(ii) = log(d_ct+TINY) - log(ct(ii)+TINY);
+	int ig, ih, kgear;
+	N.initialize();
+	bt.initialize();
+	// Vulnerable biomass to all gears
+	vbt.initialize();
+	for(ig = 1; ig <= n_ags; ig++){
+	  f = n_area(ig);
+	  g = n_group(ig);
+	  ih = pntr_ag(f, g);
+	  dvar_vector lx(sage, nage);
+	  dvar_vector tr(sage, nage);
+	  lx(sage) = 1.0;
+	  for(j = sage; j < nage; j++){
+	    lx(j + 1) = lx(j) * exp(-M(ig)(syr)(j));
+	  }
+	  lx(nage) /= (1. - exp(-M(ig)(syr, nage)));
+	  if(d_iscamCntrl(5)){
+	    // initialize at unfished conditions.
+	    tr =  log(ro(g)) + log(lx);
+	  }else{
+	    tr(sage)        = ( log_avgrec(ih) + log_rec_devs(ih)(syr));
+	    tr(sage+1,nage) = (log_recinit(ih) + init_log_rec_devs(ih));
+	    tr(sage+1,nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
+	  }
+	  N(ig)(syr)(sage,nage) = 1./nsex * mfexp(tr);
+	  log_rt(ih)(syr - nage + sage, syr) = tr.shift(syr - nage + sage);
+	  for(i = syr; i <= nyr; i++){
+	    if(i > syr){
+	      log_rt(ih)(i) = (log_avgrec(ih) + log_rec_devs(ih)(i));
+	      N(ig)(i, sage) = 1./nsex * mfexp(log_rt(ih)(i));
+	    }
+	    N(ig)(i + 1)(sage + 1, nage) = ++elem_prod(N(ig)(i)(sage, nage - 1),
+	                                               S(ig)(i)(sage, nage - 1));
+	    N(ig)(i+1, nage) += N(ig)(i, nage) * S(ig)(i, nage);
+	    // average biomass for group in year i
+	    bt(g)(i) = sum(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)));
+	    // Vulnerable biomass to all gears
+	    for(kgear = 1; kgear <= ngear; kgear++){
+	      vbt(g)(kgear)(i) = sum(elem_prod(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)),
+	                                       mfexp(log_sel(kgear)(ig)(i))));
+	    }
+	  }
+	  N(ig)(nyr + 1, sage) = 1. / nsex * mfexp(log_avgrec(ih));
+	  bt(g)(nyr + 1) = sum(elem_prod(N(ig)(nyr+1),
+	                               d3_wt_avg(ig)(nyr+1)));
+	  // Vulnerable biomass to all gears
+	  for(kgear = 1; kgear <= ngear; kgear++){
+	    vbt(g)(kgear)(nyr + 1) = sum(elem_prod(elem_prod(N(ig)(nyr + 1),
+	                                                     d3_wt_avg(ig)(nyr + 1)),
+	                                           mfexp(log_sel(kgear)(ig)(nyr))));
+	  }
 	}
 	if(verbose){
-    LOG<<"**** Ok after calcTotalCatch ****\n";
-  }
-  }
+	  LOG<<"**** Ok after calcNumbersAtAge ****\n";
+	}
+	/*
+	  Purpose:
+	    This function calculates the predicted age-composition samples (A) for
+	    both directed commercial fisheries and survey age-composition data. For
+	    all years of data specified in the A matrix, calculated the predicted
+	    proportions-at-age in the sampled catch-at-age.  If no catch-age data exist
+	    for a particular year i, for gear k (i.e. no directed fishery or from a
+	    survey sample process that does not have an appreciable F), the calculate
+	    the predicted proportion based on log(N) + log_sel(group,gear,year)
+	  Notes:
+	    - Adapted from iSCAM 1.5.
+	    - No longer using ragged arrays for gear, the ragged matrix is indexed by:
+	      year gear area, group, sex | age columns
+	    - For the residuals, note that each gear is weigthed by the conditional MLE
+	      of the variance.
+	*/
+FUNCTION calcComposition
+	int ii, ig, kk;
+	ig = 0;
+	dvar_vector va(sage, nage);
+	dvar_vector fa(sage, nage);
+	dvar_vector sa(sage, nage);
+	dvar_vector za(sage, nage);
+	dvar_vector ca(sage, nage);
+	dvar_vector na(sage, nage);
+	A_hat.initialize();
+	for(kk = 1; kk <= nAgears; kk++){
+	  for(ii = 1; ii <= n_A_nobs(kk); ii++){
+	    i = d3_A(kk)(ii)(n_A_sage(kk) - 5);
+	    k = d3_A(kk)(ii)(n_A_sage(kk) - 4);
+	    f = d3_A(kk)(ii)(n_A_sage(kk) - 3);
+	    g = d3_A(kk)(ii)(n_A_sage(kk) - 2);
+	    h = d3_A(kk)(ii)(n_A_sage(kk) - 1);
+	    // trap for retrospecitve analysis.
+	    if(i < syr)
+	      continue;
+	    if(i > nyr)
+	      continue;
+	    if(h){
+	      // age comps are sexed (h > 0)
+	      ig = pntr_ags(f, g, h);
+	      va = mfexp(log_sel(k)(ig)(i));
+	      za = Z(ig)(i);
+	      sa = S(ig)(i);
+	      na = N(ig)(i);
+	      if(ft(ig)(k)(i) == 0){
+	        fa = va;
+	      }else{
+	        fa = ft(ig)(k)(i) * va;
+	      }
+	      ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
+	      //  A_hat(kk)(ii) = ca(n_A_sage(kk),n_A_nage(kk));
+	      //    +group if n_A_nage(kk) < nage
+	      //
+	      //  if(n_A_nage(kk) < nage){
+	      //    A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
+	      //  }
+	    }else{
+	      for(h = 1; h <= nsex; h++){
+	        ig = pntr_ags(f,g,h);
+	        va = mfexp(log_sel(k)(ig)(i));
+	        za = Z(ig)(i);
+	        sa = S(ig)(i);
+	        na = N(ig)(i);
+	        if(ft(ig)(k)(i) == 0){
+	          fa = va;
+	        }else{
+	          fa = ft(ig)(k)(i) * va;
+	        }
+	        ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
+	        //  A_hat(kk)(ii) += ca(n_A_sage(kk),n_A_nage(kk));
+	        //    +group if n_A_nage(kk) < nage
+	        //  if(n_A_nage(kk) < nage){
+	        //    A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
+	        //  }
+	      }
+	    }
+	    // This is the age-composition
+	    if(n_ageFlag(kk)){
+	      A_hat(kk)(ii) = ca(n_A_sage(kk), n_A_nage(kk));
+	      if(n_A_nage(kk) < nage){
+	        A_hat(kk)(ii)(n_A_nage(kk)) += sum( ca(n_A_nage(kk)+1,nage) );
+	      }
+	    }else{
+	      /*
+	        This the catch-at-length composition.
+	        Pseudocode:
+	        -make an ALK
+	        -Ahat = ca * ALK
+	      */
+	      dvar_vector mu = d3_len_age(ig)(i);
+	      dvar_vector sig = 0.1 * mu;
+	      dvector x(n_A_sage(kk), n_A_nage(kk));
+	      x.fill_seqadd(n_A_sage(kk), 1);
+	      dvar_matrix alk = ALK(mu,sig,x);
+	      A_hat(kk)(ii) = ca * alk;
+	    }
+	    A_hat(kk)(ii) /= sum( A_hat(kk)(ii));
+	  }
+	}
+	if(verbose)LOG<<"**** Ok after calcComposition ****\n";
 
-  	/**
-  	Purpose:  This function computes the mle for survey q, calculates the survey
-  	          residuals (epsilon).
-  	Author: Steven Martell
+	/*
+	  Purpose: This function calculates the total catch.
+	  Dependencies: Must call calcCatchAtAge function first.
+	  NOTES:
+	  TODO list:
+	    [ ] get rid of the obs_ct, ct, eta array structures, inefficient, better to use
+	        a matrix, then cbind the predicted catch and residuals for report. (ie. an R
+	        data.frame structure and use melt to ggplot for efficient plots.)
+	*/
+FUNCTION calcTotalCatch
+	int ii, l, ig;
+	double d_ct;
+	ct.initialize();
+	eta.initialize();
+	dvar_vector fa(sage,nage);
+	dvar_vector ca(sage,nage);
+	dvar_vector sa(sage,nage);
+	dvar_vector za(sage,nage);
+	for(ii=1;ii<=nCtNobs;ii++){
+	  i = dCatchData(ii,1);
+	  k = dCatchData(ii,2);
+	  f = dCatchData(ii,3);
+	  g = dCatchData(ii,4);
+	  h = dCatchData(ii,5);
+	  l = dCatchData(ii,6);
+	  d_ct = dCatchData(ii,7);
+	  // | trap for retro year
+	  if(i<syr)
+	    continue;
+	  if(i>nyr)
+	    continue;
+	  switch(l){
+	    case 1: // catch in weight
+	      if(h){
+	        ig = pntr_ags(f,g,h);
+	        fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
+	        za = Z(ig)(i);
+	        sa = S(ig)(i);
+	        ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
+	        ct(ii) = ca * d3_wt_avg(ig)(i);
+	      }else{
+	        for(h=1;h<=nsex;h++){
+	          ig = pntr_ags(f,g,h);
+	          fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
+	          za = Z(ig)(i);
+	          sa = S(ig)(i);
+	          ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
+	          ct(ii) += ca * d3_wt_avg(ig)(i);
+	        }
+	      }
+	      break;
+	    case 2: // catch in numbers
+	      if(h){
+	        ig = pntr_ags(f,g,h);
+	        fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
+	        za = Z(ig)(i);
+	        sa = S(ig)(i);
+	        ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
+	        ct(ii) = sum( ca );
+	      }else{
+	        for(h=1;h<=nsex;h++){
+	          ig = pntr_ags(f,g,h);
+	          fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
+	          za = Z(ig)(i);
+	          sa = S(ig)(i);
+	          ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
+	          ct(ii) += sum( ca );
+	        }
+	      }
+	      break;
+	    case 3: // roe fisheries, special case
+	      if(h){
+	        ig = pntr_ags(f,g,h);
+	        dvariable ssb = N(ig)(i) * d3_wt_mat(ig)(i);
+	        ct(ii) = (1.-exp(-ft(ig)(k)(i))) * ssb;
+	      }else{
+	        for(h=1;h<=nsex;h++){
+	          ig = pntr_ags(f,g,h);
+	          dvariable ssb = N(ig)(i) * d3_wt_mat(ig)(i);
+	          ct(ii) += (1.-exp(-ft(ig)(k)(i))) * ssb;
+	        }
+	      }
+	      break;
+	  } // end of switch
+	  // | catch residual
+	  eta(ii) = log(d_ct+TINY) - log(ct(ii)+TINY);
+	}
+	if(verbose){
+	  LOG<<"**** Ok after calcTotalCatch ****\n";
+	}
 
-  	Arguments:
-  		None
-
-  	NOTES:
-  		- Oct 31, 2010, added retrospective counter.
-  		- Nov 22, 2010, adding multiple surveys.
-  		Still need to check with retrospective option
-  		- Nov 30, 2010, adjust the suvery biomass by the fraction of Z that has occurred
-  		when the survey was conducted. For herring spawning biomass this would be
-  		after the fishery has taken place.
-  		- Dec 6, 2010, modified predicted survey biomass to accomodate empirical
-  		weight-at-age data (d3_wt_avg).
-  		- May 11, 2011.  Vivian Haist pointed out an error in survey biomass comparison.
-  		The spawning biomass was not properly calculated in this routine. I.e. its
-  		different than the spawning biomass in the stock-recruitment routine. (Based on
-  		fecundity which changes with time when given empirical weight-at-age data.)
-  		- Jan 6, 2012.  CHANGED corrected spawn survey observations to include a roe
-  		fishery that would remove potential spawn that would not be surveyed.
-  		- d3_survey_data: (iyr index(it) gear area group sex wt timing)
-  		- for MLE of survey q, using weighted mean of zt to calculate q.
-
-  	TODO list:
-  	    [?] - add capability to accomodate priors for survey q\'s.
-  	    [ ] - verify q_prior=2 option for random walk in q.
-  	    [ ] - For sel_type==3, may need to reduce abundance by F on spawning biomass (herring)
-
-  	TODO LIST:
-	  [ ] - add capability to accompodate priors for survey catchabiliyt coefficients.
-
-  */
+	/*
+	  Purpose: This function computes the mle for survey q, calculates the survey
+	    residuals (epsilon).
+	  NOTES:
+	    - Oct 31, 2010, added retrospective counter.
+	    - Nov 22, 2010, adding multiple surveys.
+	    Still need to check with retrospective option
+	    - Nov 30, 2010, adjust the suvery biomass by the fraction of Z that has occurred
+	    when the survey was conducted. For herring spawning biomass this would be
+	    after the fishery has taken place.
+	    - Dec 6, 2010, modified predicted survey biomass to accomodate empirical
+	    weight-at-age data (d3_wt_avg).
+	    - May 11, 2011.  Vivian Haist pointed out an error in survey biomass comparison.
+	    The spawning biomass was not properly calculated in this routine. I.e. its
+	    different than the spawning biomass in the stock-recruitment routine. (Based on
+	    fecundity which changes with time when given empirical weight-at-age data.)
+	    - Jan 6, 2012.  CHANGED corrected spawn survey observations to include a roe
+	    fishery that would remove potential spawn that would not be surveyed.
+	    - d3_survey_data: (iyr index(it) gear area group sex wt timing)
+	    - for MLE of survey q, using weighted mean of zt to calculate q.
+	  TODO LIST:
+	    [?] - add capability to accomodate priors for survey q\'s.
+	    [ ] - verify q_prior=2 option for random walk in q.
+	    [ ] - For sel_type==3, may need to reduce abundance by F on spawning biomass (herring)
+	    [ ] - add capability to accompodate priors for survey catchabiliyt coefficients.
+	*/
 FUNCTION calcSurveyObservations
-  {
-
-	int ii,kk,ig,nz;
+	int ii, kk, ig, nz;
 	double di;
 	dvariable ftmp;
 	dvar_vector Na(sage,nage);
@@ -2429,370 +2360,273 @@ FUNCTION calcSurveyObservations
 	dvar_vector sa(sage,nage);
 	epsilon.initialize();
 	it_hat.initialize();
-
-	for(kk=1;kk<=nItNobs;kk++)
-	{
-		// | Vulnerable number-at-age to survey.
-		dvar_matrix V(1,n_it_nobs(kk),sage,nage);
-		V.initialize();
-		nz = 0;
-		int iz=1;  // index for first year of data for prospective analysis.
-		for(ii=1;ii<=n_it_nobs(kk);ii++)
-		{
-			i    = d3_survey_data(kk)(ii)(1);
-			k    = d3_survey_data(kk)(ii)(3);
-			f    = d3_survey_data(kk)(ii)(4);
-			g    = d3_survey_data(kk)(ii)(5);
-			h    = d3_survey_data(kk)(ii)(6);
-			di   = d3_survey_data(kk)(ii)(8);
-
-			// | trap for retrospective nyr change
-			if( i < syr )
-			{
-				iz ++;
-				nz ++;
-				continue;
-			}
-
-			if( i > nyr ) continue;
-
-			nz ++;  // counter for number of observations.
-
-			// h ==0?h=1:NULL;
-			Na.initialize();
-			for(h=1;h<=nsex;h++)
-			{
-				ig  = pntr_ags(f,g,h);
-				va  = mfexp( log_sel(k)(ig)(i) );
-				sa  = mfexp( -Z(ig)(i)*di );
-				Na  = elem_prod(N(ig)(i),sa);
-				switch(n_survey_type(kk))
-				{
-					case 1:
-						V(ii) += elem_prod(Na,va);
-					break;
-					case 2:
-						V(ii) += elem_prod(elem_prod(Na,va),d3_wt_avg(ig)(i));
-					break;
-					case 3:
-						V(ii) += elem_prod(Na,d3_wt_mat(ig)(i));
-					break;
-				}
-			}
-
-		} // end of ii loop
-		dvector     it = trans(d3_survey_data(kk))(2)(iz,nz);
-		dvector     wt = trans(d3_survey_data(kk))(7)(iz,nz);
-		            wt = wt/sum(wt);
-		dvar_vector t1 = rowsum(V);
-		dvar_vector zt = log(it) - log(t1(iz,nz));
-		dvariable zbar = sum(elem_prod(zt,wt));
-				 q(kk) = mfexp(zbar);
-
-
-		// | survey residuals
-		epsilon(kk).sub(iz,nz) = zt - zbar;
-		 it_hat(kk).sub(iz,nz) = q(kk) * t1(iz,nz);
-
-		// | SPECIAL CASE: penalized random walk in q.
-		if( q_prior(kk)==2 )
-		{
-			epsilon(kk).initialize();
-			dvar_vector fd_zt     = first_difference(zt);
-			dvariable  zw_bar     = sum(elem_prod(fd_zt,wt(iz,nz-1)));
-			epsilon(kk).sub(iz,nz-1) = fd_zt - zw_bar;
-			qt(kk)(iz) = exp(zt(iz));
-			for(ii=iz+1;ii<=nz;ii++)
-			{
-				qt(kk)(ii) = qt(kk)(ii-1) * exp(fd_zt(ii-1));
-			}
-			it_hat(kk).sub(iz,nz) = elem_prod(qt(kk)(iz,nz),t1(iz,nz));
-		}
+	for(kk=1;kk<=nItNobs;kk++){
+	  // | Vulnerable number-at-age to survey.
+	  dvar_matrix V(1,n_it_nobs(kk),sage,nage);
+	  V.initialize();
+	  nz = 0;
+	  int iz = 1;  // index for first year of data for prospective analysis.
+	  for(ii=1;ii<=n_it_nobs(kk);ii++){
+	    i = d3_survey_data(kk)(ii)(1);
+	    k = d3_survey_data(kk)(ii)(3);
+	    f = d3_survey_data(kk)(ii)(4);
+	    g = d3_survey_data(kk)(ii)(5);
+	    h = d3_survey_data(kk)(ii)(6);
+	    di = d3_survey_data(kk)(ii)(8);
+	    // | trap for retrospective nyr change
+	    if(i < syr){
+	      iz ++;
+	      nz ++;
+	      continue;
+	    }
+	    if(i > nyr)
+	      continue;
+	    nz ++; // counter for number of observations.
+	    // h ==0?h=1:NULL;
+	    Na.initialize();
+	    for(h=1;h<=nsex;h++){
+	      ig = pntr_ags(f,g,h);
+	      va = mfexp(log_sel(k)(ig)(i));
+	      sa = mfexp(-Z(ig)(i)*di);
+	      Na = elem_prod(N(ig)(i),sa);
+	      switch(n_survey_type(kk)){
+	        case 1:
+	          V(ii) += elem_prod(Na,va);
+	          break;
+	        case 2:
+	          V(ii) += elem_prod(elem_prod(Na,va),d3_wt_avg(ig)(i));
+	          break;
+	        case 3:
+	          V(ii) += elem_prod(Na,d3_wt_mat(ig)(i));
+	          break;
+	      }
+	    }
+	  }
+	  dvector it = trans(d3_survey_data(kk))(2)(iz,nz);
+	  dvector wt = trans(d3_survey_data(kk))(7)(iz,nz);
+	  wt = wt / sum(wt);
+	  dvar_vector t1 = rowsum(V);
+	  dvar_vector zt = log(it) - log(t1(iz,nz));
+	  dvariable zbar = sum(elem_prod(zt,wt));
+	  q(kk) = mfexp(zbar);
+	  // | survey residuals
+	  epsilon(kk).sub(iz,nz) = zt - zbar;
+	  it_hat(kk).sub(iz,nz) = q(kk) * t1(iz,nz);
+	  // | SPECIAL CASE: penalized random walk in q.
+	  if(q_prior(kk) == 2){
+	    epsilon(kk).initialize();
+	    dvar_vector fd_zt = first_difference(zt);
+	    dvariable zw_bar = sum(elem_prod(fd_zt,wt(iz,nz-1)));
+	    epsilon(kk).sub(iz,nz-1) = fd_zt - zw_bar;
+	    qt(kk)(iz) = exp(zt(iz));
+	    for(ii=iz+1;ii<=nz;ii++){
+	      qt(kk)(ii) = qt(kk)(ii-1) * exp(fd_zt(ii-1));
+	    }
+	    it_hat(kk).sub(iz,nz) = elem_prod(qt(kk)(iz,nz),t1(iz,nz));
+	  }
 	}
 
 	if(verbose){
-    LOG<<"**** Ok after calcSurveyObservations ****\n";
-  }
+	  LOG<<"**** Ok after calcSurveyObservations ****\n";
+	}
 
-  }
-
-
-  	/**
-	Purpose:
-		This function is used to derive the underlying stock-recruitment
-		relationship that is ultimately used in determining MSY-based reference
-		points.  The objective of this function is to determine the appropriate
-		Ro, Bo and steepness values of either the Beverton-Holt or Ricker  Stock-
-		Recruitment Model:
-
-		Beverton-Holt Model
-		\f$ Rt=k*Ro*St/(Bo+(k-1)*St)*exp(delta-0.5*tau*tau) \f$
-
-		Ricker Model
-		\f$ Rt=so*St*exp(-beta*St)*exp(delta-0.5*tau*tau) \f$
-
-		The definition of a stock is based on group only. At this point, spawning biomass
-		from all areas for a given group is the assumed stock, and the resulting
-		recruitment is compared with the estimated recruits|group for all areas.
-
-  	Author: Steven Martell
-
-  	Arguments:
-  		None
-
-  	NOTES:
-		Pseudocode:
-		-1) Get average natural mortality rate at age.
-		-2) Calculate survivorship to time of spawning.
-		-3) Calculate unfished spawning biomass per recruit.
-		-4) Compute spawning biomass vector & substract roe fishery
-		-5) Project spawning biomass to nyr+1 under natural mortality.
-		-6) Calculate stock recruitment parameters (so, beta);
-		-7) Calculate predicted recruitment
-		-8) Compute residuals from estimated recruitments.
-
-
-  	TODO list:
-	  [?] - Change step 3 to be a weighted average of spawning biomass per recruit by area.
-	  [?] - Increase dimensionality of ro, sbo, so, beta, and steepness to ngroup.
-	  [?] - Add autocorrelation in recruitment residuals with parameter \f$ \gamma_r \f$.
-
-  	*/
+	/*
+	  Purpose:
+	    This function is used to derive the underlying stock-recruitment
+	    relationship that is ultimately used in determining MSY-based reference
+	    points. The objective of this function is to determine the appropriate
+	    Ro, Bo and steepness values of either the Beverton-Holt or Ricker  Stock-
+	  Recruitment Model:
+	    Beverton-Holt Model
+	    \f$ Rt=k*Ro*St/(Bo+(k-1)*St)*exp(delta-0.5*tau*tau) \f$
+	    Ricker Model
+	    \f$ Rt=so*St*exp(-beta*St)*exp(delta-0.5*tau*tau) \f$
+	    The definition of a stock is based on group only. At this point, spawning biomass
+	    from all areas for a given group is the assumed stock, and the resulting
+	     recruitment is compared with the estimated recruits|group for all areas.
+	  NOTES:
+	    Pseudocode:
+	    -1) Get average natural mortality rate at age.
+	    -2) Calculate survivorship to time of spawning.
+	    -3) Calculate unfished spawning biomass per recruit.
+	    -4) Compute spawning biomass vector & substract roe fishery
+	    -5) Project spawning biomass to nyr+1 under natural mortality.
+	    -6) Calculate stock recruitment parameters (so, beta);
+	    -7) Calculate predicted recruitment
+	    -8) Compute residuals from estimated recruitments.
+	  TODO list:
+	    [?] - Change step 3 to be a weighted average of spawning biomass per recruit by area.
+	    [?] - Increase dimensionality of ro, sbo, so, beta, and steepness to ngroup.
+	    [?] - Add autocorrelation in recruitment residuals with parameter \f$ \gamma_r \f$.
+	*/
 FUNCTION void calcStockRecruitment()
-  {
-
-  	int ig,ih;
-  	rt.initialize();
-  	sbt.initialize();
-  	delta.initialize();
-
+	int ig, ih;
+	rt.initialize();
+	sbt.initialize();
+	delta.initialize();
 	dvariable phib;//,so,beta;
-	dvector         fa(sage,nage); //fecundity here
-	dvar_vector   stmp(sage,nage);
-	dvar_vector     ma(sage,nage);
+	dvector fa(sage,nage); //fecundity here
+	dvar_vector stmp(sage,nage);
+	dvar_vector ma(sage,nage);
 	dvar_vector tmp_rt(syr+sage,nyr);
-	dvar_vector     lx(sage,nage);
-	dvar_vector     lw(sage,nage);
-
-
-	for(g=1;g<=ngroup;g++)
-	{
-		lx.initialize();
-		lw.initialize();
-		lx(sage) = 1.0;
-		lw(sage) = 1.0;
-		phib = 0;
-		for(f=1;f<=narea;f++)
-		{
-			for(h=1;h<=nsex;h++)
-			{
-				ig = pntr_ags(f,g,h);
-
-				// | Step 1. average natural mortality rate at age.
-				// | Step 2. calculate survivorship
-				for(j=sage;j<=nage;j++)
-				{
-					ma(j) = mean(trans(M(ig))(j));
-					fa(j) = mean( trans(d3_wt_mat(ig))(j) );
-					if(j > sage)
-					{
-						lx(j) = lx(j-1) * mfexp(-ma(j-1));
-					}
-					lw(j) = lx(j) * mfexp(-ma(j)*d_iscamCntrl(13));
-				}
-				lx(nage) /= 1.0 - mfexp(-ma(nage));
-				lw(nage) /= 1.0 - mfexp(-ma(nage));
-
-				// | Step 3. calculate average spawing biomass per recruit.
-				phib += 1./(narea*nsex) * lw*fa;
-
-				// | Step 4. compute spawning biomass at time of spawning.
-				for(i=syr;i<=nyr;i++)
-				{
-					stmp      = mfexp(-Z(ig)(i)*d_iscamCntrl(13));
-					sbt(g,i) += elem_prod(N(ig)(i),d3_wt_mat(ig)(i)) * stmp;
-				}
-
-				// | Step 5. spawning biomass projection under natural mortality only.
-				stmp          = mfexp(-M(ig)(nyr)*d_iscamCntrl(13));
-				sbt(g,nyr+1) += elem_prod(N(ig)(nyr+1),d3_wt_mat(ig)(i)) * stmp;
-			}
-
-			// | Estimated recruits
-			ih     = pntr_ag(f,g);
-			rt(g) += mfexp(log_rt(ih)(syr+sage,nyr));
-		}
-
-		// | Step 6. calculate stock recruitment parameters (so, beta, sbo);
-		so(g)  = kappa(g)/phib;
-		sbo(g) = ro(g) * phib;
-
-		// | Step 7. calculate predicted recruitment.
-		dvar_vector tmp_st = sbt(g)(syr,nyr-sage).shift(syr+sage);
-		switch(int(d_iscamCntrl(2)))
-		{
-			case 1:  // | Beverton Holt model
-				beta(g)   = (kappa(g)-1.)/sbo(g);
-				tmp_rt    = elem_div(so(g)*tmp_st,1.+beta(g)*tmp_st);
-			break;
-
-			case 2:  // | Ricker model
-				beta(g)   = log(kappa(g))/sbo(g);
-				tmp_rt    = elem_prod(so(g)*tmp_st,exp(-beta(g)*tmp_st));
-			break;
-		}
-
-		// | Step 8. // residuals in stock-recruitment curve with gamma_r = 0
-		delta(g) = log(rt(g))-log(tmp_rt)+0.5*tau(g)*tau(g);
-
-		// Autocorrelation in recruitment residuals.
-		// if gamma_r > 0 then
-		if( active(gamma_r) )
-		{
-			int byr = syr+sage+1;
-			delta(g)(byr,nyr) 	= log(rt(g)(byr,nyr))
-									- (1.0-gamma_r)*log(tmp_rt(byr,nyr))
-									- gamma_r*log(++rt(g)(byr-1,nyr-1))
-									+ 0.5*tau(g)*tau(g);
-		}
-
-
+	dvar_vector lx(sage,nage);
+	dvar_vector lw(sage,nage);
+	for(g=1;g<=ngroup;g++){
+	  lx.initialize();
+	  lw.initialize();
+	  lx(sage) = 1.0;
+	  lw(sage) = 1.0;
+	  phib = 0;
+	  for(f=1;f<=narea;f++){
+	    for(h=1;h<=nsex;h++){
+	      ig = pntr_ags(f,g,h);
+	      // | Step 1. average natural mortality rate at age.
+	      // | Step 2. calculate survivorship
+	      for(j=sage;j<=nage;j++){
+	        ma(j) = mean(trans(M(ig))(j));
+	        fa(j) = mean( trans(d3_wt_mat(ig))(j) );
+	        if(j > sage){
+	          lx(j) = lx(j-1) * mfexp(-ma(j-1));
+	        }
+	        lw(j) = lx(j) * mfexp(-ma(j)*d_iscamCntrl(13));
+	      }
+	      lx(nage) /= 1.0 - mfexp(-ma(nage));
+	      lw(nage) /= 1.0 - mfexp(-ma(nage));
+	      // | Step 3. calculate average spawing biomass per recruit.
+	      phib += 1./(narea*nsex) * lw*fa;
+	      // | Step 4. compute spawning biomass at time of spawning.
+	      for(i=syr;i<=nyr;i++){
+	        stmp = mfexp(-Z(ig)(i)*d_iscamCntrl(13));
+	        sbt(g,i) += elem_prod(N(ig)(i),d3_wt_mat(ig)(i)) * stmp;
+	      }
+	      // | Step 5. spawning biomass projection under natural mortality only.
+	      stmp = mfexp(-M(ig)(nyr)*d_iscamCntrl(13));
+	      sbt(g,nyr+1) += elem_prod(N(ig)(nyr+1),d3_wt_mat(ig)(i)) * stmp;
+	    }
+	    // | Estimated recruits
+	    ih = pntr_ag(f,g);
+	    rt(g) += mfexp(log_rt(ih)(syr+sage,nyr));
+	  }
+	  // | Step 6. calculate stock recruitment parameters (so, beta, sbo);
+	  so(g) = kappa(g)/phib;
+	  sbo(g) = ro(g) * phib;
+	  // | Step 7. calculate predicted recruitment.
+	  dvar_vector tmp_st = sbt(g)(syr,nyr-sage).shift(syr+sage);
+	  switch(int(d_iscamCntrl(2))){
+	    case 1: // | Beverton Holt model
+	      beta(g) = (kappa(g)-1.)/sbo(g);
+	      tmp_rt = elem_div(so(g)*tmp_st,1.+beta(g)*tmp_st);
+	      break;
+	    case 2: // | Ricker model
+	      beta(g) = log(kappa(g))/sbo(g);
+	      tmp_rt = elem_prod(so(g)*tmp_st,exp(-beta(g)*tmp_st));
+	      break;
+	  }
+	  // | Step 8. // residuals in stock-recruitment curve with gamma_r = 0
+	  delta(g) = log(rt(g))-log(tmp_rt)+0.5*tau(g)*tau(g);
+	  // Autocorrelation in recruitment residuals.
+	  // if gamma_r > 0 then
+	  if(active(gamma_r)){
+	    int byr = syr + sage + 1;
+	    delta(g)(byr,nyr) = log(rt(g)(byr,nyr))
+	                          - (1.0-gamma_r) * log(tmp_rt(byr,nyr))
+	                          - gamma_r * log(++rt(g)(byr-1,nyr-1))
+	                          + 0.5 * tau(g) * tau(g);
+	  }
 	}
-  if(verbose){
-    LOG<<"**** Ok after calcStockRecruitment ****\n";
-  }
-
-  }
-
-
-
-  //RF added for comparison to Pacific Cod delay difference model	      //START_RF_ADD
-FUNCTION calcAnnualMeanWeight
-    {
-    	     	int ii,kk,ig,nz;
-		double di;
-		dvar_vector wNa(sage,nage);
-		dvar_vector wva(sage,nage);
-		dvar_vector wsa(sage,nage);
-		wNa.initialize();
-		wva.initialize();
-		wsa.initialize();
-
-		for(kk=1;kk<=nMeanWt;kk++)   //loop through series with empirical annual mean weight data
-		{
-
-			dvar_matrix Vn(1,nMeanWtNobs(kk),sage,nage);	      // | Vulnerable number-at-age to gear
-			dvar_matrix Vb(1,nMeanWtNobs(kk),sage,nage);	      // | Vulnerable biomass-at-age to gear
-			Vn.initialize();
-			Vb.initialize();
-			nz = 0;
-			int iz=1;  // index for first year of data for prospective analysis.
-
-			for(ii=1;ii<=nMeanWtNobs(kk);ii++)	    //Loop through years
-			{
-				i    = d3_mean_wt_data(kk)(ii)(1);  //year
-				k    =d3_mean_wt_data(kk)(ii)(3);  //gear
-				f    = d3_mean_wt_data(kk)(ii)(4);  //area
-				g    = d3_mean_wt_data(kk)(ii)(5);  //group
-				h    = d3_mean_wt_data(kk)(ii)(6);  //sex
-				di   = d3_mean_wt_data(kk)(ii)(7); //timing
-
-				// | trap for retrospective nyr change
-				if( i < syr )
-				{
-					iz ++;
-					nz ++;
-					continue;
-				}
-
-				if( i > nyr ) continue;
-
-				nz ++;  // counter for number of observations.
-
-				// h ==0?h=1:NULL;
-
-				for(h=1;h<=nsex;h++)
-				{
-					ig  = pntr_ags(f,g,h);
-					wva  = mfexp( log_sel(k)(ig)(i) );
-					wsa  = mfexp( -Z(ig)(i)*di );   //accounts for survey timing
-					wNa  = elem_prod(N(ig)(i),wsa);
-					Vn(ii) += elem_prod(wNa,wva);  //adds sexes
-					Vb(ii) += elem_prod(elem_prod(wNa,wva),d3_wt_avg(ig)(i));
-				}
-		 annual_mean_weight(kk)(ii) = sum(Vb(ii))/sum(Vn(ii));
-		obs_annual_mean_weight(kk)(ii)	= d3_mean_wt_data(kk)(ii)(2);	  //fill a matrix with observed annual mean weights - makes objective function calcs easier
-		} // end of ii loop
-	} // end of kk loop
 	if(verbose){
-    LOG<<"**** Ok after calcAnnualMeanWeight ****\n";
-  }
-  }
+	  LOG<<"**** Ok after calcStockRecruitment ****\n";
+	}
 
+FUNCTION calcAnnualMeanWeight
+	int ii, kk, ig, nz;
+	double di;
+	dvar_vector wNa(sage,nage);
+	dvar_vector wva(sage,nage);
+	dvar_vector wsa(sage,nage);
+	wNa.initialize();
+	wva.initialize();
+	wsa.initialize();
+	for(kk=1;kk<=nMeanWt;kk++){ //loop through series with empirical annual mean weight data
+	  dvar_matrix Vn(1,nMeanWtNobs(kk),sage,nage); // | Vulnerable number-at-age to gear
+	  dvar_matrix Vb(1,nMeanWtNobs(kk),sage,nage); // | Vulnerable biomass-at-age to gear
+	  Vn.initialize();
+	  Vb.initialize();
+	  nz = 0;
+	  int iz = 1; // index for first year of data for prospective analysis.
+	  for(ii=1;ii<=nMeanWtNobs(kk);ii++){ //Loop through years
+	    i = d3_mean_wt_data(kk)(ii)(1); //year
+	    k = d3_mean_wt_data(kk)(ii)(3); //gear
+	    f = d3_mean_wt_data(kk)(ii)(4); //area
+	    g = d3_mean_wt_data(kk)(ii)(5); //group
+	    h = d3_mean_wt_data(kk)(ii)(6); //sex
+	    di = d3_mean_wt_data(kk)(ii)(7); //timing
+	    // | trap for retrospective nyr change
+	    if(i < syr){
+	      iz++;
+	      nz++;
+	      continue;
+	    }
+	    if(i > nyr)
+	      continue;
+	    nz++; // counter for number of observations.
+	    for(h=1;h<=nsex;h++){
+	      ig = pntr_ags(f,g,h);
+	      wva = mfexp(log_sel(k)(ig)(i));
+	      wsa = mfexp( -Z(ig)(i)*di ); //accounts for survey timing
+	      wNa = elem_prod(N(ig)(i),wsa);
+	      Vn(ii) += elem_prod(wNa,wva); //adds sexes
+	      Vb(ii) += elem_prod(elem_prod(wNa,wva),d3_wt_avg(ig)(i));
+	    }
+	    annual_mean_weight(kk)(ii) = sum(Vb(ii))/sum(Vn(ii));
+	    obs_annual_mean_weight(kk)(ii)	= d3_mean_wt_data(kk)(ii)(2);	  //fill a matrix with observed annual mean weights - makes objective function calcs easier
+	  }
+	}
+	if(verbose){
+	  LOG<<"**** Ok after calcAnnualMeanWeight ****\n";
+	}
+
+	/*
+	  Purpose: This function calculates fishing mortality, total mortality and annual
+	           surivival rates S=exp(-Z) for each year  and area*sex*group.  Z also is updated with time-varying
+	           natural mortality rates if specificed by user.
+	  NOTES:
+	  TODO list:
+	*/
 FUNCTION calcTotalMortality_deldiff
-  {
-
-  	/**
-  	Purpose: This function calculates fishing mortality, total mortality and annual
-  	         surivival rates S=exp(-Z) for each year  and area*sex*group.  Z also is updated with time-varying
-  	         natural mortality rates if specificed by user.
-  	Author: Catarina Wor - Adapted from Steven Martell and Robyn Forrest work
-
-  	Arguments:
-  		None
-
-  	NOTES:
-
-  	TODO list:
-
-  	*/
-
-	int ig,ii,i,k;
+	int ig, ii, i, k;
 	int ft_counter = 0;
 	dvariable ftmp;
-
-
 	// |---------------------------------------------------------------------------------|
 	// | FISHING MORTALITY
 	// |---------------------------------------------------------------------------------|
-
 	F_dd.initialize();
-
-    for(ii=1;ii<=nCtNobs;ii++)
-	{
-		i  = dCatchData(ii)(1);	//year
-		k  = dCatchData(ii)(2);  //gear
-		f  = dCatchData(ii)(3);  //area
-		g  = dCatchData(ii)(4);  //group
-		h  = dCatchData(ii)(5);  //sex
-
-		if( i < syr ) continue;
-		if( i > nyr ) continue;
-
-		ft_counter ++;
-
-		if( h )
-		{
-			ig = pntr_ags(f,g,h);
-			ftmp = mfexp(log_ft_pars(ft_counter));
-			ft(ig)(k,i) = ftmp;
-			F_dd(ig)(i) += ftmp;
-		}
-		else if( !h ) // h=0 case for asexual catch	       RFUpdate: are these loops backwards?
-		{
-			//sum over sex
-			for(h=1;h<=nsex;h++)
-			{
-				ig = pntr_ags(f,g,h);
-				ftmp = mfexp(log_ft_pars(ft_counter));
-				ft(ig)(k,i) = ftmp;
-				F_dd(ig)(i) += ftmp;
-
-			}
-		}
+	for(ii=1;ii<=nCtNobs;ii++){
+	  i = dCatchData(ii)(1); //year
+	  k = dCatchData(ii)(2); //gear
+	  f = dCatchData(ii)(3); //area
+	  g = dCatchData(ii)(4); //group
+	  h = dCatchData(ii)(5); //sex
+	  if(i < syr)
+	    continue;
+	  if(i > nyr)
+	    continue;
+	  ft_counter++;
+	  if(h){
+	    ig = pntr_ags(f,g,h);
+	    ftmp = mfexp(log_ft_pars(ft_counter));
+	    ft(ig)(k,i) = ftmp;
+	    F_dd(ig)(i) += ftmp;
+	  }else{
+	    //sum over sex
+	    for(h=1;h<=nsex;h++){
+	      ig = pntr_ags(f,g,h);
+	      ftmp = mfexp(log_ft_pars(ft_counter));
+	      ft(ig)(k,i) = ftmp;
+	      F_dd(ig)(i) += ftmp;
+	    }
+	  }
 	}
-
-
 	// |---------------------------------------------------------------------------------|
 	// | NATURAL MORTALITY
 	// |---------------------------------------------------------------------------------|
@@ -2800,246 +2634,169 @@ FUNCTION calcTotalMortality_deldiff
 	M_dd.initialize();
 	log_m_devs.initialize();
 	Z_dd.initialize();
-
-	int gg,hh;
-
-	for(int igg=1;igg<=n_ags;igg++)
-	{
-		gg = n_group(igg);
-		hh = n_sex(igg);
-		M_dd(igg)(syr) = m( pntr_gs(gg,hh) );
-		Z_dd(igg)(syr) = M_dd(igg)(syr) + F_dd(igg)(syr);
-		surv(igg,syr) = mfexp(-Z_dd(igg,syr));
-
-
-		if( active( log_m_nodes) )
-		{
-			int nodes = size_count(log_m_nodes);
-			dvector im(1,nodes);
-			dvector fm(syr+1,nyr);
-			im.fill_seqadd(0,1./(nodes-1));
-			fm.fill_seqadd(0,1./(nyr-syr));
-			vcubic_spline_function m_spline(im,log_m_nodes);
-			log_m_devs = m_spline( fm );
-		}
-
-
-
-		for(int iyr=syr+1; iyr<=nyr; iyr++)
-		{
-			M_dd(igg)(iyr) = M_dd(igg)(iyr-1); //* mfexp(log_m_devs(iyr)); RFUpdate: The delay difference model assumes constant M
-			Z_dd(igg)(iyr) = M_dd(igg)(iyr) + F_dd(igg)(iyr);
-			surv(igg,iyr) = mfexp(-Z_dd(igg,iyr));
-
-		}
-
-
-		// |---------------------------------------------------------------------------------|
-		// | TOTAL MORTALITY
-		// |---------------------------------------------------------------------------------|
-		// |
-
-		// TODO fix for reference point calculations
-		// m_bar = mean( M_tot.sub(pf_cntrl(1),pf_cntrl(2)) );
-
+	int gg, hh;
+	for(int igg=1;igg<=n_ags;igg++){
+	  gg = n_group(igg);
+	  hh = n_sex(igg);
+	  M_dd(igg)(syr) = m( pntr_gs(gg,hh) );
+	  Z_dd(igg)(syr) = M_dd(igg)(syr) + F_dd(igg)(syr);
+	  surv(igg,syr) = mfexp(-Z_dd(igg,syr));
+	  if(active( log_m_nodes)){
+	    int nodes = size_count(log_m_nodes);
+	    dvector im(1,nodes);
+	    dvector fm(syr+1,nyr);
+	    im.fill_seqadd(0,1./(nodes-1));
+	    fm.fill_seqadd(0,1./(nyr-syr));
+	    vcubic_spline_function m_spline(im,log_m_nodes);
+	    log_m_devs = m_spline( fm );
+	  }
+	  for(int iyr=syr+1; iyr<=nyr; iyr++){
+	    M_dd(igg)(iyr) = M_dd(igg)(iyr-1); //* mfexp(log_m_devs(iyr)); RFUpdate: The delay difference model assumes constant M
+	    Z_dd(igg)(iyr) = M_dd(igg)(iyr) + F_dd(igg)(iyr);
+	    surv(igg,iyr) = mfexp(-Z_dd(igg,iyr));
+	  }
+	  // |---------------------------------------------------------------------------------|
+	  // | TOTAL MORTALITY
+	  // |---------------------------------------------------------------------------------|
+	  // |
+	  // TODO fix for reference point calculations
+	  // m_bar = mean( M_tot.sub(pf_cntrl(1),pf_cntrl(2)) );
 	}
 	if(verbose){
-    LOG<<"**** OK after  delay diff calcTotalMortality ****\n";
-  }
-
-  /*
-  LOG<<"M_dd is "<<M_dd<<'\n';
-  LOG<<"F_dd is "<<F_dd<<'\n';
-  LOG<<"Z_dd is "<<Z_dd<<'\n';
-  LOG<<"surv is "<<surv<<'\n';
-  */
-  //LOG<<"**** OK after  delay diff calcTotalMortality"<<'\n';
-  //exit(1);
-  }
-
-FUNCTION calcNumbersBiomass_deldiff
-    {
-    	/**
-  	Purpose: This function calculates  total biomass and total numbers according to the delay differnce
-  	model equations from Hilborn and Walters. Quantities are calculated for each year and area*sex*group
-  	Author: Catarina Wor - Adapted from Robyn Forrest work.
-
-  	Arguments:
-  		None
-
-  	NOTES:
-
-  	TODO list:
-
-  	*/
-
-  	int g,h, gs;
-  	//int j;
-  	numbers.initialize();
-  	biomass.initialize();
-  	sbt.initialize();      //RFUpdate added this -- was adding to previous iteration of sbt each time
-
-  	sfished.initialize();
-  	snat.initialize();
-  	wbar.initialize();
-
-  	//DD initialization
-        //Equilibrium mean weight - obtained from weq = Beq/Neq and solving for weq
-	//i.e. weq = [surv(alpha.Neq + rho.Beq + wk.R] / [surv.Neq + R]
-	// with substitutions Neq = Beq/weq and R = Neq(1 - surv)
-	//From SJDM, also used by Sinclair in 2005 p cod assessment
-
-	//take the average of natural mortality for both sexes
-	snat = mfexp(-m);
-	wbar= elem_div(elem_prod(snat,alpha_g)+elem_prod(wk,(1.-snat)),(1.-elem_prod(rho_g,snat)));
-
-	// need to change this by multiplying quantities by 0.5 instead of taking the mean
-	no.initialize();
-	bo.initialize();  //RFUpdate added this
-
-	// average sexes for unfished quantities
-	for(g=1; g<=ngroup; g++)
-	{
-		for(h=1; h<=nsex;h++)
-		{
-			gs = pntr_gs(g,h);
-			//H&W 1992 p339
-			no(g) +=  (ro(g)*1./nsex)/(1.-snat(gs));
-			bo(g) +=  (ro(g)*1./nsex)/(1.-snat(gs)) * wbar(gs);
-		}
-
-		so(g) 	  = kappa(g)*(ro(g)/bo(g));
-
-		switch(int(d_iscamCntrl(2)))
-		{
-			case 1:  // | Beverton Holt model
-				beta(g)   = (kappa(g)-1.)/bo(g);
-			break;
-
-			case 2:  // | Ricker model
-				beta(g)   = log(kappa(g))/bo(g);
-			break;
-		}
+	  LOG<<"**** OK after  delay diff calcTotalMortality ****\n";
 	}
 
 	/*
-	LOG<<"m snat wbar ro no bo"<<'\n';
-        LOG<<m<<'\n';
-	LOG<<snat<<'\n';
-	LOG<<wbar<<'\n';
-	LOG<<ro<<'\n';
-	LOG<<no<<'\n';
-        LOG<<bo<<'\n'; exit(1);
-       */
-
+	  Purpose: This function calculates  total biomass and total numbers according to the delay differnce
+	    model equations from Hilborn and Walters. Quantities are calculated for each year and area*sex*group
+	  NOTES:
+	  TODO list:
+	*/
+FUNCTION calcNumbersBiomass_deldiff
+	int g, h, gs;
+	numbers.initialize();
+	biomass.initialize();
+	sbt.initialize();
+	sfished.initialize();
+	snat.initialize();
+	wbar.initialize();
+	// DD initialization
+	// Equilibrium mean weight - obtained from weq = Beq/Neq and solving for weq
+	// i.e. weq = [surv(alpha.Neq + rho.Beq + wk.R] / [surv.Neq + R]
+	// with substitutions Neq = Beq/weq and R = Neq(1 - surv)
+	// From SJDM, also used by Sinclair in 2005 p cod assessment
+	// take the average of natural mortality for both sexes
+	snat = mfexp(-m);
+	wbar = elem_div(elem_prod(snat,alpha_g)+elem_prod(wk,(1.-snat)),(1.-elem_prod(rho_g,snat)));
+	// need to change this by multiplying quantities by 0.5 instead of taking the mean
+	no.initialize();
+	bo.initialize();
+	// average sexes for unfished quantities
+	for(g=1; g<=ngroup; g++){
+	  for(h=1; h<=nsex;h++){
+	    gs = pntr_gs(g,h);
+	    // H&W 1992 p339
+	    no(g) += (ro(g)*1./nsex)/(1.-snat(gs));
+	    bo(g) +=  (ro(g)*1./nsex)/(1.-snat(gs)) * wbar(gs);
+	  }
+	  so(g) = kappa(g)*(ro(g)/bo(g));
+	  switch(int(d_iscamCntrl(2))){
+	    case 1: // | Beverton Holt model
+	      beta(g) = (kappa(g)-1.)/bo(g);
+	      break;
+	    case 2: // | Ricker model
+	      beta(g) = log(kappa(g))/bo(g);
+	      break;
+	  }
+	}
+	/*
+	  LOG<<"m snat wbar ro no bo"<<'\n';
+	  LOG<<m<<'\n';
+	  LOG<<snat<<'\n';
+	  LOG<<wbar<<'\n';
+	  LOG<<ro<<'\n';
+	  LOG<<no<<'\n';
+	  LOG<<bo<<'\n'; exit(1);
+	*/
 	//recruitment for projection year
 	dvar_vector rnplus=mfexp(log_avgrec); //assume recruits nyr+1 average - same as for ASM
-
-	int ih,ig;
-	for(ig=1;ig<=n_ags;ig++)
-	{
-		f  = n_area(ig);
-		g  = n_group(ig);
-		h  = n_sex(ig);
-		ih = pntr_ag(f,g);
-		gs = pntr_gs(g,h);
-	        dvar_vector tmp_N(sage,nage);
-	        tmp_N.initialize();
-
-		switch(int(d_iscamCntrl(5)))
-		{
-			case 0: //Unfished and not at equilibrium - Initialise as for ASM
-			        tmp_N(sage)  = mfexp( log_avgrec(ih)+log_rec_devs(ih)(syr));
-				for(int j=sage+1;j<=nage;j++)
-				{
-					tmp_N(j)=mfexp(log_avgrec(ih)+ init_log_rec_devs(ih)(j))*mfexp(-M_dd(ig)(syr)*(j-sage)); // AUG 7 2018. do not use log_rec_init in dd model
-					//tmp_N(j)=mfexp(log_recinit(ih)+init_log_rec_devs(ih)(j))*mfexp(-M_dd(ig)(syr)*(j-sage));
-				}
-		        	tmp_N(nage)/=(1.-mfexp(-M_dd(ig)(syr)));
-		        	numbers(ig,syr) = sum(tmp_N)* 1./nsex;
-		        	log_rt(ih,syr) = log_avgrec(ih)+log_rec_devs(ih,syr);
-				//RFUpdate Correction: below biomass is the sum of weight at age x numbers at age not wbar
-				biomass(ig,syr) = sum(elem_prod(tmp_N,d3_wt_avg(ig)(syr)));
-				annual_mean_wt(ig,syr) = biomass(ig,syr)/numbers(ig,syr); //wbar(gs);
-
-			break;
-
-			case 1: //start at equilibrium unfished  //check these two options are the same in the absence of fishing mortality
-                                //RFUpdate Correction: No need for age structure here
-				numbers(ig,syr)= no(g);
-				numbers(ig,i)/=nsex;
-				biomass(ig,syr) = bo(g);
-				//annual_mean_wt(ig,syr) = wbar(gs);
-				// corrected this to follow RF correction for case
-				annual_mean_wt(ig,syr) = biomass(ig,syr)/numbers(ig,syr);
-
-		        log_rt(ih,syr) = log(ro(g));
-
-			break;
-
-			case 2: //start at equilibrium with fishing mortality - delay difference. CHECK THIS
-	  		  	sfished(ig) = surv(ig,syr); //equilibrium survivorship at initial fishing mortality (gear 1 commercial fishery)
-	   		  	annual_mean_wt(ig,syr) = (sfished(ig)*alpha_g(gs) + wk(gs)*(1.-sfished(ig)))/(1-rho_g(gs)*sfished(ig));
-
-	   		  	biomass(ig,syr) = -(annual_mean_wt(ig,syr)*(wk(gs)*so(g)-1)+sfished(ig)*(alpha_g(gs)+
-	   		  						rho_g(gs)* annual_mean_wt(ig,syr)))/
-	   		  						(beta(g)*(sfished(ig)*alpha_g(gs)+sfished(ig)*rho_g(gs)* annual_mean_wt(ig,syr)-
-	   		  							annual_mean_wt(ig,syr)));
-	   		  	numbers(ig,syr) = biomass(ig,syr)/annual_mean_wt(ig,syr);
-	   		  	numbers(ig,i)/=nsex;
-
-	   		  	//pergunta: where does the biomass eq comes from?
-	   		  	// log rt originally missing from this option
-	   		  	// chose log_avgrec as placeholder-- dangerous if fishing in first year and before was very high.
-	   		  	log_rt(ih,syr) = log_avgrec(ih);
-
-			break;
-
-		}
-
-		sbt(g,syr) += biomass(ig,syr);
-
-		for(i=syr+1;i<=nyr;i++){
-
-			log_rt(ih,i)=log_avgrec(ih)+log_rec_devs(ih,i);
-
-			//Update biomass and numbers
-			//RFUpdate Correction: don\'t divide both numbers and biomass by nsex
-			biomass(ig,i) =surv(ig,i-1)*(rho_g(gs)*biomass(ig,i-1)+alpha_g(gs)*numbers(ig,i-1))+
-								wk(gs)*mfexp(log_rt(ih,i)); // eq. 9.2.5 in HW
-			numbers(ig,i)=surv(ig,i-1)*numbers(ig,i-1)+mfexp(log_rt(ih,i));
-			numbers(ig,i)/=nsex;
-			annual_mean_wt(ig,i)=biomass(ig,i)/numbers(ig,i);		//calculate predicted weight in dynamics - possible option to fit to it
-				sbt(g,i) += biomass(ig,i);
-		}
-
-    biomass(ig,nyr+1)=(surv(ig,nyr)*(rho_g(gs)*biomass(ig,nyr)+alpha_g(gs)*numbers(ig,nyr))+wk(gs)*rnplus(ih)/nsex);
-		numbers(ig,nyr+1)=surv(ig,nyr)*numbers(ig,nyr)+rnplus(ih)/nsex;
-
-	  	sbt(g,nyr+1) += biomass(ig,nyr+1); //set spawning biomass to biomass
+	int ih, ig;
+	for(ig=1;ig<=n_ags;ig++){
+	  f = n_area(ig);
+	  g = n_group(ig);
+	  h = n_sex(ig);
+	  ih = pntr_ag(f,g);
+	  gs = pntr_gs(g,h);
+	  dvar_vector tmp_N(sage,nage);
+	  tmp_N.initialize();
+	  switch(int(d_iscamCntrl(5))){
+	    case 0: //Unfished and not at equilibrium - Initialise as for ASM
+	      tmp_N(sage) = mfexp( log_avgrec(ih)+log_rec_devs(ih)(syr));
+	      for(int j=sage+1;j<=nage;j++){
+	        tmp_N(j) = mfexp(log_avgrec(ih) + init_log_rec_devs(ih)(j)) * mfexp(-M_dd(ig)(syr) * (j - sage)); // Do not use log_rec_init in dd model
+	      }
+	      tmp_N(nage) /= (1. - mfexp(-M_dd(ig)(syr)));
+	      numbers(ig,syr) = sum(tmp_N) * 1. / nsex;
+	      log_rt(ih,syr) = log_avgrec(ih)+log_rec_devs(ih,syr);
+	      biomass(ig,syr) = sum(elem_prod(tmp_N,d3_wt_avg(ig)(syr)));
+	      annual_mean_wt(ig,syr) = biomass(ig,syr)/numbers(ig,syr); //wbar(gs);
+	      break;
+	    case 1: //start at equilibrium unfished  //check these two options are the same in the absence of fishing mortality
+	      numbers(ig,syr) = no(g);
+	      numbers(ig,i) /= nsex;
+	      biomass(ig,syr) = bo(g);
+	      //annual_mean_wt(ig,syr) = wbar(gs);
+	      annual_mean_wt(ig,syr) = biomass(ig,syr) / numbers(ig,syr);
+	      log_rt(ih,syr) = log(ro(g));
+	      break;
+	    case 2: //start at equilibrium with fishing mortality - delay difference. CHECK THIS
+	      sfished(ig) = surv(ig,syr); //equilibrium survivorship at initial fishing mortality (gear 1 commercial fishery)
+	      annual_mean_wt(ig,syr) = (sfished(ig)*alpha_g(gs) + wk(gs)*(1.-sfished(ig)))/(1-rho_g(gs)*sfished(ig));
+	      biomass(ig,syr) = -(annual_mean_wt(ig,syr)*(wk(gs)*so(g)-1) +
+	                          sfished(ig)*(alpha_g(gs) +
+	                          rho_g(gs) * annual_mean_wt(ig,syr))) /
+	                          (beta(g) * (sfished(ig) * alpha_g(gs) +
+	                          sfished(ig) * rho_g(gs) * annual_mean_wt(ig,syr)-
+	                          annual_mean_wt(ig,syr)));
+	      numbers(ig,syr) = biomass(ig,syr) / annual_mean_wt(ig,syr);
+	      numbers(ig,i) /= nsex;
+	      // log rt originally missing from this option
+	      // chose log_avgrec as placeholder-- dangerous if fishing in first year and before was very high.
+	      log_rt(ih,syr) = log_avgrec(ih);
+	      break;
+	  }
+	  sbt(g,syr) += biomass(ig,syr);
+	  for(i=syr+1;i<=nyr;i++){
+	    log_rt(ih,i) = log_avgrec(ih) + log_rec_devs(ih,i);
+	    //Update biomass and numbers
+	    biomass(ig,i) = surv(ig,i-1) * (rho_g(gs) * biomass(ig, i - 1) +
+	                    alpha_g(gs) * numbers(ig, i - 1)) +
+	                    wk(gs) * mfexp(log_rt(ih,i)); // eq. 9.2.5 in HW
+	    numbers(ig,i) = surv(ig,i-1)*numbers(ig,i-1)+mfexp(log_rt(ih,i));
+	    numbers(ig,i) /= nsex;
+	    annual_mean_wt(ig,i) = biomass(ig,i) / numbers(ig,i); //calculate predicted weight in dynamics - possible option to fit to it
+	    sbt(g,i) += biomass(ig,i);
+	  }
+	  biomass(ig,nyr+1) = (surv(ig,nyr) * (rho_g(gs) * biomass(ig,nyr) +
+	                      alpha_g(gs) * numbers(ig,nyr)) +
+	                      wk(gs)*rnplus(ih)/nsex);
+	  numbers(ig,nyr+1)=surv(ig,nyr)*numbers(ig,nyr)+rnplus(ih)/nsex;
+	  sbt(g,nyr+1) += biomass(ig,nyr+1); //set spawning biomass to biomass
 	}
-
-	//RFUpdate - added sbo for delay diff model
-	 sbo(g)=bo(g);
-
+	sbo(g) = bo(g);
 	if(verbose){
-    LOG<<"**** Ok after calcNumbersBiomass_deldiff ****\n";
-  	}
-
-  	    /*
-  	LOG<<"surv is "<<surv<<'\n';
-  	LOG<<"biomass is "<<biomass<<'\n';
-	LOG<<"numbers is "<<numbers<<'\n';
-	LOG<<"sbt is "<<sbt<<'\n';
-	LOG<<"log_rt is "<<log_rt<<'\n';
-	LOG<<"log_rec_devs is "<<log_rec_devs<<'\n';
-	LOG<<"**** Ok after calcNumbersBiomass_deldiff ****"<<'\n';
-	//exit(1);
+	  LOG<<"**** Ok after calcNumbersBiomass_deldiff ****\n";
+	}
+	/*
+	  LOG<<"surv is "<<surv<<'\n';
+	  LOG<<"biomass is "<<biomass<<'\n';
+	  LOG<<"numbers is "<<numbers<<'\n';
+	  LOG<<"sbt is "<<sbt<<'\n';
+	  LOG<<"log_rt is "<<log_rt<<'\n';
+	  LOG<<"log_rec_devs is "<<log_rec_devs<<'\n';
+	  LOG<<"**** Ok after calcNumbersBiomass_deldiff ****"<<'\n';
+	  exit(1);
 	*/
-
-  }
-
-
 
 FUNCTION calcFisheryObservations_deldiff
 	{

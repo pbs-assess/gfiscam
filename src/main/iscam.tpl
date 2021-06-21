@@ -1594,24 +1594,20 @@ PRELIMINARY_CALCS_SECTION
 	// | - nf is a function evaluation counter.
 	// | - SimFlag comes from the -sim command line argument to simulate fake data.
 	// |
-	nf=0;
-	if( testMSY )
-	{
-		testMSYxls();
+	nf = 0;
+	if(testMSY){
+	  testMSYxls();
 	}
-	if( SimFlag )
-	{
-		initParameters();
-		simulationModel(rseed);
+	if(SimFlag){
+	  initParameters();
+	  simulationModel(rseed);
 	}
 
 RUNTIME_SECTION
-    maximum_function_evaluations 2000, 2000, 2000, 25000, 25000
-    convergence_criteria 0.01, 0.01, 1.e-3, 1.e-4, 1.e-5
-
+  maximum_function_evaluations 2000, 2000, 2000, 25000, 25000
+  convergence_criteria 0.01, 0.01, 1.e-3, 1.e-4, 1.e-5
 
 PROCEDURE_SECTION
-
 	if(delaydiff){
 	  initParameters();
 	  calcTotalMortality_deldiff();
@@ -1621,7 +1617,8 @@ PROCEDURE_SECTION
 	  calcStockRecruitment_deldiff();
 	  calcAnnualMeanWeight_deldiff(); //RF added this for P cod - only gets added to objective function if cntrl(15)==1
 	}else{
-	  if(d_iscamCntrl(5)==2) d_iscamCntrl(5)=0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
+	  if(d_iscamCntrl(5) == 2)
+	     d_iscamCntrl(5) = 0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
 	  initParameters();
 	  calcSelectivities(isel_type);
 	  calcTotalMortality();
@@ -1638,10 +1635,10 @@ PROCEDURE_SECTION
 	  calcSdreportVariables();
 	}
 	if(mc_phase()){
-	  mcmcPhase=1;
+	  mcmcPhase = 1;
 	}
 	if(mceval_phase()){
-	  mcmcEvalPhase=1;
+	  mcmcEvalPhase = 1;
 	  mcmc_output();
 	  LOG<<"Running mceval phase\n";
 	}
@@ -1650,97 +1647,70 @@ PROCEDURE_SECTION
 	}
 
 FUNCTION void calcSdreportVariables()
-  {
 	sd_depletion.initialize();
 	sd_log_sbt.initialize();
-
-	for(g=1;g<=ngroup;g++)
-	{
-		sd_depletion(g) = sbt(g)(nyr)/sbo(g);
-
-		sd_log_sbt(g) = log(sbt(g));
+	for(g=1;g<=ngroup;g++){
+	  sd_depletion(g) = sbt(g)(nyr)/sbo(g);
+	  sd_log_sbt(g) = log(sbt(g));
 	}
 	if(verbose){
-    LOG<<"**** Ok after calcSdreportVariables ****\n";
-  }
-  }
+	  LOG<<"**** Ok after calcSdreportVariables ****\n";
+	}
 
-  	/**
-  	Purpose: This function extracts the specific parameter values from the theta vector
-  	       to initialize the leading parameters in the model.
-  	Author: Steven Martell
-  	Arguments:
-  		None
-
-  	NOTES:
-  		- You must call this routine before running the simulation model to generate
-  		  fake data, otherwise you'll have goofy initial values for your leading parameters.
-  		- Variance partitioning:
-  	  Estimating total variance as = 1/precision
-  	  and partition variance by rho = sig^2/(sig^2+tau^2).
-
-  	  E.g. if sig = 0.2 and tau =1.12 then
-  	  rho = 0.2^2/(0.2^2+1.12^2) = 0.03090235
-  	  the total variance is kappa^2 = sig^2 + tau^2 = 1.2944
-
-  	TODO list:
-  	[ ] - Alternative parameterization using MSY and FMSY as leading parameters (Martell).
-  	[*] - avg recruitment limited to area, may consider ragged object for area & stock.
-
-  	*/
+	/*
+	  Purpose: This function extracts the specific parameter values from the theta vector
+	    to initialize the leading parameters in the model.
+	  NOTES:
+	    You must call this routine before running the simulation model to generate
+	    fake data, otherwise you'll have goofy initial values for your leading parameters.
+	  - Variance partitioning:
+	    Estimating total variance as = 1/precision
+	    and partition variance by rho = sig^2/(sig^2+tau^2).
+	    E.g. if sig = 0.2 and tau =1.12 then
+	    rho = 0.2^2/(0.2^2+1.12^2) = 0.03090235
+	    the total variance is kappa^2 = sig^2 + tau^2 = 1.2944
+	  TODO list:
+	    [ ] - Alternative parameterization using MSY and FMSY as leading parameters (Martell).
+	    [*] - avg recruitment limited to area, may consider ragged object for area & stock.
+	*/
 FUNCTION void initParameters()
-  {
-
-  	int ih;
-
-	ro        = mfexp(theta(1));
+	int ih;
+	ro = mfexp(theta(1));
 	steepness = theta(2);
-	m         = mfexp(theta(3));
-	rho       = theta(6);
-	varphi    = sqrt(1.0/theta(7));
-	sig       = elem_prod(sqrt(rho) , varphi);
-	tau       = elem_prod(sqrt(1.0-rho) , varphi);
-
+	m = mfexp(theta(3));
+	rho = theta(6);
+	varphi = sqrt(1.0/theta(7));
+	sig = elem_prod(sqrt(rho) , varphi);
+	tau = elem_prod(sqrt(1.0-rho) , varphi);
         if(!delaydiff){
-        	for(ih=1;ih<=n_ag;ih++)
-		{
-			log_avgrec(ih)  = theta(4,ih);
-			log_recinit(ih) = theta(5,ih);
-		}
-         }
-
-         //AUG 14 2018 Set all average rec parameters to ro in delay difference model
-          if(delaydiff){
-	         	for(ih=1;ih<=n_ag;ih++)
-	 		{
-	 			log_avgrec(ih)  = theta(1,ih);
-	 			log_recinit(ih) = theta(1,ih);
-	 		}
-         }
-
-
-	switch(int(d_iscamCntrl(2)))
-	{
-		case 1:
-			//Beverton-Holt model
-			kappa = elem_div(4.*steepness,(1.-steepness));
-			break;
-		case 2:
-			//Ricker model
-			kappa = pow((5.*steepness),1.25);
-		break;
+	  for(ih=1;ih<=n_ag;ih++){
+	    log_avgrec(ih)  = theta(4,ih);
+	    log_recinit(ih) = theta(5,ih);
+	  }
+        }
+	if(delaydiff){
+	  for(ih=1;ih<=n_ag;ih++){
+	    log_avgrec(ih)  = theta(1,ih);
+	    log_recinit(ih) = theta(1,ih);
+	  }
 	}
-
+	switch(int(d_iscamCntrl(2))){
+	  case 1:
+	    //Beverton-Holt model
+	    kappa = elem_div(4.*steepness,(1.-steepness));
+	    break;
+	  case 2:
+	    //Ricker model
+	    kappa = pow((5.*steepness),1.25);
+	    break;
+	}
 	if(verbose){
-    LOG<<"**** Ok after initParameters ****\n";
-  }
-
-  }
+	  LOG<<"**** Ok after initParameters ****\n";
+	}
 
 FUNCTION dvar_vector cubic_spline(const dvar_vector& spline_coffs)
-  {
 	RETURN_ARRAYS_INCREMENT();
-	int nodes=size_count(spline_coffs);
+	int nodes = size_count(spline_coffs);
 	dvector ia(1,nodes);
 	dvector fa(sage,nage);
 	ia.fill_seqadd(0,1./(nodes-1));
@@ -1749,340 +1719,247 @@ FUNCTION dvar_vector cubic_spline(const dvar_vector& spline_coffs)
 	RETURN_ARRAYS_DECREMENT();
 
 	//some testing here
-	/*dvar_vector spline_nodes(1,nodes);
-		spline_nodes.fill_seqadd(-0.5,1./(nodes-1));
-		LOG<<spline_nodes<<'\n';
-		vcubic_spline_function test_ffa(ia,spline_nodes);
-		LOG<<test_ffa(fa)<<'\n';
-		exit(1);*/
+	/*
+	  dvar_vector spline_nodes(1,nodes);
+	  spline_nodes.fill_seqadd(-0.5,1./(nodes-1));
+	  LOG<<spline_nodes<<'\n';
+	  vcubic_spline_function test_ffa(ia,spline_nodes);
+	  LOG<<test_ffa(fa)<<'\n';
+	  exit(1);
+	*/
 	return(ffa(fa));
-  }
 
 FUNCTION dvar_vector cubic_spline(const dvar_vector& spline_coffs, const dvector& la)
-  {
-	/*interplolation for length-based selectivity coefficeients*/
+	/*
+	  interplolation for length-based selectivity coefficeients
+	*/
 	RETURN_ARRAYS_INCREMENT();
-	int nodes=size_count(spline_coffs);
+	int nodes = size_count(spline_coffs);
 	dvector ia(1,nodes);
 	ia.fill_seqadd(0,1./(nodes-1));
 	dvector fa = (la-min(la))/(max(la)-min(la));
 	vcubic_spline_function ffa(ia,spline_coffs);
 	RETURN_ARRAYS_DECREMENT();
 	return(ffa(fa));
-  }
 
-  /**
-   * @brief cubic spline interpolation
-   * @details Uses cubic spline interpolatoin for data type variables based on a
-   * vector of spline coefficients, or nodes, and independent points.
-   * The nodes are rescaled to 0-1.  This function does not extrapolate beyond the
-   * independent points.
-   *
-   * @param spline_coffs a data vector of spline coefficients (nodes)
-   * @param la a vector of independent points for use in interpolation.
-   *
-   * @return A data vector containing the interpolated points.
-   */
-
+	/*
+	  * @brief cubic spline interpolation
+	  * @details Uses cubic spline interpolatoin for data type variables based on a
+	  * vector of spline coefficients, or nodes, and independent points.
+	  * The nodes are rescaled to 0-1.  This function does not extrapolate beyond the
+	  * independent points.
+	  * @param spline_coffs a data vector of spline coefficients (nodes)
+	  * @param la a vector of independent points for use in interpolation.
+	  * @return A data vector containing the interpolated points.
+	*/
 FUNCTION dvector cubic_spline(const dvector& spline_coffs, const dvector& la)
-  {
-	/*interplolation for length-based selectivity coefficeients*/
+	/*
+	  interplolation for length-based selectivity coefficeients
+	*/
 	//RETURN_ARRAYS_INCREMENT();
-	int nodes=size_count(spline_coffs);
+	int nodes = size_count(spline_coffs);
 	dvector ia(1,nodes);
 	ia.fill_seqadd(0,1./(nodes-1));
 	dvector fa = (la-min(la))/(max(la)-min(la));
 	vcubic_spline_function ffa(ia,spline_coffs);
 	//RETURN_ARRAYS_DECREMENT();
 	return(value(ffa(fa)));
-	//return(1.0*la);
-  }
 
-// FUNCTION dvar_matrix cubic_spline_matrix(const dvar_matrix& spline_coffs)
-//   {
-// 	RETURN_ARRAYS_INCREMENT();
-// 	int nodes= spline_coffs.colmax()-spline_coffs.colmin()+1;
-// 	int rmin = spline_coffs.rowmin();
-// 	int rmax = spline_coffs.rowmax();
+	/*
+	  Purpose: This function loops over each of ngears and calculates the corresponding
+	  selectivity coefficients for that gear in each year.  It uses a switch
+	  statement based on isel_type to determine which selectivty function to use
+	  for each particular gear that is specified in the control file.  See NOTES
+	  below for more information on selectivity models.
+	  Arguments:
+	    isel_type -> an ivector with integers that determine what selectivity model to use.
 
-// 	dvector ia(1,nodes);
-// 	dvector fa(sage,nage);
-// 	ia.fill_seqadd(0,1./(nodes-1));
-// 	//fa.fill_seqadd(sage,1);
-// 	fa.fill_seqadd(0,1./(nage-sage));
-// 	vcubic_spline_function_array fna(rmin,rmax,ia,spline_coffs);
-// 	RETURN_ARRAYS_DECREMENT();
-// 	return(fna(fa));
-
-//   }
-
-
-  	/**
-  	Purpose: This function loops over each of ngears and calculates the corresponding
-  	         selectivity coefficients for that gear in each year.  It uses a switch
-  	         statement based on isel_type to determine which selectivty function to use
-  	         for each particular gear that is specified in the control file.  See NOTES
-  	         below for more information on selectivity models.
-
-  	Author: Steven Martell
-
-  	Arguments:
-  		isel_type -> an ivector with integers that determine what selectivity model to use.
-
-
-  	NOTES:
-  		- The following is a list of the current selectivity models that are implemented:
-		1)  Logistic selectivity with 2 parameters.
-		2)  Age-specific selectivity coefficients with (nage-sage) parameters.
-		    and the last two age-classes are assumed to have the same selectivity.
-		3)  A reduced age-specific parameter set based on a bicubic spline.
-		4)  Time varying cubic spline.
-		5)  Time varying bicubic spline (2d version).
-		6)  Fixed logistic.
-		7)  Logistic selectivity based on relative changes in mean weight at age
-		8)  Time varying selectivity based on logistic with deviations in
-		    weights at age (3 estimated parameters).
-		11) Logistic selectivity with 2 parameters based on mean length.
-		12) Length-based selectivity using cubic spline interpolation.
-
-  		- The bicubic_spline function is located in stats.cxx library.
-
-  	TODO list:
-  	[*] add an option for length-based selectivity.  Use inverse of
-		allometric relationship w_a = a*l_a^b; to get mean length-at-age from
-		empirical weight-at-age data, then calculate selectivity based on
-		mean length. IMPLEMENTED IN CASE 11
-
-	[*] change index for gear loop from j to k, and be consistent with year (i) and
-	    age (j), and sex (h) indexing.
-
-  	*/
+	  NOTES:
+	    The following is a list of the current selectivity models that are implemented:
+	    1) Logistic selectivity with 2 parameters.
+	    2) Age-specific selectivity coefficients with (nage-sage) parameters.
+	       and the last two age-classes are assumed to have the same selectivity.
+	    3) A reduced age-specific parameter set based on a bicubic spline.
+	    4) Time varying cubic spline.
+	    5) Time varying bicubic spline (2d version).
+	    6) Fixed logistic.
+	    7) Logistic selectivity based on relative changes in mean weight at age
+	    8) Time varying selectivity based on logistic with deviations in
+	       weights at age (3 estimated parameters).
+	   11) Logistic selectivity with 2 parameters based on mean length.
+	   12) Length-based selectivity using cubic spline interpolation.
+	   13) The bicubic_spline function is located in statsLib.h
+	  TODO list:
+	    [*] add an option for length-based selectivity.  Use inverse of
+	        allometric relationship w_a = a*l_a^b; to get mean length-at-age from
+	        empirical weight-at-age data, then calculate selectivity based on
+	        mean length. IMPLEMENTED IN CASE 11
+	    [*] change index for gear loop from j to k, and be consistent with year (i) and
+	        age (j), and sex (h) indexing.
+	*/
 FUNCTION void calcSelectivities(const ivector& isel_type)
-  {
-	int ig,i,j,k,byr,bpar,kgear;
-	double tiny=1.e-10;
-	dvariable p1,p2,p3;
-	dvar_vector age_dev=age;
+	int ig, i, j, k, byr, bpar, kgear;
+	double tiny = 1.e-10;
+	dvariable p1, p2, p3;
+	dvar_vector age_dev = age;
 	dvar_matrix t1;
-	dvar_matrix   tmp(syr,nyr-1,sage,nage);
-	dvar_matrix  tmp2(syr,nyr,sage,nage);
+	dvar_matrix tmp(syr,nyr-1,sage,nage);
+	dvar_matrix tmp2(syr,nyr,sage,nage);
 	dvar_matrix ttmp2(sage,nage,syr,nyr);
-
 	// Selex cSelex(age);
 	// logistic_selectivity cLogisticSelex(age);
 	log_sel.initialize();
-
-	for(kgear=1; kgear<=ngear; kgear++)
-	{
-		// The following is used to mirror another gear-type
-		// based on the absolute value of sel_phz.
-		k  = kgear;
-
-		if(sel_phz(k) < 0)
-		{
-			k = abs(sel_phz(kgear));
-			sel_par(kgear) = sel_par(k);
-		}
-
-		for( ig = 1; ig <= n_ags; ig++ )
-		{
-			tmp.initialize(); tmp2.initialize();
-			dvector iy(1,yr_nodes(k));
-			dvector ia(1,age_nodes(k));
-			byr  = 1;
-			bpar = 0;
-
-			switch(isel_type(k))
-			{
-
-				case 1: //logistic selectivity (2 parameters)
-					for(i=syr; i<=nyr; i++)
-					{
-						if( i == sel_blocks(k,byr) )
-						{
-							bpar ++;
-							if( byr < n_sel_blocks(k) ) byr++;
-						}
-
-						// LOG<<"Testing selex class"<<'\n';
-						// log_sel(k)(ig)(i) = log( cSelex.logistic(sel_par(k)(bpar)) );
-						// log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(bpar)) );
-						p1 = mfexp(sel_par(k,bpar,1));
-						p2 = mfexp(sel_par(k,bpar,2));
-						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny );
-						log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2)+tiny );
-					}
-					break;
-
-				case 6:	// fixed logistic selectivity
-					p1 = mfexp(sel_par(k,1,1));
-					p2 = mfexp(sel_par(k,1,2));
-					for(i=syr; i<=nyr; i++)
-					{
-						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2) );
-						log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2) );
-						// log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(1)) );
-					}
-					break;
-
-				case 2:	// age-specific selectivity coefficients
-					for(i=syr; i<=nyr; i++)
-					{
-						if( i == sel_blocks(k,byr) )
-						{
-							bpar ++;
-							if( byr < n_sel_blocks(k) ) byr++;
-						}
-						for(j=sage;j<=nage-1;j++)
-						{
-							log_sel(kgear)(ig)(i)(j)   = sel_par(k)(bpar)(j-sage+1);
-						}
-						log_sel(kgear)(ig)(i,nage) = log_sel(kgear)(ig)(i,nage-1);
-					}
-					break;
-
-				case 3:	// cubic spline
-					for(i=syr; i<nyr; i++)
-					{
-						if( i==sel_blocks(k,byr) )
-						{
-							bpar ++;
-							log_sel(k)(ig)(i)=cubic_spline( sel_par(k)(bpar) );
-							if( byr < n_sel_blocks(k) ) byr++;
-						}
-						log_sel(kgear)(ig)(i+1) = log_sel(k)(ig)(i);
-					}
-					break;
-
-				case 4:	// time-varying cubic spline every year
-					for(i=syr; i<=nyr; i++)
-					{
-						log_sel(kgear)(ig)(i) = cubic_spline(sel_par(k)(i-syr+1));
-					}
-					break;
-
-				case 5:	// time-varying bicubic spline
-					ia.fill_seqadd( 0,1./(age_nodes(k)-1) );
-					iy.fill_seqadd( 0,1./( yr_nodes(k)-1) );
-					bicubic_spline( iy,ia,sel_par(k),tmp2 );
-					log_sel(kgear)(ig) = tmp2;
-					break;
-
-				case 7:
-					// time-varying selectivity based on deviations in weight-at-age
-					// CHANGED This is not working and should not be used. (May 5, 2011)
-					// SkDM:  I was not able to get this to run very well.
-					// AUG 5, CHANGED so it no longer has the random walk component.
-					p1 = mfexp(sel_par(k,1,1));
-					p2 = mfexp(sel_par(k,1,2));
-
-					for(i = syr; i<=nyr; i++)
-					{
-						dvar_vector tmpwt=log(d3_wt_avg(ig)(i)*1000)/mean(log(d3_wt_avg(ig)*1000.));
-						log_sel(kgear)(ig)(i) = log( plogis(tmpwt,p1,p2)+tiny );
-					}
-					break;
-
-				case 8:
-					//Alternative time-varying selectivity based on weight
-					//deviations (d3_wt_dev) d3_wt_dev is a matrix(syr,nyr+1,sage,nage)
-					//p3 is the coefficient that describes variation in log_sel.
-					p1 = mfexp(sel_par(k,1,1));
-					p2 = mfexp(sel_par(k,1,2));
-					p3 = sel_par(k,1,3);
-
-					for(i=syr; i<=nyr; i++)
-					{
-						tmp2(i) = p3*d3_wt_dev(ig)(i);
-						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny ) + tmp2(i);
-						log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2)+tiny ) + tmp2(i);
-					}
-					break;
-
-				case 11: // logistic selectivity based on mean length-at-age
-					for(i=syr; i<=nyr; i++)
-					{
-						if( i == sel_blocks(k,byr) )
-						{
-							bpar ++;
-							if( byr < n_sel_blocks(k) ) byr++;
-						}
-						p1 = mfexp(sel_par(k,bpar,1));
-						p2 = mfexp(sel_par(k,bpar,2));
-
-						dvector len = pow(d3_wt_avg(ig)(i)/d_a(ig),1./d_b(ig));
-
-						//log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(len,p1,p2) );
-						log_sel(kgear)(ig)(i) = log( plogis(len,p1,p2) );
-					}
-					break;
-
-				case 12: // cubic spline length-based coefficients.
-					for(i=syr; i<=nyr; i++)
-					{
-						if( i == sel_blocks(k,byr) )
-						{
-							bpar ++;
-							if( byr < n_sel_blocks(k) ) byr++;
-						}
-
-						dvector len = pow(d3_wt_avg(ig)(i)/d_a(ig),1./d_b(ig));
-						log_sel(kgear)(ig)(i)=cubic_spline( sel_par(k)(bpar), len );
-					}
-					break;
-
-				case 13:	// truncated age-specific selectivity coefficients
-
-					for(i=syr; i<=nyr; i++)
-					{
-						if( i == sel_blocks(k,byr) )
-						{
-							bpar ++;
-							if( byr < n_sel_blocks(k) ) byr++;
-						}
-						for(j=ahat_agemin(k); j<=ghat_agemax(k); j++)
-						{
-							log_sel(k)(ig)(i)(j)   = sel_par(k)(bpar)(j-ahat_agemin(k)+1);
-						}
-
-						for (j=ghat_agemax(k)+1; j<=nage; j++)
-						{
-							log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ghat_agemax(k));
-						}
-
-						for(j=sage; j<ahat_agemin(k); j++)
-						{
-							log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ahat_agemin(k));
-						}
-					}
-					break;
-
-
-				default:
-					log_sel(kgear)(ig)=0;
-					break;
-
-			}  // switch
-			//subtract mean to ensure mean(exp(log_sel))==1
-
-			//temp RF if statement
-			//if(isel_type(k) !=6){
-			//	for(i=syr;i<=nyr;i++)
-			//	{
-			//		log_sel(kgear)(ig)(i) -= log( mean(mfexp(log_sel(kgear)(ig)(i))) );
-		       //
-					// log_sel(k)(ig)(i) -= log( max(mfexp(log_sel(k)(ig)(i))) );
-			//	}
-			//} //end if
-		}
-	}  //end of gear k
-
+	for(kgear=1; kgear<=ngear; kgear++){
+	  // The following is used to mirror another gear-type
+	  // based on the absolute value of sel_phz.
+	  k = kgear;
+	  if(sel_phz(k) < 0){
+	    k = abs(sel_phz(kgear));
+	    sel_par(kgear) = sel_par(k);
+	  }
+	  for(ig = 1; ig <= n_ags; ig++){
+	    tmp.initialize(); tmp2.initialize();
+	    dvector iy(1,yr_nodes(k));
+	    dvector ia(1,age_nodes(k));
+	    byr = 1;
+	    bpar = 0;
+	    switch(isel_type(k)){
+	      case 1: //logistic selectivity (2 parameters)
+	        for(i=syr; i<=nyr; i++){
+	          if(i == sel_blocks(k,byr)){
+	            bpar ++;
+	            if(byr < n_sel_blocks(k)) byr++;
+	          }
+	          // LOG<<"Testing selex class"<<'\n';
+	          // log_sel(k)(ig)(i) = log(cSelex.logistic(sel_par(k)(bpar)));
+	          // log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(bpar)) );
+	          p1 = mfexp(sel_par(k,bpar,1));
+	          p2 = mfexp(sel_par(k,bpar,2));
+	          // log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny );
+	          log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2)+tiny );
+	        }
+	        break;
+	      case 6: // fixed logistic selectivity
+	        p1 = mfexp(sel_par(k,1,1));
+	        p2 = mfexp(sel_par(k,1,2));
+	        for(i=syr; i<=nyr; i++){
+	          //log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2) );
+	          log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2) );
+	          // log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(1)) );
+	        }
+	        break;
+	      case 2: // age-specific selectivity coefficients
+	        for(i=syr; i<=nyr; i++){
+	          if(i == sel_blocks(k,byr)){
+	            bpar ++;
+	            if(byr < n_sel_blocks(k))
+	              byr++;
+	          }
+	          for(j=sage;j<=nage-1;j++){
+	            log_sel(kgear)(ig)(i)(j) = sel_par(k)(bpar)(j-sage+1);
+	          }
+	          log_sel(kgear)(ig)(i,nage) = log_sel(kgear)(ig)(i,nage-1);
+	        }
+	        break;
+	      case 3: // cubic spline
+	        for(i=syr; i<nyr; i++){
+	          if(i==sel_blocks(k,byr)){
+	            bpar ++;
+	            log_sel(k)(ig)(i) = cubic_spline(sel_par(k)(bpar));
+	            if(byr < n_sel_blocks(k))
+	              byr++;
+	          }
+	          log_sel(kgear)(ig)(i+1) = log_sel(k)(ig)(i);
+	        }
+	        break;
+	      case 4: // time-varying cubic spline every year
+	        for(i=syr; i<=nyr; i++){
+	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par(k)(i-syr+1));
+	        }
+	        break;
+	      case 5: // time-varying bicubic spline
+	        ia.fill_seqadd(0,1./(age_nodes(k)-1));
+	        iy.fill_seqadd( 0,1. / (yr_nodes(k)-1));
+	        bicubic_spline(iy,ia,sel_par(k),tmp2);
+	        log_sel(kgear)(ig) = tmp2;
+	        break;
+	      case 7:
+	        // time-varying selectivity based on deviations in weight-at-age
+	        // CHANGED This is not working and should not be used. (May 5, 2011)
+	        // SkDM:  I was not able to get this to run very well.
+	        // AUG 5, CHANGED so it no longer has the random walk component.
+	        p1 = mfexp(sel_par(k,1,1));
+	        p2 = mfexp(sel_par(k,1,2));
+	        for(i = syr; i<=nyr; i++){
+	          dvar_vector tmpwt = log(d3_wt_avg(ig)(i) * 1000) / mean(log(d3_wt_avg(ig) * 1000.));
+	          log_sel(kgear)(ig)(i) = log( plogis(tmpwt,p1,p2)+tiny );
+	        }
+	        break;
+	      case 8:
+	        //Alternative time-varying selectivity based on weight
+	        //deviations (d3_wt_dev) d3_wt_dev is a matrix(syr,nyr+1,sage,nage)
+	        //p3 is the coefficient that describes variation in log_sel.
+	        p1 = mfexp(sel_par(k,1,1));
+	        p2 = mfexp(sel_par(k,1,2));
+	        p3 = sel_par(k,1,3);
+	        for(i=syr; i<=nyr; i++){
+	          tmp2(i) = p3 * d3_wt_dev(ig)(i);
+	          //log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny ) + tmp2(i);
+	          log_sel(kgear)(ig)(i) = log(plogis(age,p1,p2)+tiny) + tmp2(i);
+	        }
+	        break;
+	      case 11: // logistic selectivity based on mean length-at-age
+	        for(i=syr; i<=nyr; i++){
+	          if(i == sel_blocks(k,byr)){
+	            bpar ++;
+	            if(byr < n_sel_blocks(k))
+	              byr++;
+	          }
+	          p1 = mfexp(sel_par(k,bpar,1));
+	          p2 = mfexp(sel_par(k,bpar,2));
+	          dvector len = pow(d3_wt_avg(ig)(i) / d_a(ig), 1. / d_b(ig));
+	          log_sel(kgear)(ig)(i) = log(plogis(len,p1,p2));
+	        }
+	        break;
+	      case 12: // cubic spline length-based coefficients.
+	        for(i=syr; i<=nyr; i++){
+	          if(i == sel_blocks(k,byr)){
+	            bpar ++;
+	            if(byr < n_sel_blocks(k))
+	              byr++;
+	          }
+	          dvector len = pow(d3_wt_avg(ig)(i) / d_a(ig), 1. / d_b(ig));
+	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par(k)(bpar), len);
+	        }
+	        break;
+	      case 13: // truncated age-specific selectivity coefficients
+	        for(i=syr; i<=nyr; i++){
+	          if(i == sel_blocks(k,byr)){
+	            bpar ++;
+	            if(byr < n_sel_blocks(k))
+	              byr++;
+	          }
+	          for(j=ahat_agemin(k); j<=ghat_agemax(k); j++){
+	            log_sel(k)(ig)(i)(j) = sel_par(k)(bpar)(j-ahat_agemin(k)+1);
+	          }
+	          for(j=ghat_agemax(k)+1; j<=nage; j++){
+	            log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ghat_agemax(k));
+	          }
+	          for(j=sage; j<ahat_agemin(k); j++){
+	              log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ahat_agemin(k));
+	          }
+	        }
+	        break;
+	      default:
+	        log_sel(kgear)(ig) = 0;
+	        break;
+	    }
+	    // subtract mean to ensure mean(exp(log_sel)) == 1
+	  }
+	}
 	if(verbose){
-    LOG<<"**** Ok after calcSelectivities ****\n";
-  }
-  }
-
-
+	  LOG<<"**** Ok after calcSelectivities ****\n";
+	}
 
   	/**
   	Purpose: This function calculates fishing mortality, total mortality and annual
@@ -2533,7 +2410,7 @@ FUNCTION calcTotalCatch
   		- for MLE of survey q, using weighted mean of zt to calculate q.
 
   	TODO list:
-  	    [?] - add capability to accomodate priors for survey q's.
+  	    [?] - add capability to accomodate priors for survey q\'s.
   	    [ ] - verify q_prior=2 option for random walk in q.
   	    [ ] - For sel_type==3, may need to reduce abundance by F on spawning biomass (herring)
 

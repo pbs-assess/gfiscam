@@ -486,38 +486,33 @@ DATA_SECTION
 	init_ivector n_A_nage(1,nAgears);
 	init_vector  inp_nscaler(1,nAgears);
 	init_ivector n_ageFlag(1,nAgears);
-  // The 5 in the next command is to remove the first 5 columns
-  // from the age comp 'data' because they are not the actual ages,
-  // but the header data.
+	// The 6 in the next command is to remove the first 5 columns
+	// from the age comp data because they are not the actual ages,
+	// but the header data.
 	init_3darray d3_A(1,nAgears,1,n_A_nobs,n_A_sage-6,n_A_nage);
 	3darray d3_A_obs(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage);
 	LOC_CALCS
-		if( n_A_nobs(nAgears) > 0)
-		{
-			if(!mseFlag)
-			{
-				if(n_A_nobs(nAgears) > 3)
-				{
-					LOG<<"| ----------------------- |\n";
-					LOG<<"| HEAD(A)                 |"<<'\n';
-					LOG<<"| ----------------------- |\n";
-					LOG<<setw(4)<<d3_A(1).sub(1,3)<<'\n';
-					LOG<<"| ----------------------- |\n\n";
-					LOG<<"| ----------------------- |\n";
-					LOG<<"| TAIL(A)                 |"<<'\n';
-					LOG<<"| ----------------------- |\n";
-					LOG<<setw(4)<<d3_A(nAgears).sub(n_A_nobs(nAgears)-2,n_A_nobs(nAgears))<<'\n';
-					LOG<<"| ----------------------- |\n";
-				  }
-			}
-		}
-		else if(!mseFlag)
-		{
-			LOG<<"| ----------------------- |\n";
-			LOG<<"| NO AGE OR LENGTH DATA   |\n";
-			LOG<<"| ----------------------- |\n";
-		}
-
+	  LOG<<"Line 495: n_A_sage = "<<n_A_sage<<", n_A_sage-6="<<n_A_sage-6<<"\n";
+	  if( n_A_nobs(nAgears) > 0){
+	    if(!mseFlag){
+	      if(n_A_nobs(nAgears) > 3){
+	        LOG<<"| ----------------------- |\n";
+	        LOG<<"| HEAD(d3_A               |"<<'\n';
+	        LOG<<"| ----------------------- |\n";
+	        LOG<<setw(4)<<d3_A(1).sub(1,3)<<'\n';
+	        LOG<<"| ----------------------- |\n\n";
+	        LOG<<"| ----------------------- |\n";
+	        LOG<<"| TAIL(d3_A)              |"<<'\n';
+	        LOG<<"| ----------------------- |\n";
+	        LOG<<setw(4)<<d3_A(nAgears).sub(n_A_nobs(nAgears)-2,n_A_nobs(nAgears))<<'\n';
+	        LOG<<"| ----------------------- |\n";
+	      }
+	    }
+	  }else if(!mseFlag){
+	    LOG<<"| ----------------------- |\n";
+	    LOG<<"| NO AGE OR LENGTH DATA   |\n";
+	    LOG<<"| ----------------------- |\n";
+	  }
 	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | EMPIRICAL WEIGHT_AT_AGE DATA
@@ -558,103 +553,74 @@ DATA_SECTION
 	init_3darray d3_mean_wt_data(1,nMeanWt,1,nMeanWtNobs,1,7);
 
 	LOC_CALCS
-		/*
-		  This will determine the new dimension of d3_inp_wt_avg in case the backward
-		  projection is needed required and rename nWtNobs to tmp_nWtNobs
-		*/
-		projwt.initialize();
-		n_bf_wt_row.initialize();
-		tmp_nWtNobs.initialize();
-
-
-		for(int k=1; k<=nWtTab; k++)
-		{
-			tmp_nWtNobs(k) = nWtNobs(k);
-			projwt(k)=1;
-
-			for(i=1; i<=nWtNobs(k); i++)
-			{
-				if(nWtNobs(k) > 0 && d3_inp_wt_avg(k)(i)(sage-5) < 0)
-				{
-					n_bf_wt_row(k)++ ;
-				}
-			}
-			if(n_bf_wt_row(k)>0)
-			{
-				for(int i=1; i<=n_bf_wt_row(k); i++)
-				{
-					int exp_nyr = fabs(d3_inp_wt_avg(k,i,sage-5))-syr;
-					tmp_nWtNobs(k) += exp_nyr;
-				}
-				projwt(k)=-n_bf_wt_row(k);
-			}
-			else if (n_bf_wt_row(k) == 0)
-			{
-				tmp_nWtNobs(k) = nWtNobs(k);
-				projwt(k)=1;
-			}
-		}
-		sum_tmp_nWtNobs = sum(tmp_nWtNobs);
+	  /*
+	    This will determine the new dimension of d3_inp_wt_avg in case the backward
+	    projection is needed required and rename nWtNobs to tmp_nWtNobs
+	  */
+	  projwt.initialize();
+	  n_bf_wt_row.initialize();
+	  tmp_nWtNobs.initialize();
+	  for(int k=1; k<=nWtTab; k++){
+	    tmp_nWtNobs(k) = nWtNobs(k);
+	    projwt(k) = 1;
+	    for(i=1; i<=nWtNobs(k); i++){
+	      if(nWtNobs(k) > 0 && d3_inp_wt_avg(k)(i)(sage-5) < 0){
+	        n_bf_wt_row(k)++;
+	      }
+	    }
+	    if(n_bf_wt_row(k)>0){
+	      for(int i=1; i<=n_bf_wt_row(k); i++){
+	        int exp_nyr = fabs(d3_inp_wt_avg(k,i,sage-5)) - syr;
+	        tmp_nWtNobs(k) += exp_nyr;
+	      }
+	      projwt(k) = -n_bf_wt_row(k);
+	    }else if (n_bf_wt_row(k) == 0){
+	      tmp_nWtNobs(k) = nWtNobs(k);
+	      projwt(k) = 1;
+	    }
+	  }
+	  sum_tmp_nWtNobs = sum(tmp_nWtNobs);
 	END_CALCS
 
-		3darray xinp_wt_avg(1,nWtTab,1,tmp_nWtNobs,sage-5,nage);
-		matrix  xxinp_wt_avg(1,sum_tmp_nWtNobs,sage-5,nage);
+	3darray xinp_wt_avg(1,nWtTab,1,tmp_nWtNobs,sage-5,nage);
+	matrix xxinp_wt_avg(1,sum_tmp_nWtNobs,sage-5,nage);
 
 	LOC_CALCS
-
-		/*
-		  This will redimension the d3_inp_wt_avg  according to tmp_nWtNobs and rename
-		  the 3d array to xinp_wt_avg. Then the 3darray is converted to a matrix
-		  xxinp_wt_avg
-		*/
-
-		xinp_wt_avg.initialize();
-		xxinp_wt_avg.initialize();
-
-  		for(int k=1; k<=nWtTab; k++)
-		{
-			ivector iroww(0,n_bf_wt_row(k));
-			iroww.initialize();
-
-			if(nWtNobs(k) > 0)
-			{
-				if(n_bf_wt_row(k) > 0)
-				{
-					for(i=1; i<=n_bf_wt_row(k); i++)
-					{
-						d3_inp_wt_avg(k,i,sage-5) = fabs(d3_inp_wt_avg(k,i,sage-5));
-						iroww(i) = d3_inp_wt_avg(k,i,sage-5)-syr+iroww(i-1);
-
-						for(int jj=iroww(i);jj>=iroww(i-1)+1;jj--)
-	 					{
-	 						xinp_wt_avg(k)(jj)(sage-5) = syr+jj-iroww(i-1)-1 ;
-	 						xinp_wt_avg(k)(jj)(sage-4,nage) = d3_inp_wt_avg(k)(i)(sage-4,nage);
-
-	 					}
-					}
-
-					for(int jj = iroww(n_bf_wt_row(k))+1; jj <= tmp_nWtNobs(k); jj++)
-	 				{
-	 					xinp_wt_avg(k)(jj)(sage-5,nage) = d3_inp_wt_avg(k)(jj-iroww(n_bf_wt_row(k)))(sage-5,nage);
-	 				}
-				}
-				else
-	 			{
-	 				for(int jj = 1; jj <= tmp_nWtNobs(k); jj++)
-	 				{
-	 					xinp_wt_avg(k)(jj)(sage-5,nage) = d3_inp_wt_avg(k)(jj)(sage-5,nage);
-	 				}
-	 			}
-
-				int ttmp =	sum(tmp_nWtNobs(1,k-1));
-				int ttmp2 =	sum(tmp_nWtNobs(1,k));
-
-				for(int jj=ttmp+1; jj<=ttmp2; jj++)
-				{
-					xxinp_wt_avg(jj)(sage-5,nage) = xinp_wt_avg(k)(jj-ttmp)(sage-5,nage);
-				}
-			}
-		}
+	  /*
+	    This will redimension the d3_inp_wt_avg  according to tmp_nWtNobs and rename
+	    the 3d array to xinp_wt_avg. Then the 3darray is converted to a matrix
+	    xxinp_wt_avg
+	  */
+	  xinp_wt_avg.initialize();
+	  xxinp_wt_avg.initialize();
+	  for(int k=1; k<=nWtTab; k++){
+	    ivector iroww(0,n_bf_wt_row(k));
+	    iroww.initialize();
+	    if(nWtNobs(k) > 0){
+	      if(n_bf_wt_row(k) > 0){
+	        for(i=1; i<=n_bf_wt_row(k); i++){
+	          d3_inp_wt_avg(k,i,sage-5) = fabs(d3_inp_wt_avg(k, i, sage - 5));
+	          iroww(i) = d3_inp_wt_avg(k, i, sage - 5) - syr + iroww(i - 1);
+	          for(int jj=iroww(i);jj>=iroww(i-1)+1;jj--){
+	            xinp_wt_avg(k)(jj)(sage-5) = syr + jj - iroww(i - 1) - 1;
+	            xinp_wt_avg(k)(jj)(sage-4,nage) = d3_inp_wt_avg(k)(i)(sage-4,nage);
+	          }
+	        }
+	        for(int jj = iroww(n_bf_wt_row(k))+1; jj <= tmp_nWtNobs(k); jj++){
+	          xinp_wt_avg(k)(jj)(sage-5,nage) = d3_inp_wt_avg(k)(jj-iroww(n_bf_wt_row(k)))(sage-5,nage);
+	        }
+	      }else{
+	        for(int jj = 1; jj <= tmp_nWtNobs(k); jj++){
+	          xinp_wt_avg(k)(jj)(sage-5,nage) = d3_inp_wt_avg(k)(jj)(sage-5,nage);
+	        }
+	      }
+	      int ttmp = sum(tmp_nWtNobs(1, k - 1));
+	      int ttmp2 = sum(tmp_nWtNobs(1, k));
+	      for(int jj=ttmp+1; jj<=ttmp2; jj++){
+	        xxinp_wt_avg(jj)(sage-5,nage) = xinp_wt_avg(k)(jj-ttmp)(sage-5,nage);
+	      }
+	    }
+	  }
 	END_CALCS
 
 	matrix  dWt_bar(1,n_ags,sage,nage);
@@ -1409,10 +1375,10 @@ DATA_SECTION
     // Prospective counter for n_A_nobs
     n_saa.initialize();
     n_saa = 1;
-    for( int k = 1; k <= nAgears; k++ ){
-      for( int i = 1; i <= n_A_nobs(k); i++ ){
-        iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
-        if( iyr < syr ){
+    for(int k = 1; k <= nAgears; k++){
+      for(int i = 1; i <= n_A_nobs(k); i++){
+        iyr = d3_A(k)(i)(n_A_sage(k)-6); //index for year
+        if(iyr < syr){
           n_saa(k)++;
         }
       }
@@ -3756,6 +3722,8 @@ FUNCTION calcObjectiveFunction
 	// | - Phase (n)  : standard deviation in the catch based on user input d_iscamCntrl(4)
 	// |
 
+	LOG<<"\nLine 3759: n_saa="<<n_saa<<", n_naa="<<n_naa;
+
 	double sig_c = d_iscamCntrl(3);
 	if(last_phase()){
 	  sig_c = d_iscamCntrl(4);
@@ -3805,8 +3773,8 @@ FUNCTION calcObjectiveFunction
 	  A_nu.initialize();
 	  for(k=1;k<=nAgears;k++){
 	    if( n_A_nobs(k)>0 ){
-	      //int n_naa = 0;		//retrospective counter
-	      //int n_saa = 1;		//prospective counter
+	      //int n_naa = 0; //retrospective counter
+	      //int n_saa = 1; //prospective counter
 	      int iyr;
 	      dmatrix O(n_saa(k),n_naa(k),n_A_sage(k),n_A_nage(k));
 	      dvar_matrix P(n_saa(k),n_naa(k),n_A_sage(k),n_A_nage(k));
@@ -3827,8 +3795,10 @@ FUNCTION calcObjectiveFunction
 	      }
 	      // | Choose form of the likelihood based on d_iscamCntrl(14) switch
 	      // switch(int(d_iscamCntrl(14)))
-	      LOG<<"\nLine 3861: k="<<k<<", n_saa="<<n_saa(k)<<", n_naa="<<n_naa(k)<<", n_A_sage"<<n_A_sage(k)<<", n_A_nage"<<n_A_nage(k);
-	      LOG<<"\nLine 3862: dMinP="<<dMinP(k)<<", dEps="<<dEps(k);
+	      LOG<<"\nLine 3861: k="<<k<<", n_saa(k)="<<n_saa(k)<<", n_naa(k)="<<n_naa(k)<<", n_A_sage(k)="<<n_A_sage(k)<<", n_A_nage(k)="<<n_A_nage(k);
+	      LOG<<"\nLine 3862: dMinP(k)="<<dMinP(k)<<", dEps(k)="<<dEps(k)<<"\n";
+	      LOG<<"n_A_nobs = "<<n_A_nobs<<"\n";
+	      LOG<<"O = "<<O<<"\n";
 	      exit(1);
 	      logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 	      logistic_student_t cLST_Age( O,P,dMinP(k),dEps(k) );

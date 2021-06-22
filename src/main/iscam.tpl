@@ -4947,430 +4947,388 @@ FUNCTION void projection_model(const double& tac);
 	    p_sbt(i + 1) = elem_prod(p_N(i), exp(-p_Z(i) * d_iscamCntrl(13))) * fa_bar;
 	  }
 	}
-
-  // write_proj_headers and write_proj_output are in include/utilities.h
-  // ofsmcmc object is in libs/utilities.cpp
-  if(mceval_phase()){
-   if(nf == 1 && runNo == 1){
-    LOG<<"Running MCMC projections\n";
-    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-    write_proj_headers(ofsmcmc,
-                       syr,
-                       nyr,
-                       !d_iscamCntrl(13),
-                       d_iscamCntrl(13) && d_iscamCntrl(20));
-    ofsmcmc.flush();
-   }
-   ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-   write_proj_output(ofsmcmc,
-                     syr,
-                     nyr,
-                     nage,
-                     tac,
-                     pyr,
-                     p_sbt,
-                     p_rt,
-                     p_ft,
-                     p_N,
-                     M,
-                     ma,
-                     dWt_bar,
-                     ft(1),
-                     value(sbo(1)),
-                     fmsy,
-                     bmsy,
-                     !d_iscamCntrl(13),
-                     d_iscamCntrl(13) && d_iscamCntrl(20));
-
-   ofsmcmc.flush();
-  }else{
-//   if(runNo==1){
-//    LOG<<"Running MPD projections"<<'\n';
-//    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
-//    write_proj_output(ofsmpd);
-//    ofsmpd.flush();
-//   }
-//   ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
-//   write_proj_output(ofsmpd, tac, pyr, p_sbt, p_ft);
-//   ofsmpd.flush();
-  }
-  if(!mceval_phase()){
-   LOG<<"Finished projection model for TAC = "<<tac<<'\n';
-  }
-
-FUNCTION void projection_model_dd(const double& tac)
+	// write_proj_headers and write_proj_output are in include/utilities.h
+	// ofsmcmc object is in libs/utilities.cpp
+	if(mceval_phase()){
+	  if(nf == 1 && runNo == 1){
+	    LOG<<"Running MCMC projections\n";
+	    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
+	    write_proj_headers(ofsmcmc, syr, nyr, !d_iscamCntrl(13), d_iscamCntrl(13) && d_iscamCntrl(20));
+	    ofsmcmc.flush();
+	  }
+	  ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
+	  write_proj_output(ofsmcmc,
+	                    syr,
+	                    nyr,
+	                    nage,
+	                    tac,
+	                    pyr,
+	                    p_sbt,
+	                    p_rt,
+	                    p_ft,
+	                    p_N,
+	                    M,
+	                    ma,
+	                    dWt_bar,
+	                    ft(1),
+	                    value(sbo(1)),
+	                    fmsy,
+	                    bmsy,
+	                    !d_iscamCntrl(13),
+	                    d_iscamCntrl(13) && d_iscamCntrl(20));
+	  ofsmcmc.flush();
+	}else{
 	/*
-	This routine conducts population projections based on
-	the estimated values of theta.  Note that all variables
-	in this routine are data type variables.
-
-	Arguments:
-	tac is the total allowable catch that must be allocated
-	to each gear type based on allocation(k)
-
-	theta(1) = log_ro
-	theta(2) = h
-	theta(3) = log_m
-	theta(4) = log_avgrec
-	theta(5) = log_recinit
-	theta(6) = rho
-	theta(7) = vartheta
-
-	** NOTES **
-	* Projections are based on estimated constant natural mortality
-	* Currently, reference points are historical only, based average historical
-     biomass and ft, and minimum biomass, based on years provided in the pfc file
-	* TO DO: implement fmsy and bo-based reference points
-
+	  if(runNo==1){
+	    LOG<<"Running MPD projections"<<'\n';
+	    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
+	    write_proj_output(ofsmpd);
+	    ofsmpd.flush();
+	  }
+	  ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
+	  write_proj_output(ofsmpd, tac, pyr, p_sbt, p_ft);
+	  ofsmpd.flush();
 	*/
+	}
+	if(!mceval_phase()){
+	  LOG<<"Finished projection model for TAC = "<<tac<<'\n';
+	}
+
+	/*
+	  This routine conducts population projections based on
+	    the estimated values of theta.  Note that all variables
+	    in this routine are data type variables.
+	  Arguments:
+	    tac is the total allowable catch that must be allocated
+	    to each gear type based on allocation(k)
+	    theta(1) = log_ro
+	    theta(2) = h
+	    theta(3) = log_m
+	    theta(4) = log_avgrec
+	    theta(5) = log_recinit
+	    theta(6) = rho
+	    theta(7) = vartheta
+	  NOTES:
+	    - Projections are based on estimated constant natural mortality
+	    - Currently, reference points are historical only, based average historical
+	      biomass and ft, and minimum biomass, based on years provided in the pfc file
+	  TODO:
+	    Implement fmsy and bo-based reference points
+	*/
+FUNCTION void projection_model_dd(const double& tac)
 	static int runNo=0;
 	runNo ++;
 	int i;
 	int pyr = nyr+2;	//projection year.
 	//int pyr = nyr+3;	//projection year. Sept 11 2018. RF testing two year projection. Add this to control file.
-
-	 BaranovCatchEquation cBaranov;
-
+	BaranovCatchEquation cBaranov;
 	//get parameters - convert to data objects
 	//double pbo   = value(bo(1));
 	//double pso = value (so(1));
 	//double pbeta =value(beta(1));
-
 	dvector p_bt(syr,pyr);
 	dvector p_ft(syr,pyr);
 	dvector p_N(syr,pyr);
 	dvector p_S(syr,pyr);
-	dvector p_rt(syr+sage,pyr);//dmatrix p_Ft(1,ngear,syr,pyr);
+	dvector p_rt(syr+sage,pyr); //dmatrix p_Ft(1,ngear,syr,pyr);
 	p_bt.initialize();
 	p_ft.initialize();
 	p_N.initialize();
 	p_S.initialize();
 	p_rt.initialize();
-
 	p_ft(syr,nyr) = value(ft(1)(1)(syr,nyr));
 	p_N(syr,nyr) = value(numbers(1)(syr,nyr));
-	p_bt(syr,nyr)   = value(biomass(1)(syr,nyr)); //sbt and vul biomass all the same for delay diff
-	p_S(syr,nyr)   = value(surv(1)(syr,nyr));
-	p_rt(syr+sage,nyr)   = value(rt(1)(syr+sage,nyr));
-
+	p_bt(syr,nyr) = value(biomass(1)(syr,nyr)); //sbt and vul biomass all the same for delay diff
+	p_S(syr,nyr) = value(surv(1)(syr,nyr));
+	p_rt(syr+sage,nyr) = value(rt(1)(syr+sage,nyr));
 	// *** HISTORICAL REFERENCE POINTS *** //
 	//Values needed for calculating historical reference points
 	int nshort=pf_cntrl(7)-syr+1;
 	int nlong=pf_cntrl(8)-syr+1;
-	double meanfshort = 0;	  // average F between syr and pf_cntrl(7)
-	double meanflong = 0;	    // average F between syr and pf_cntrl(8)
-	double meanbshort = 0;	 // average B between syr and pf_cntrl(7)
-	double meanblong = 0;	  // average B between syr and pf_cntrl(8)
-	double minb = 0;	  // biomass in pf_cntrl(9)
-
+	double meanfshort = 0; // average F between syr and pf_cntrl(7)
+	double meanflong = 0; // average F between syr and pf_cntrl(8)
+	double meanbshort = 0; // average B between syr and pf_cntrl(7)
+	double meanblong = 0; // average B between syr and pf_cntrl(8)
+	double minb = 0; // biomass in pf_cntrl(9)
 	dvector hist_ftshort(syr,pf_cntrl(7));
 	dvector hist_ftlong(syr,pf_cntrl(8));
 	dvector hist_btshort(syr,pf_cntrl(7));
 	dvector hist_btlong(syr,pf_cntrl(8));
-        hist_ftshort.initialize();  hist_ftlong.initialize();
-	hist_btshort.initialize();  hist_btlong.initialize();
-
+	hist_ftshort.initialize(); hist_ftlong.initialize();
+	hist_btshort.initialize(); hist_btlong.initialize();
 	hist_ftshort=value(ft(1)(1)(syr,pf_cntrl(7)));
 	hist_btshort=value(biomass(1)(syr,pf_cntrl(7)));
-
 	if(nyr>=pf_cntrl(8)){
-
-		hist_ftlong=value(ft(1)(1)(syr,pf_cntrl(8)));
-		hist_btlong=value(biomass(1)(syr,pf_cntrl(8)));
+	  hist_ftlong=value(ft(1)(1)(syr,pf_cntrl(8)));
+	  hist_btlong=value(biomass(1)(syr,pf_cntrl(8)));
 	}
-
 	meanfshort=sum(hist_ftshort)/nshort;
 	if(nyr>=pf_cntrl(8)) meanflong=sum(hist_ftlong)/nlong;
 	meanbshort=sum(hist_btshort)/nshort;
 	if(nyr>=pf_cntrl(8)) meanblong=sum(hist_btlong)/nlong;
-
 	//Minimum biomass from which the stock recovered to above average. Currently wired into pfc file.
 	//minb=pf_cntrl(9); August 21, 2018. This is just the year. Need the biomass
-	minb=value(biomass(1)(pf_cntrl(9))); //RF::August 21, 2018.
-
+	minb = value(biomass(1)(pf_cntrl(9)));
 	/* Simulate population into the future under constant tac policy. */
-	for(i = nyr+1; i<=pyr; i++)
-	{
-		//recruits
-		//double p_tau = value(sqrt(1-rho)/varphi);
-		double p_tau = value(tau(1));
-		double xx = randn(nf+i)*p_tau;
-
-		//double rt;
-		double et=p_bt(i-kage(1)); //delay diff
-
-		if(d_iscamCntrl(2)==1)p_rt(i)=value((so(1)*et/(1.+beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-		if(d_iscamCntrl(2)==2)p_rt(i)=value((so(1)*et*exp(-beta(1)*et))*exp(xx-0.5*p_tau*p_tau));
-
-    //for nyr + 1 use values projected using the actual catch
-    if(i==nyr+1) {
-      p_bt(i)   = value(biomass(1)(nyr+1));
-      p_N(i) = value(numbers(1)(nyr+1));
-    }
-		//numbers and biomass
-		//Update biomass and numbers
-		if(i>nyr+1) {
-		     p_bt(i) = (p_S(i-1)*(rho_g(1)*p_bt(i-1)+alpha_g(1)*p_N(i-1))+wk(1)*p_rt(i));
-		     p_N(i) = p_S(i-1)*p_N(i-1)+p_rt(i);
-		 }
-               	//LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
-
-		//get_ftdd is defined in the Baranov.cpp file
-		p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i)); //hardwiring the catch to gear 1 for this assessment. m_bar is same as constant M
-
-		/*
-		//test get_ftdd with Baranov equation
-		double testf =p_ft(i);
-		double testc = p_bt(i)*(1-mfexp(-value(m)-testf))*(testf/(value(m) + testf));
-		LOG<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<'\n'<<'\n';
-		*/
-
-		//Calculate mortality for next projection year
-		p_S(i) = mfexp(-(value(M_dd(1)(syr))+p_ft(i)));
-
+	for(i = nyr+1; i<=pyr; i++){
+	  //recruits
+	  //double p_tau = value(sqrt(1-rho)/varphi);
+	  double p_tau = value(tau(1));
+	  double xx = randn(nf+i)*p_tau;
+	  //double rt;
+	  double et = p_bt(i-kage(1)); //delay diff
+	  if(d_iscamCntrl(2)==1)
+	    p_rt(i)=value((so(1) * et / (1. + beta(1) * et)) * exp(xx - 0.5 * p_tau * p_tau));
+	  if(d_iscamCntrl(2)==2)
+	    p_rt(i)=value((so(1) * et * exp(-beta(1) * et)) * exp(xx - 0.5 * p_tau * p_tau));
+	  //for nyr + 1 use values projected using the actual catch
+	  if(i == nyr+1){
+	    p_bt(i) = value(biomass(1)(nyr+1));
+	    p_N(i) = value(numbers(1)(nyr+1));
+	  }
+	  // numbers and biomass
+	  //Update biomass and numbers
+	  if(i>nyr+1){
+	    p_bt(i) = (p_S(i-1) * (rho_g(1) * p_bt(i-1) + alpha_g(1) * p_N(i-1)) + wk(1) * p_rt(i));
+	    p_N(i) = p_S(i-1) * p_N(i-1) + p_rt(i);
+	  }
+	  //LOG<<i<<"  "<<p_rt(i)<<"  "<<p_bt(i)<<"  "<<p_N(i)<<'\n';
+	  //get_ftdd is defined in the Baranov.cpp file
+	  p_ft(i) = cBaranov.get_ftdd(tac,value(M_dd(1)(syr)),p_bt(i)); //hardwiring the catch to gear 1 for this assessment. m_bar is same as constant M
+	  /*
+	    // test get_ftdd with Baranov equation
+	    double testf =p_ft(i);
+	    double testc = p_bt(i)*(1-mfexp(-value(m)-testf))*(testf/(value(m) + testf));
+	    LOG<<i<<"  "<<testf<<"  "<<tac<<"  "<<testc<<'\n'<<'\n';
+	  */
+	  //Calculate mortality for next projection year
+	  p_S(i) = mfexp(-(value(M_dd(1)(syr))+p_ft(i)));
 	}
-
 
 	//_S= Short: Start and end year in pfc file
 	//_L=Long: Start and end year in pfc file
-
 	// QUANTITIES NEEDED FOR DECISION TABLE
 	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE
-  //  (LRP=0.2B0; USR=0.4B0 -- could add these to control file)
+	// (LRP=0.2B0; USR=0.4B0 -- could add these to control file)
 	if(mceval_phase()){
-		if(nf==1 && runNo==1){
-      LOG<<"Running MCMC projections\n";
-      ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-      write_proj_headers_dd(ofsmcmc, nyr, pyr);
-      ofsmcmc.flush();
-		}
-    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
-    write_proj_output_dd(ofsmcmc, tac, nyr, pyr,
-                         p_bt, p_ft, fmsy, bmsy, sbo, minb,
-                         meanbshort,
-                         meanblong,
-                         meanfshort,
-                         meanflong);
-
-    ofsmcmc.flush();
-  }
-
+	  if(nf==1 && runNo==1){
+	    LOG<<"Running MCMC projections\n";
+	    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
+	    write_proj_headers_dd(ofsmcmc, nyr, pyr);
+	    ofsmcmc.flush();
+	  }
+	  ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
+	  write_proj_output_dd(ofsmcmc, tac, nyr, pyr,
+	                       p_bt, p_ft, fmsy, bmsy, sbo, minb,
+	                       meanbshort,
+	                       meanblong,
+	                       meanfshort,
+	                       meanflong);
+	  ofsmcmc.flush();
+	}
 	// MPD projections
- 	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE
-  //  (LRP=0.2B0; USR=0.4B0 -- could add proportions to control file)
-  if(last_phase() && !mceval_phase()){
+	// TO DO: IMPLEMENT MSY AND B0-BASED REFERENCE POINTS AND ADD TO TABLE
+	// (LRP=0.2B0; USR=0.4B0 -- could add proportions to control file)
+	if(last_phase() && !mceval_phase()){
 	  if(runNo==1){
-      LOG<<"Running MPD projections\n";
-      ofstream ofsmpd("iscammpd_proj_Gear1.csv");
-      write_proj_headers_dd(ofsmpd, nyr, pyr);
-      ofsmpd.flush();
-    }
-    ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
-    write_proj_output_dd(ofsmpd, tac, nyr, pyr,
-                         p_bt, p_ft, fmsy, bmsy, sbo, minb,
-                         meanbshort,
-                         meanblong,
-                         meanfshort,
-                         meanflong);
-
-    ofsmpd.flush();
-  }
+	    LOG<<"Running MPD projections\n";
+	    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
+	    write_proj_headers_dd(ofsmpd, nyr, pyr);
+	    ofsmpd.flush();
+	  }
+	  ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
+	  write_proj_output_dd(ofsmpd, tac, nyr, pyr,
+	                       p_bt, p_ft, fmsy, bmsy, sbo, minb,
+	                       meanbshort,
+	                       meanblong,
+	                       meanfshort,
+	                       meanflong);
+	  ofsmpd.flush();
+	}
 
 TOP_OF_MAIN_SECTION
-  // These lines make all stdout and stderr go to the file
-  int fd = open("admb_runtime.log", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-  dup2(fd, 1);
-  dup2(fd, 2);
-  close(fd);
-  time(&start);
-  arrmblsize = 50000000;
-  gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e8);
-  gradient_structure::set_CMPDIF_BUFFER_SIZE(1.e7);
-  gradient_structure::set_MAX_NVAR_OFFSET(5000);
-  gradient_structure::set_NUM_DEPENDENT_VARIABLES(5000);
+	// These lines make all stdout and stderr go to the file
+	int fd = open("admb_runtime.log", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+	dup2(fd, 1);
+	dup2(fd, 2);
+	close(fd);
+	time(&start);
+	arrmblsize = 50000000;
+	gradient_structure::set_GRADSTACK_BUFFER_SIZE(1.e8);
+	gradient_structure::set_CMPDIF_BUFFER_SIZE(1.e7);
+	gradient_structure::set_MAX_NVAR_OFFSET(5000);
+	gradient_structure::set_NUM_DEPENDENT_VARIABLES(5000);
 
 GLOBALS_SECTION
-  /**
-  \def REPORT(object)
-  Prints name and value of \a object on ADMB report %ofstream file.
-  */
-  #undef REPORT
-  #define REPORT(object) report << #object "\n" << object << "\n";
-
-  #undef TINY
-  #define TINY 1.e-08
-
-  #undef NA
-  #define NA -99.0
-
-  #include <time.h>
-  #include <string.h>
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include "/home/cgrandin/admb/contrib/statslib/statsLib.h"
-  #include "../../include/baranov.h"
-  #include "../../include/LogisticNormal.h"
-  #include "../../include/LogisticStudentT.h"
-  #include "../../include/msy.h"
-  #include "../../include/slowmsy.h"
-  #include "../../include/msy.hpp"
-  #include "../../include/multinomial.h"
-  #include "../../include/utilities.h"
-  #include "../../include/Logger.h"
-
-  time_t start,finish;
-  long hour,minute,second;
-  double elapsed_time;
-  bool mcmcPhase = 0;
-  bool mcmcEvalPhase = 0;
-  adstring BaseFileName;
-  adstring ReportFileName;
-  adstring NewFileName;
-  // Variables to store results from DIC calculations.
-  double dicNoPar = 0;
-  double dicValue = 0;
+	/*
+	  \def REPORT(object)
+	  Prints name and value of \a object on ADMB report %ofstream file.
+	*/
+	#undef REPORT
+	#define REPORT(object) report << #object "\n" << object << "\n";
+	#undef TINY
+	#define TINY 1.e-08
+	#undef NA
+	#define NA -99.0
+	#include <time.h>
+	#include <string.h>
+	#include <unistd.h>
+	#include <fcntl.h>
+	#include "/home/cgrandin/admb/contrib/statslib/statsLib.h"
+	#include "../../include/baranov.h"
+	#include "../../include/LogisticNormal.h"
+	#include "../../include/LogisticStudentT.h"
+	#include "../../include/msy.h"
+	#include "../../include/slowmsy.h"
+	#include "../../include/msy.hpp"
+	#include "../../include/multinomial.h"
+	#include "../../include/utilities.h"
+	#include "../../include/Logger.h"
+	time_t start,finish;
+	long hour,minute,second;
+	double elapsed_time;
+	bool mcmcPhase = 0;
+	bool mcmcEvalPhase = 0;
+	adstring BaseFileName;
+	adstring ReportFileName;
+	adstring NewFileName;
+	// Variables to store results from DIC calculations.
+	double dicNoPar = 0;
+	double dicValue = 0;
 
 FUNCTION void ddiff_msy(dvector& ftest,
-                        dvector& ye,
-                        dvector& be,
-                        double& msy,
-                        double& fmsy,
-                        double& bmsy)
-  int k;
-  int NF = size_count(ftest);
-  ye.initialize();
-  be.initialize();
-  dvariable rec_a;
-  dvariable rec_b;
-  dvariable M;
+	                dvector& ye,
+	                dvector& be,
+	                double& msy,
+	                double& fmsy,
+	                double& bmsy)
+	int k;
+	int NF = size_count(ftest);
+	ye.initialize();
+	be.initialize();
+	dvariable rec_a;
+	dvariable rec_b;
+	dvariable M;
+	//double M = value(m);
+	rec_a = value(so(1));
+	rec_b = value(beta(1));
+	//int f, g, h, ih, gs;
+	// Calculate equilibrium survivorship as function of FMSY
+	for(k = 1; k <= NF; k++){
+	  double se; //survival in equilibrium
+	  double we; //average weight in equilibrium
+	  se = exp(-value(M_dd(1)(nyr)) - ftest(k));
+	  we = (se*alpha_g(1)+wk(1) *(1.-se))/(1.-rho_g(1)*se);
+	  be(k) = value(-1 * ((-we + se * alpha_g(1) + se * rho_g(1) * we +
+	  wk(1) * rec_a * we)/(rec_b * (-we + se * alpha_g(1) + se *
+	  rho_g(1) * we))));
+	  M = value(M_dd(1)(nyr));
+	  ye(k) = value(be(k) * (1.0 - mfexp(-ftest(k) - M)) * (ftest(k) /
+	  (ftest(k) + M)));
+	  if(ye(k) < 0){
+	    ye(k) = 0;
+	  }
+	  if(be(k) < 0){
+	    be(k) = 0;
+	  }
+	}
+	//LOG<<"ye"<<ye<<'\n';
+	//LOG<<"be"<<be<<'\n';
+	//LOG<<"ftest"<<ftest<<'\n';
+	double mtest;
+	msy = max(ye);
+	for(k = 1; k <= NF; k++){
+	  mtest = ye(k);
+	  if(mtest == msy){
+	    fmsy = ftest(k);
+	    bmsy = be(k);
+	  }
+	}
+	LOG<<"Slow msy calcs"<<'\n';
+	LOG<<"msy = "<<msy<<'\n';
+	LOG<<"fmsy = "<<fmsy<<'\n';
+	LOG<<"bmsy = "<<bmsy<<'\n';
 
-  //double M = value(m);
-  rec_a=value(so(1));
-  rec_b=value(beta(1));
-  //int f,g,h,ih,gs;
-
-  // Calculate equilibrium survivorship as function of FMSY
-  for(k = 1; k <= NF; k++){
-    double se; //survival in equilibrium
-    double we; //average weight in equilibrium
-    se = exp(-value(M_dd(1)(nyr)) - ftest(k));
-    we = (se*alpha_g(1)+wk(1) *(1.-se))/(1.-rho_g(1)*se);
-    be(k) = value(-1 * ((-we + se * alpha_g(1) + se * rho_g(1) * we +
-      wk(1) * rec_a * we)/(rec_b * (-we + se * alpha_g(1) + se *
-      rho_g(1) * we))));
-    M = value(M_dd(1)(nyr));
-    ye(k) = value(be(k) * (1.0 - mfexp(-ftest(k) - M)) * (ftest(k) /
-      (ftest(k) + M)));
-    if(ye(k) < 0){
-      ye(k) = 0;
-    }
-    if(be(k) < 0){
-      be(k) = 0;
-    }
-  }
-
-  //LOG<<"ye"<<ye<<'\n';
-  //LOG<<"be"<<be<<'\n';
-  //LOG<<"ftest"<<ftest<<'\n';
-  //exit(1);
-  double mtest;
-  msy = max(ye);
-  for(k = 1; k <= NF; k++){
-    mtest = ye(k);
-    if(mtest == msy){
-      fmsy = ftest(k);
-      bmsy = be(k);
-    }
-  }
-  LOG<<"Slow msy calcs"<<'\n';
-  LOG<<"msy = "<<msy<<'\n';
-  LOG<<"fmsy = "<<fmsy<<'\n';
-  LOG<<"bmsy = "<<bmsy<<'\n';
-
-//RF's function for calling slow msy routine to test ref points
-//Called by calcReferencePoints if turned on
+	/*
+	  Slow msy routine to test ref points
+	  Called by calcReferencePoints if turned on
+	*/
 FUNCTION void run_FRP()
-  //Reference points
-  if(last_phase()){
-    LOG<<"\n*********Getting reference points the slow way************\n";
-    LOG<<"*******************************************\n\n";
-  }
-  // ftest is a vector of F's from 0 to the number selected in the control
-  //  file with the number of elements necessary to match the precision
-  //  selected in the control file.
-  int vec_size = (int)(d_iscamCntrl(19) / d_iscamCntrl(18)) + 1;
-  dvector ftest(1, vec_size);
-  ftest.fill_seqadd(0, d_iscamCntrl(18));
-  int Nf = size_count(ftest);
-  double Fmsy;
-  double MSY;
-  double Bmsy;
-  double B0;
+	//Reference points
+	if(last_phase()){
+	  LOG<<"\n*********Getting reference points the slow way************\n";
+	  LOG<<"*******************************************\n\n";
+	}
+	// ftest is a vector of F's from 0 to the number selected in the control
+	// file with the number of elements necessary to match the precision
+	// selected in the control file.
+	int vec_size = (int)(d_iscamCntrl(19) / d_iscamCntrl(18)) + 1;
+	dvector ftest(1, vec_size);
+	ftest.fill_seqadd(0, d_iscamCntrl(18));
+	int Nf = size_count(ftest);
+	double Fmsy;
+	double MSY;
+	double Bmsy;
+	double B0;
+	// Matrix for putting numerically derived equilibrium catches for
+	// Calculating MSY and FMSY (in R)
+	dvector Ye(1,Nf);
+	// Matrix for putting numerically derived equilibrium catches for
+	// calculating MSY and FMSY (in R)
+	dvector Be(1,Nf);
+	dvector ye(1, Nf);
+	dvector be(1, Nf);
+	slow_msy(ftest, Ye, Be, MSY, Fmsy,
+	         Bmsy, B0, sage, nage, nyr,
+	         M, dWt_bar, ma, ro, kappa,
+	         log_sel, d_iscamCntrl, pf_cntrl);
+	if(d_iscamCntrl(13)){
+	  // If the fraction of total mortality that takes place
+	  //  before spawning is greater than 0, set the report
+	  //  file outputs to the results from the slow_msy
+	  //  routine
+	  fmsy = Fmsy;
+	  msy = MSY;
+	  bmsy = Bmsy;
+	  ye = Ye;
+	  be = Be;
+	  bo = B0;
+	}
+	ofstream ofsr("TEST_frp.rep");
+	ofsr<<"Max F"<<'\n'<<d_iscamCntrl(19)<<'\n';
+	ofsr<<"Precision for F"<<'\n'<<d_iscamCntrl(18)<<'\n';
+	ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
+	ofsr<<"MSY"<<'\n'<<MSY<<'\n';
+	ofsr<<"Bmsy"<<'\n'<<Bmsy<<'\n';
+	ofsr<<"ftest"<<'\n'<<ftest<<'\n';
+	ofsr<<"Ye"<<'\n'<<Ye<<'\n';
+	ofsr<<"Be"<<'\n'<<Be<<'\n';
+	ofsr<<"B0"<<'\n'<<B0<<'\n';
 
-  //Matrix for putting numerically derived equilibrium catches for
-  // calculating MSY and FMSY (in R)
-  dvector Ye(1,Nf);
-  //Matrix for putting numerically derived equilibrium catches for
-  // calculating MSY and FMSY (in R)
-  dvector Be(1,Nf);
-  dvector ye(1, Nf);
-  dvector be(1, Nf);
-
-  slow_msy(ftest, Ye, Be, MSY, Fmsy,
-           Bmsy, B0, sage, nage, nyr,
-           M, dWt_bar, ma, ro, kappa,
-           log_sel, d_iscamCntrl, pf_cntrl);
-
-  if(d_iscamCntrl(13)){
-    // If the fraction of total mortality that takes place
-    //  before spawning is greater than 0, set the report
-    //  file outputs to the results from the slow_msy
-    //  routine
-    fmsy = Fmsy;
-    msy = MSY;
-    bmsy = Bmsy;
-    ye = Ye;
-    be = Be;
-    bo = B0;
-  }
-
-  ofstream ofsr("TEST_frp.rep");
-  ofsr<<"Max F"<<'\n'<<d_iscamCntrl(19)<<'\n';
-  ofsr<<"Precision for F"<<'\n'<<d_iscamCntrl(18)<<'\n';
-  ofsr<<"Fmsy"<<'\n'<<Fmsy<<'\n';
-  ofsr<<"MSY"<<'\n'<<MSY<<'\n';
-  ofsr<<"Bmsy"<<'\n'<<Bmsy<<'\n';
-  ofsr<<"ftest"<<'\n'<<ftest<<'\n';
-  ofsr<<"Ye"<<'\n'<<Ye<<'\n';
-  ofsr<<"Be"<<'\n'<<Be<<'\n';
-  ofsr<<"B0"<<'\n'<<B0<<'\n';
-
-//RF's function for calling slow msy routine to test ref points -- currently
+// Call slow msy routine to test ref points -- currently
 // the only ref points implemented for delay difference model
-//Called by calcReferencePoints
+// Called by calcReferencePoints
 FUNCTION void run_FRPdd()
-  if(n_ags > 1){
-    LOG<<"MSY quantities not defined for n_ags > 1"<<'\n';
-  }else{
-    if(last_phase()){
-      LOG<<"\nGetting ref points the slow way for delay difference model\n";
-      LOG<<"*******************************************\n\n";
-    }
-    dvector ftest(1, 101);
-    ftest.fill_seqadd(0, 0.01);
-
-    int Nf = size_count(ftest);
-
-    for(int g = 1; g <= ngroup; g++){
-      //dvector Ye(1, Nf); // Should be a matrix by group and gear?
-      //Matrix for putting numerically derived equilibrium catches for
-      // calculating MSY and FMSY (in R)
-      //dvector Be(1, Nf); // Should be a matrix by group?
-      dvector ye(1, Nf); // i think this should be a matrix by group and gear
-      dvector be(1, Nf);
-      ddiff_msy(ftest, ye, be, msy(g, 1), fmsy(g, 1), bmsy(g));
-    }
-  }
+	if(n_ags > 1){
+	  LOG<<"MSY quantities not defined for n_ags > 1"<<'\n';
+	}else{
+	  if(last_phase()){
+	    LOG<<"\nGetting ref points the slow way for delay difference model\n";
+	    LOG<<"*******************************************\n\n";
+	  }
+	  dvector ftest(1, 101);
+	  ftest.fill_seqadd(0, 0.01);
+	  int Nf = size_count(ftest);
+	  for(int g = 1; g <= ngroup; g++){
+	    //dvector Ye(1, Nf); // Should be a matrix by group and gear?
+	    // Matrix for putting numerically derived equilibrium catches for
+	    // calculating MSY and FMSY (in R)
+	    //dvector Be(1, Nf); // Should be a matrix by group?
+	    dvector ye(1, Nf); // i think this should be a matrix by group and gear
+	    dvector be(1, Nf);
+	    ddiff_msy(ftest, ye, be, msy(g, 1), fmsy(g, 1), bmsy(g));
+	  }
+	}
 
 FINAL_SECTION
-  LOG<<"\n\nNumber of function evaluations: "<<nf<<'\n';
+	LOG<<"\n\nNumber of function evaluations: "<<nf<<'\n';

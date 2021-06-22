@@ -156,14 +156,14 @@ DATA_SECTION
 	int n_ags;
 	!! n_ags = narea * ngroup * nsex;
 	int n_ag;
-	!! n_ag  = narea * ngroup;
+	!! n_ag = narea * ngroup;
 	int n_gs;
-	!! n_gs  = ngroup * nsex;
-	ivector   n_area(1,n_ags);
-	ivector  n_group(1,n_ags);
-	ivector    n_sex(1,n_ags);
-	imatrix  pntr_ag(1,narea,1,ngroup);
-	imatrix  pntr_gs(1,ngroup,1,nsex);
+	!! n_gs = ngroup * nsex;
+	ivector n_area(1,n_ags);
+	ivector n_group(1,n_ags);
+	ivector n_sex(1,n_ags);
+	imatrix pntr_ag(1,narea,1,ngroup);
+	imatrix pntr_gs(1,ngroup,1,nsex);
 	3darray pntr_ags(1,narea,1,ngroup,1,nsex);
 
 	LOC_CALCS
@@ -1550,10 +1550,10 @@ PROCEDURE_SECTION
 	  calcFisheryObservations_deldiff();
 	  calcSurveyObservations_deldiff();
 	  calcStockRecruitment_deldiff();
-	  calcAnnualMeanWeight_deldiff(); //RF added this for P cod - only gets added to objective function if cntrl(15)==1
+	  calcAnnualMeanWeight_deldiff(); // Only added to objective function if cntrl(15) == 1
 	}else{
 	  if(d_iscamCntrl(5) == 2)
-	     d_iscamCntrl(5) = 0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
+	    d_iscamCntrl(5) = 0; //This control determines whether population is unfished in syr (0=false). The delay diff model also has option 2 where the population is at equilibrium with fishing mortality - not implemented in ASM.
 	  initParameters();
 	  calcSelectivities(isel_type);
 	  calcTotalMortality();
@@ -1617,26 +1617,25 @@ FUNCTION void initParameters()
 	varphi = sqrt(1.0/theta(7));
 	sig = elem_prod(sqrt(rho) , varphi);
 	tau = elem_prod(sqrt(1.0-rho) , varphi);
-	if(!delaydiff){
-	  for(ih=1;ih<=n_ag;ih++){
-	    log_avgrec(ih)  = theta(4,ih);
-	    log_recinit(ih) = theta(5,ih);
-	  }
-	}
 	if(delaydiff){
 	  for(ih=1;ih<=n_ag;ih++){
 	    log_avgrec(ih)  = theta(1,ih);
 	    log_recinit(ih) = theta(1,ih);
 	  }
+	}else{
+	  for(ih=1;ih<=n_ag;ih++){
+	    log_avgrec(ih)  = theta(4,ih);
+	    log_recinit(ih) = theta(5,ih);
+	  }
 	}
 	switch(int(d_iscamCntrl(2))){
 	  case 1:
-	    //Beverton-Holt model
-	    kappa = elem_div(4.*steepness,(1.-steepness));
+	    // Beverton-Holt model
+	    kappa = elem_div(4. * steepness, (1. - steepness));
 	    break;
 	  case 2:
-	    //Ricker model
-	    kappa = pow((5.*steepness),1.25);
+	    // Ricker model
+	    kappa = pow((5. * steepness), 1.25);
 	    break;
 	}
 	if(verbose){
@@ -1733,9 +1732,9 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	dvariable p1, p2, p3;
 	dvar_vector age_dev = age;
 	dvar_matrix t1;
-	dvar_matrix tmp(syr,nyr-1,sage,nage);
-	dvar_matrix tmp2(syr,nyr,sage,nage);
-	dvar_matrix ttmp2(sage,nage,syr,nyr);
+	dvar_matrix tmp(syr, nyr - 1, sage, nage);
+	dvar_matrix tmp2(syr, nyr, sage, nage);
+	dvar_matrix ttmp2(sage, nage, syr, nyr);
 	// Selex cSelex(age);
 	// logistic_selectivity cLogisticSelex(age);
 	log_sel.initialize();
@@ -1755,27 +1754,28 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	    bpar = 0;
 	    switch(isel_type(k)){
 	      case 1: //logistic selectivity (2 parameters)
-	        for(i=syr; i<=nyr; i++){
-	          if(i == sel_blocks(k,byr)){
-	            bpar ++;
-	            if(byr < n_sel_blocks(k)) byr++;
+	        for(i = syr; i <= nyr; i++){
+	          if(i == sel_blocks(k, byr)){
+	            bpar++;
+	            if(byr < n_sel_blocks(k))
+	              byr++;
 	          }
 	          // LOG<<"Testing selex class"<<'\n';
 	          // log_sel(k)(ig)(i) = log(cSelex.logistic(sel_par(k)(bpar)));
-	          // log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(bpar)) );
-	          p1 = mfexp(sel_par(k,bpar,1));
-	          p2 = mfexp(sel_par(k,bpar,2));
+	          // log_sel(k)(ig)(i) = log(cLogisticSelex(sel_par(k)(bpar)));
+	          p1 = mfexp(sel_par(k, bpar, 1));
+	          p2 = mfexp(sel_par(k, bpar, 2));
 	          // log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny );
-	          log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2)+tiny );
+	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2) + tiny);
 	        }
 	        break;
 	      case 6: // fixed logistic selectivity
-	        p1 = mfexp(sel_par(k,1,1));
-	        p2 = mfexp(sel_par(k,1,2));
-	        for(i=syr; i<=nyr; i++){
-	          //log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2) );
-	          log_sel(kgear)(ig)(i) = log( plogis(age,p1,p2) );
-	          // log_sel(k)(ig)(i) = log( cLogisticSelex(sel_par(k)(1)) );
+	        p1 = mfexp(sel_par(k, 1, 1));
+	        p2 = mfexp(sel_par(k, 1, 2));
+	        for(i = syr; i <= nyr; i++){
+	          //log_sel(kgear)(ig)(i) = log(plogis<dvar_vector>(age, p1, p2) );
+	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2));
+	          // log_sel(k)(ig)(i) = log(cLogisticSelex(sel_par(k)(1)));
 	        }
 	        break;
 	      case 2: // age-specific selectivity coefficients
@@ -1894,7 +1894,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	/*
 	  Purpose: This function calculates fishing mortality, total mortality and annual
 	    surivival rates S=exp(-Z) for each age and year based on fishing mortality
-	    and selectivity coefficients.  Z also is updated with time-varying
+	    and selectivity coefficients. Z also is updated with time-varying
 	    natural mortality rates if specificed by user.
 	  NOTES:
 	-   Jan 5, 2012 Added catch_type to allow for catch in numbers, weight or spawn.
@@ -1920,32 +1920,30 @@ FUNCTION calcTotalMortality
 	// | FISHING MORTALITY
 	// |---------------------------------------------------------------------------------|
 	// |
-	for(ig=1;ig<=nCtNobs;ig++){
+	for(ig = 1; ig <= nCtNobs; ig++){
 	  i = dCatchData(ig)(1); //year
 	  k = dCatchData(ig)(2); //gear
 	  f = dCatchData(ig)(3); //area
 	  g = dCatchData(ig)(4); //group
 	  h = dCatchData(ig)(5); //sex
 	  l = dCatchData(ig)(6); //type
-	  if(i < syr)
-	    continue;
-	  if(i > nyr)
+	  if(i < syr || i > nyr)
 	    continue;
 	  ft_counter++;
 	  if(h){
-	    ii = pntr_ags(f,g,h);
+	    ii = pntr_ags(f, g, h);
 	    ftmp = mfexp(log_ft_pars(ft_counter));
-	    ft(ii)(k,i) = ftmp;
+	    ft(ii)(k, i) = ftmp;
 	    if(l != 3){
 	      F(ii)(i) += ftmp*mfexp(log_sel(k)(ii)(i));
 	    }
-	  }else{ // h=0 case for asexual catch
-	    for(h=1;h<=nsex;h++){
-	      ii = pntr_ags(f,g,h);
+	  }else{
+	    for(h = 1; h <= nsex; h++){
+	      ii = pntr_ags(f, g, h);
 	      ftmp = mfexp(log_ft_pars(ft_counter));
-	      ft(ii)(k,i) = ftmp;
+	      ft(ii)(k, i) = ftmp;
 	      if(l != 3){
-	        F(ii)(i) += ftmp*mfexp(log_sel(k)(ii)(i));
+	        F(ii)(i) += ftmp * mfexp(log_sel(k)(ii)(i));
 	      }
 	    }
 	  }
@@ -1957,31 +1955,31 @@ FUNCTION calcTotalMortality
 	// | - uses cubic spline to interpolate time-varying natural mortality
 	M.initialize();
 	log_m_devs.initialize();
-	for(ig=1;ig<=n_ags;ig++){
+	for(ig = 1; ig <= n_ags; ig++){
 	  g = n_group(ig);
 	  h = n_sex(ig);
-	  M(ig) = m(pntr_gs(g,h));
+	  M(ig) = m(pntr_gs(g, h));
 	  if(active(log_m_nodes)){
 	    int nodes = size_count(log_m_nodes);
-	    dvector im(1,nodes);
-	    dvector fm(syr+1,nyr);
+	    dvector im(1, nodes);
+	    dvector fm(syr + 1, nyr);
 	    im.fill_seqadd(0, 1. / (nodes - 1));
 	    fm.fill_seqadd(0, 1. / (nyr - syr));
-	    vcubic_spline_function m_spline(im,log_m_nodes);
+	    vcubic_spline_function m_spline(im, log_m_nodes);
 	    log_m_devs = m_spline(fm);
 	  }
-	  for(i=syr+1; i<=nyr; i++){
-	    M(ig)(i) = M(ig)(i-1) * mfexp(log_m_devs(i));
+	  for(i = syr + 1; i <= nyr; i++){
+	    M(ig)(i) = M(ig)(i - 1) * mfexp(log_m_devs(i));
 	  }
 	  // TODO fix for reference point calculations
-	  // m_bar = mean( M_tot.sub(pf_cntrl(1),pf_cntrl(2)) );
+	  // m_bar = mean( M_tot.sub(pf_cntrl(1), pf_cntrl(2)) );
 	}
 
 	// |---------------------------------------------------------------------------------|
 	// | TOTAL MORTALITY
 	// |---------------------------------------------------------------------------------|
 	// |
-	for(ig=1;ig<=n_ags;ig++){
+	for(ig = 1; ig <= n_ags; ig++){
 	  Z(ig) = M(ig) + F(ig);
 	  S(ig) = mfexp(-Z(ig));
 	}
@@ -2023,13 +2021,13 @@ FUNCTION calcNumbersAtAge
 	  lx(nage) /= (1. - exp(-M(ig)(syr, nage)));
 	  if(d_iscamCntrl(5)){
 	    // initialize at unfished conditions.
-	    tr =  log(ro(g)) + log(lx);
+	    tr = log(ro(g)) + log(lx);
 	  }else{
-	    tr(sage)        = ( log_avgrec(ih) + log_rec_devs(ih)(syr));
-	    tr(sage+1,nage) = (log_recinit(ih) + init_log_rec_devs(ih));
-	    tr(sage+1,nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
+	    tr(sage) = log_avgrec(ih) + log_rec_devs(ih)(syr);
+	    tr(sage + 1, nage) = log_recinit(ih) + init_log_rec_devs(ih);
+	    tr(sage + 1, nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
 	  }
-	  N(ig)(syr)(sage,nage) = 1./nsex * mfexp(tr);
+	  N(ig)(syr)(sage, nage) = 1./nsex * mfexp(tr);
 	  log_rt(ih)(syr - nage + sage, syr) = tr.shift(syr - nage + sage);
 	  for(i = syr; i <= nyr; i++){
 	    if(i > syr){
@@ -2180,74 +2178,72 @@ FUNCTION calcTotalCatch
 	dvar_vector ca(sage,nage);
 	dvar_vector sa(sage,nage);
 	dvar_vector za(sage,nage);
-	for(ii=1;ii<=nCtNobs;ii++){
-	  i = dCatchData(ii,1);
-	  k = dCatchData(ii,2);
-	  f = dCatchData(ii,3);
-	  g = dCatchData(ii,4);
-	  h = dCatchData(ii,5);
-	  l = dCatchData(ii,6);
-	  d_ct = dCatchData(ii,7);
+	for(ii = 1; ii <= nCtNobs; ii++){
+	  i = dCatchData(ii, 1); // year
+	  k = dCatchData(ii, 2); // gear
+	  f = dCatchData(ii, 3); // area
+	  g = dCatchData(ii, 4); // group
+	  h = dCatchData(ii, 5); // sex
+	  l = dCatchData(ii, 6); // type
+	  d_ct = dCatchData(ii, 7); // value
 	  // | trap for retro year
-	  if(i<syr)
-	    continue;
-	  if(i>nyr)
+	  if(i < syr || i > nyr)
 	    continue;
 	  switch(l){
 	    case 1: // catch in weight
 	      if(h){
-	        ig = pntr_ags(f,g,h);
+	        ig = pntr_ags(f, g, h);
 	        fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
 	        za = Z(ig)(i);
 	        sa = S(ig)(i);
-	        ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
+	        ca = elem_prod(elem_prod(elem_div(fa, za), 1. - sa), N(ig)(i));
 	        ct(ii) = ca * d3_wt_avg(ig)(i);
 	      }else{
-	        for(h=1;h<=nsex;h++){
-	          ig = pntr_ags(f,g,h);
+	        for(h = 1 ; h <= nsex; h++){
+	          ig = pntr_ags(f, g, h);
 	          fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
 	          za = Z(ig)(i);
 	          sa = S(ig)(i);
-	          ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
+	          ca = elem_prod(elem_prod(elem_div(fa, za), 1. - sa), N(ig)(i));
 	          ct(ii) += ca * d3_wt_avg(ig)(i);
 	        }
 	      }
 	      break;
 	    case 2: // catch in numbers
 	      if(h){
-	        ig = pntr_ags(f,g,h);
+	        ig = pntr_ags(f, g, h);
 	        fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
 	        za = Z(ig)(i);
 	        sa = S(ig)(i);
-	        ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
-	        ct(ii) = sum( ca );
+	        ca = elem_prod(elem_prod(elem_div(fa, za), 1. - sa), N(ig)(i));
+	        ct(ii) = sum(ca);
 	      }else{
-	        for(h=1;h<=nsex;h++){
-	          ig = pntr_ags(f,g,h);
+	        for(h = 1; h <= nsex; h++){
+	          ig = pntr_ags(f, g, h);
 	          fa = ft(ig)(k)(i) * mfexp(log_sel(k)(ig)(i));
 	          za = Z(ig)(i);
 	          sa = S(ig)(i);
-	          ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),N(ig)(i));
-	          ct(ii) += sum( ca );
+	          ca = elem_prod(elem_prod(elem_div(fa, za), 1. - sa), N(ig)(i));
+	          ct(ii) += sum(ca);
 	        }
 	      }
 	      break;
 	    case 3: // roe fisheries, special case
 	      if(h){
-	        ig = pntr_ags(f,g,h);
+	        ig = pntr_ags(f, g, h);
 	        dvariable ssb = N(ig)(i) * d3_wt_mat(ig)(i);
 	        ct(ii) = (1.-exp(-ft(ig)(k)(i))) * ssb;
 	      }else{
-	        for(h=1;h<=nsex;h++){
-	          ig = pntr_ags(f,g,h);
+	        for(h = 1; h <= nsex; h++){
+	          ig = pntr_ags(f, g, h);
 	          dvariable ssb = N(ig)(i) * d3_wt_mat(ig)(i);
-	          ct(ii) += (1.-exp(-ft(ig)(k)(i))) * ssb;
+	          ct(ii) += (1. - exp(-ft(ig)(k)(i))) * ssb;
 	        }
 	      }
 	      break;
-	  } // end of switch
+	  }
 	  // | catch residual
-	  eta(ii) = log(d_ct+TINY) - log(ct(ii)+TINY);
+	  eta(ii) = log(d_ct + TINY) - log(ct(ii) + TINY);
 	}
 	if(verbose){
 	  LOG<<"**** Ok after calcTotalCatch ****\n";

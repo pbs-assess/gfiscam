@@ -4743,299 +4743,210 @@ FUNCTION mcmc_output
 	  }
 	}
 	of4<<'\n';
-  // output vulnerable biomass to all gears //Added by RF March 19 2015
-  ofstream of5("iscam_vbt_mcmc.csv",ios::app);
-  iter = 1;
-  for(int ag=1;ag<=ngroup;ag++){
-    for(int gear=1;gear<=ngear;gear++){
-      for(int yr=syr;yr<=nyr;yr++){
-        if(iter == 1){
-          of5<<vbt(ag)(gear)(yr);
-        }else{
-          of5<<","<<vbt(ag)(gear)(yr);
-        }
-        iter++;
-      }
-    }
-  }
-  of5<<'\n';
-
-  // output fishing mortality as U (1-e^-F)
-  ofstream of6("iscam_ut_mcmc.csv",ios::app);
-  iter = 1;
-  for(int ag=1;ag<=n_ags;ag++){
-    for(int gear=1;gear<=ngear;gear++){
-      for(int yr=syr;yr<=nyr;yr++){
-        if(iter == 1){
-          of6<<1.0-exp(-ft(ag)(gear)(yr));
-        }else{
-          of6<<","<<1.0-exp(-ft(ag)(gear)(yr));
-        }
-        iter++;
-      }
-    }
-  }
-  of6<<'\n';
-
-  // output natural mortality - (added for herring)
-  ofstream of7("iscam_m_mcmc.csv",ios::app);
-  iter = 1;
-  for(int yr=syr;yr<=nyr;yr++){
-    if(iter == 1){
-      of7<<M(1)(yr)(sage);
-    }else{
-      of7<<","<<M(1)(yr)(sage);
-    }
-    iter++;
-  }
-  of7<<'\n';
-
-  // Output Nage1951 (added for MSE conditioning)
-	ofstream of8("iscam_Na1951_mcmc.csv",ios::app);
+	// output vulnerable biomass to all gears //Added by RF March 19 2015
+	ofstream of5("iscam_vbt_mcmc.csv",ios::app);
 	iter = 1;
-	for( int ag=1;ag <= n_ags; ag++)
-		for( int age=sage;age<=nage;age++){
-			if(iter == 1){
-				of8<<N(ag,syr,age);
-			} else {
-				of8<<","<<N(ag,syr,age);
-			}
-			iter++;
-		}
-	of8<<"\n";
-
-	ofstream of9("iscam_Nage2t_mcmc.csv",ios::app);
-    iter = 1;
-    for( int ag=1;ag <= n_ags; ag++)
-	    for( int t = syr; t <= nyr+1; t++){
-	    	if(iter == 1){
-	    		of9<<N(ag,t,sage);
-	    	} else {
-	    		of9<<"," << N(ag,t,sage);
-	    	}
-	    	iter++;
+	for(int ag=1;ag<=ngroup;ag++){
+	  for(int gear=1;gear<=ngear;gear++){
+	    for(int yr=syr;yr<=nyr;yr++){
+	      if(iter == 1){
+	        of5<<vbt(ag)(gear)(yr);
+	      }else{
+	        of5<<","<<vbt(ag)(gear)(yr);
+	      }
+	      iter++;
 	    }
-    of9<<"\n";
+	  }
+	}
+	of5<<'\n';
+	// output fishing mortality as U (1-e^-F)
+	ofstream of6("iscam_ut_mcmc.csv",ios::app);
+	iter = 1;
+	for(int ag=1;ag<=n_ags;ag++){
+	  for(int gear=1;gear<=ngear;gear++){
+	    for(int yr=syr;yr<=nyr;yr++){
+	      if(iter == 1){
+	        of6<<1.0-exp(-ft(ag)(gear)(yr));
+	      }else{
+	        of6<<","<<1.0-exp(-ft(ag)(gear)(yr));
+	      }
+	      iter++;
+	    }
+	  }
+	}
+	of6<<'\n';
+	// output natural mortality - (added for herring)
+	ofstream of7("iscam_m_mcmc.csv",ios::app);
+	iter = 1;
+	for(int yr=syr;yr<=nyr;yr++){
+	  if(iter == 1){
+	    of7<<M(1)(yr)(sage);
+	  }else{
+	    of7<<","<<M(1)(yr)(sage);
+	  }
+	  iter++;
+	}
+	of7<<'\n';
+	ofs.flush();
+	of1.flush();
+	of2.flush();
+	of3.flush();
+	of4.flush();
+	of5.flush();
+	of6.flush();
+	of7.flush();
+	if(n_ags == 1){
+	  int ii;
+	  for(ii=1;ii<=n_tac;ii++){
+	    LOG<<ii<<" "<<tac(ii)<<'\n';
+	    if(delaydiff)
+	       projection_model_dd(tac(ii)); // TODO: update with msy and b0-based reference points
+	    else
+	      projection_model(tac(ii)); // TODO: Add historical ref points
+	  }
+	}
+	if(n_ags>1){
+	  if(nf == 1)
+	    LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
+	}
 
-  ofs.flush();
-  of1.flush();
-  of2.flush();
-  of3.flush();
-  of4.flush();
-  of5.flush();
-  of6.flush();
-  of7.flush();
-  of8.flush();
-  of9.flush();
-
- //RF:: March 17 2015. RF re-instated projection_model for Arrowtooth Flounder assessment. NOT IMPLEMENTED FOR MULTIPLE AREA/GROUPS
- // CW: Took this out while testing  the multiple area delaydiff
-
- if(n_ags==1) {
-  int ii;
-  for(ii=1;ii<=n_tac;ii++){
-    LOG<<ii<<" "<<tac(ii)<<'\n';
-    if(!delaydiff) projection_model(tac(ii)); //TO DO: Add historical ref points
-    if(delaydiff) projection_model_dd(tac(ii)); //TO DO: update with msy and b0-based reference points
-  }
- }
-
- if(n_ags>1){
-  if(nf==1) LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
- }
-
-// FUNCTION dvector age3_recruitment(const dvector& rt, const double& wt,const double& M)
-//   {
-// /*
-// This routine returns the poor average and good age-3 recruits
-// that is used in constructing the decision table for the pacific
-// herring fisheries.
-
-// -1) sort the rt vector from small to large
-// -2) find the 33rd and 66th percentiles
-// -3) take the averge of the 0-33, 34-66, 67-100
-// -4) multiply by the average weight
-// -5) return the age-3 recruitment biomass
-// */
-
-// dvector s_rt = sort(rt);
-// dvector rbar(1,3);
-
-// double idx = floor((nyr-syr+1.)/3.);
-// int ix1 = syr+int(idx);
-// int ix2 = syr+int(2.*idx);
-// rbar(1) = mean(s_rt(syr,ix1));
-// rbar(2) = mean(s_rt(ix1+1,ix2));
-// rbar(3) = mean(s_rt(ix2+1,nyr));
-// rbar = rbar*wt*exp(-M);
-// //LOG<<rbar<<'\n';
-// return(rbar);
-//   }
-
- //RF re-instated this code (with several updates to match current version, and new code for projection output files for 2014 Arrowtooth Flounder) March 17 2015
- // !!! NOT IMPLEMENTED FOR n_ags > 1!!!
+	/*
+	  This routine conducts population projections based on
+	    the estimated values of theta.  Note that all variables
+	    in this routine are data type variables.
+	    Arguments:
+	      tac is the total allowable catch that must be allocated
+	      to each gear type based on dAllocation(k)
+	      theta(1) = log_ro
+	      theta(2) = h
+	      theta(3) = log_m
+	      theta(4) = log_avgrec
+	      theta(5) = log_recinit
+	      theta(6) = rho
+	      theta(7) = vartheta
+	    NOTES:
+	      - Projections are based on average natural mortality and fecundity.
+	      - Selectivity is based on selectivity in terminal year.
+	      - Average weight-at-age is based on mean weight in the last N years,
+	      - where N is the difference in years given in items 3 and 4 of the projection
+	      - file control options "years for average fecundity/weight-at-age in projections"
+	*/
 FUNCTION void projection_model(const double& tac);
-  /*
-  This routine conducts population projections based on
-  the estimated values of theta.  Note that all variables
-  in this routine are data type variables.
-
-  Arguments:
-  tac is the total allowable catch that must be allocated
-  to each gear type based on dAllocation(k)
-
-  theta(1) = log_ro
-  theta(2) = h
-  theta(3) = log_m
-  theta(4) = log_avgrec
-  theta(5) = log_recinit
-  theta(6) = rho
-  theta(7) = vartheta
-
-  ** NOTES **
-  * Projections are based on average natural mortality and fecundity.
-  * Selectivity is based on selectivity in terminal year.
-  * Average weight-at-age is based on mean weight in the last N years,
-  *  where N is the difference in years given in items 3 and 4 of the projection
-  *  file control options "years for average fecundity/weight-at-age in projections"
-  */
-  static int runNo = 0;
-  runNo ++;
-  int i, k;
-  // Note that the historical model already projects a year. This code will replace that year and project one more
-  int pyr = nyr + 1;
-  BaranovCatchEquation cBaranov;
-  // | (2) : Average weight and mature spawning biomass for reference years  (copied from calcReferencePoints() but only implemented for ig=1)
-  // |     : dWt_bar(1,n_ags,sage,nage)
-  dvector fa_bar(sage, nage);
-  dvector  M_bar(sage, nage);
-  fa_bar = elem_prod(dWt_bar(1), ma(1));
-  // See notes above about average fecundity
-  M_bar  = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4))));
-  M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
-  // --derive stock re4cruitment parameters
-  // --survivorship of spawning biomass
-  dvector lx(sage, nage);
-  double  tau = value(sqrt(1. - rho) * varphi);
-  //double m_rho = d_iscamCntrl(13);
-  lx(sage) = 1.;
-  for(i = sage + 1; i <= nage; i++){
-    lx(i) = lx(i - 1) * mfexp(-M_bar(i - 1));
-    if(i == nage){
-      lx(i) /= 1.0 - mfexp( -M_bar(i));
-    }
-  }
-  // average fecundity is calculated for all area/groups but projections are currently only implemented for n_ags=1
-  double phib = lx * fa_bar;
-  double so = value(kappa(1) / phib);
-  double bo  = value(ro(1) * phib);
-  double beta = 1;
-  switch(int(d_iscamCntrl(2))){
-   case 1:  // Beverton-Holt
-    beta = value((kappa(1) - 1.) / bo);
-    break;
-   case 2:  // Ricker
-    beta = value(log(kappa(1) / bo));
-    break;
-  }
-  /* Fill arrays with historical values */
-  dvector p_sbt(syr, pyr + 1);
-  dvector p_rt(syr + sage, pyr);
-  dvector p_ct(1, ngear);
-  dmatrix p_ft(nyr, pyr + 1, 1, ngear);
-  dmatrix p_N(syr, pyr + 2, sage, nage);
-  dmatrix p_Z(syr, pyr + 1, sage, nage);
-  p_N.initialize();
-  p_sbt.initialize();
-  p_rt.initialize();
-  p_Z.initialize();
-  p_ct.initialize();
-  p_ft.initialize();
-
-  // The historical model already does a projection to nyr+1
-  // but want to draw an average recruitment for projection rather than highly uncertain estimate
-  for(i = syr; i<=nyr; i++){
-    p_N(i) = value(N(1)(i));
-    p_sbt(i) =  value(sbt(1)(i));
-    if(i >= syr + sage){
-      p_rt(i) = value(rt(1)(i));
-    }
-    p_Z(i) =  value(Z(1)(i));
-  }
-
-  // Selectivity and dAllocation to gears
-  dmatrix va_bar(1, ngear, sage, nage);
-  for(k = 1; k <= ngear; k++){
-    p_ct(k) = dAllocation(k) * tac;
-    va_bar(k) = exp(value(log_sel(k)(1)(nyr)));
-  }
-
-  // Simulate population into the future under constant tac policy
-  for(i = nyr - 1; i <= pyr + 1; i++){
-    // ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
-    if(i > nyr){
-      // average weight is calculated for all area/groups but projections are currently
-      // only implemented for n_ags=1
-      p_ft(i) = cBaranov.getFishingMortality(p_ct,
-                                             M_bar,
-                                             va_bar,
-                                             p_N(i),
-                                             dWt_bar(1));
-      // calculate total mortality in future years
-      p_Z(i) = M_bar;
-      for(k = 1; k <= ngear; k++){
-        p_Z(i) += p_ft(i,k) * va_bar(k);
-      }
-    }
-
-    // sage recruits with random deviate xx
-    // note the random number seed is repeated for each tac level.
-    // NOTE that this treatment of rec devs is different from historical model
-    double xx = randn(nf + i) * tau;
-    if(i >= syr + sage - 1){
-      double rt = 1;
-      // lagged spawning biomass (+1 because we want recruits for year i+1)
-      double et = p_sbt(i - sage + 1);
-      // Beverton-Holt model
-      if(d_iscamCntrl(2) == 1){
-        rt = so * et / (1. + beta * et);
-      }
-      // Ricker model
-      if(d_iscamCntrl(2)==2){
-        rt = so * et * exp(-beta * et);
-      }
-      if(i <= pyr){
-        p_rt(i) = rt;
-      }
-      // Next year's recruits
-      p_N(i+1,sage) = rt * exp(xx - 0.5 * tau * tau);
-    }
-    /* Update numbers at age in future years*/
-    // Next year's numbers
-    p_N(i + 1)(sage + 1, nage) = ++elem_prod(p_N(i)(sage, nage - 1),
-                                             exp(-p_Z(i)(sage, nage - 1)));
-    p_N(i + 1, nage) += p_N(i, nage) * exp(-p_Z(i, nage));
-
-    // Overwrite sbt(pyr and pyr + 1) so that they do not include estimated recruitment from the
-    // historical model, which is highly uncertain due to inclusion of estimated recruitment
-    // deviations.
-    // d_iscamCntrl(13) is the fraction of total mortality that takes place prior to spawning
-    if(i >= nyr && i <= pyr){
-      p_sbt(i + 1) = elem_prod(p_N(i), exp(-p_Z(i) * d_iscamCntrl(13))) * fa_bar;
-    }
-
-    // Predicted catch for checking calculations (RF tested this March 17, 2015)
-    //if(i > nyr){
-    //        LOG<<p_ft<<'\n';
-    // for(k=1;k<=ngear;k++)
-    // {
-    //  dvector ba = elem_prod(p_N(i),dWt_bar(1));
-    //  double ctest;
-    //  ctest = sum(elem_div(elem_prod(elem_prod(ba,p_ft(i,k)*va_bar(k)),1.-exp(-p_Z(i))),p_Z(i)));
-    //  LOG<<"gear = "<<k<<" tac = "<<tac<<"\t ct = "<<ctest<<'\n';
-    // }
-    //}
-  }
+	static int runNo = 0;
+	runNo ++;
+	int i, k;
+	// Note that the historical model already projects a year. This code will replace that year and project one more
+	int pyr = nyr + 1;
+	BaranovCatchEquation cBaranov;
+	// | (2) : Average weight and mature spawning biomass for reference years  (copied from calcReferencePoints() but only implemented for ig=1)
+	// |     : dWt_bar(1,n_ags,sage,nage)
+	dvector fa_bar(sage, nage);
+	dvector M_bar(sage, nage);
+	fa_bar = elem_prod(dWt_bar(1), ma(1));
+	// See notes above about average fecundity
+	M_bar  = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4))));
+	M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
+	// --derive stock re4cruitment parameters
+	// --survivorship of spawning biomass
+	dvector lx(sage, nage);
+	double tau = value(sqrt(1. - rho) * varphi);
+	//double m_rho = d_iscamCntrl(13);
+	lx(sage) = 1.;
+	for(i = sage + 1; i <= nage; i++){
+	  lx(i) = lx(i - 1) * mfexp(-M_bar(i - 1));
+	  if(i == nage){
+	    lx(i) /= 1.0 - mfexp( -M_bar(i));
+	  }
+	}
+	// average fecundity is calculated for all area/groups but projections are currently only implemented for n_ags=1
+	double phib = lx * fa_bar;
+	double so = value(kappa(1) / phib);
+	double bo  = value(ro(1) * phib);
+	double beta = 1;
+	switch(int(d_iscamCntrl(2))){
+	  case 1: // Beverton-Holt
+	    beta = value((kappa(1) - 1.) / bo);
+	    break;
+	  case 2:  // Ricker
+	    beta = value(log(kappa(1) / bo));
+	    break;
+	}
+	// Fill arrays with historical values
+	dvector p_sbt(syr, pyr + 1);
+	dvector p_rt(syr + sage, pyr);
+	dvector p_ct(1, ngear);
+	dmatrix p_ft(nyr, pyr + 1, 1, ngear);
+	dmatrix p_N(syr, pyr + 2, sage, nage);
+	dmatrix p_Z(syr, pyr + 1, sage, nage);
+	p_N.initialize();
+	p_sbt.initialize();
+	p_rt.initialize();
+	p_Z.initialize();
+	p_ct.initialize();
+	p_ft.initialize();
+	// The historical model already does a projection to nyr+1
+	// but want to draw an average recruitment for projection rather than highly uncertain estimate
+	for(i = syr; i<=nyr; i++){
+	  p_N(i) = value(N(1)(i));
+	  p_sbt(i) =  value(sbt(1)(i));
+	  if(i >= syr + sage){
+	    p_rt(i) = value(rt(1)(i));
+	  }
+	  p_Z(i) =  value(Z(1)(i));
+	}
+	// Selectivity and dAllocation to gears
+	dmatrix va_bar(1, ngear, sage, nage);
+	for(k = 1; k <= ngear; k++){
+	  p_ct(k) = dAllocation(k) * tac;
+	  va_bar(k) = exp(value(log_sel(k)(1)(nyr)));
+	}
+	// Simulate population into the future under constant tac policy
+	for(i = nyr - 1; i <= pyr + 1; i++){
+	  // ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
+	  if(i > nyr){
+	    // average weight is calculated for all area/groups but projections are currently
+	    // only implemented for n_ags=1
+	    p_ft(i) = cBaranov.getFishingMortality(p_ct, M_bar, va_bar, p_N(i), dWt_bar(1));
+	    // calculate total mortality in future years
+	    p_Z(i) = M_bar;
+	    for(k = 1; k <= ngear; k++){
+	      p_Z(i) += p_ft(i,k) * va_bar(k);
+	    }
+	  }
+	  // sage recruits with random deviate xx
+	  // note the random number seed is repeated for each tac level.
+	  // NOTE that this treatment of rec devs is different from historical model
+	  double xx = randn(nf + i) * tau;
+	  if(i >= syr + sage - 1){
+	    double rt = 1;
+	    // lagged spawning biomass (+1 because we want recruits for year i+1)
+	    double et = p_sbt(i - sage + 1);
+	    // Beverton-Holt model
+	    if(d_iscamCntrl(2) == 1){
+	      rt = so * et / (1. + beta * et);
+	    }
+	    // Ricker model
+	    if(d_iscamCntrl(2)==2){
+	      rt = so * et * exp(-beta * et);
+	    }
+	    if(i <= pyr){
+	      p_rt(i) = rt;
+	    }
+	    // Next year recruits
+	    p_N(i+1,sage) = rt * exp(xx - 0.5 * tau * tau);
+	  }
+	  // Update numbers at age in future years
+	  // Next year numbers
+	  p_N(i + 1)(sage + 1, nage) = ++elem_prod(p_N(i)(sage, nage - 1), exp(-p_Z(i)(sage, nage - 1)));
+	  p_N(i + 1, nage) += p_N(i, nage) * exp(-p_Z(i, nage));
+	  // Overwrite sbt(pyr and pyr + 1) so that they do not include estimated recruitment from the
+	  // historical model, which is highly uncertain due to inclusion of estimated recruitment
+	  // deviations.
+	  // d_iscamCntrl(13) is the fraction of total mortality that takes place prior to spawning
+	  if(i >= nyr && i <= pyr){
+	    p_sbt(i + 1) = elem_prod(p_N(i), exp(-p_Z(i) * d_iscamCntrl(13))) * fa_bar;
+	  }
+	}
 
   // write_proj_headers and write_proj_output are in include/utilities.h
   // ofsmcmc object is in libs/utilities.cpp

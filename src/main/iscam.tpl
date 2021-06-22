@@ -435,7 +435,6 @@ DATA_SECTION
 	init_3darray d3_A(1,nAgears,1,n_A_nobs,n_A_sage-6,n_A_nage);
 	3darray d3_A_obs(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage);
 	LOC_CALCS
-	  LOG<<"Line 495: n_A_sage = "<<n_A_sage<<", n_A_sage-6="<<n_A_sage-6<<"\n";
 	  if( n_A_nobs(nAgears) > 0){
 	    if(!mseFlag){
 	      if(n_A_nobs(nAgears) > 3){
@@ -1209,7 +1208,7 @@ DATA_SECTION
 	  n_naa.initialize();
 	  for(k = 1; k <= nAgears; k++){
 	    for(i = 1; i <= n_A_nobs(k); i++){
-	      iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
+	      iyr = d3_A(k)(i)(n_A_sage(k)-6);	//index for year
 	      if(iyr <= nyr)
 	        n_naa(k)++;
 	    }
@@ -3026,7 +3025,6 @@ FUNCTION calcObjectiveFunction
 	// | - Phase (n-1): standard deviation in the catch based on user input d_iscamCntrl(3)
 	// | - Phase (n)  : standard deviation in the catch based on user input d_iscamCntrl(4)
 	// |
-	LOG<<"\nLine 3101: n_saa="<<n_saa<<", n_naa="<<n_naa;
 	double sig_c = d_iscamCntrl(3);
 	if(last_phase()){
 	  sig_c = d_iscamCntrl(4);
@@ -3087,7 +3085,7 @@ FUNCTION calcObjectiveFunction
 	      nu.initialize();
 	      int ii = n_saa(k);
 	      for(i=1;i<=n_A_nobs(k);i++){
-	        iyr = d3_A(k)(i)(n_A_sage(k)-5); //index for year
+	        iyr = d3_A(k)(i)(n_A_sage(k)-6); //index for year
 	        if(iyr >= syr && iyr <= nyr){
 	          O(ii) = d3_A_obs(k)(i).sub(n_A_sage(k),n_A_nage(k));
 	          P(ii) = A_hat(k)(i).sub(n_A_sage(k),n_A_nage(k));
@@ -3098,11 +3096,6 @@ FUNCTION calcObjectiveFunction
 	      }
 	      // | Choose form of the likelihood based on d_iscamCntrl(14) switch
 	      // switch(int(d_iscamCntrl(14)))
-	      LOG<<"\nLine 3861: k="<<k<<", n_saa(k)="<<n_saa(k)<<", n_naa(k)="<<n_naa(k)<<", n_A_sage(k)="<<n_A_sage(k)<<", n_A_nage(k)="<<n_A_nage(k);
-	      LOG<<"\nLine 3862: dMinP(k)="<<dMinP(k)<<", dEps(k)="<<dEps(k)<<"\n";
-	      LOG<<"n_A_nobs = "<<n_A_nobs<<"\n";
-	      LOG<<"O = "<<O<<"\n";
-	      exit(1);
 	      logistic_normal cLN_Age( O,P,dMinP(k),dEps(k) );
 	      logistic_student_t cLST_Age( O,P,dMinP(k),dEps(k) );
 
@@ -3173,7 +3166,7 @@ FUNCTION calcObjectiveFunction
 	      }
 	      ii = n_saa(k);
 	      for(i = 1; i <= n_A_nobs(k); i++){
-	        iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
+	        iyr = d3_A(k)(i)(n_A_sage(k)-6);	//index for year
 	        if(iyr >= syr && iyr <= nyr){
 	          A_nu(k)(i)(n_A_sage(k),n_A_nage(k))=nu(ii++);
 	        }
@@ -4090,7 +4083,7 @@ REPORT_SECTION
 	      naa = 0;
 	      //retrospective counter
 	      for(i=1;i<=n_A_nobs(k);i++){
-	        iyr = d3_A(k)(i)(n_A_sage(k)-5); //index for year
+	        iyr = d3_A(k)(i)(n_A_sage(k)-6); //index for year
 	        if(iyr<=nyr)
 	          naa++;
 	        else

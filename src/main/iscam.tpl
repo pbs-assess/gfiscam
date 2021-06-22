@@ -3990,9 +3990,9 @@ FUNCTION void simulationModel(const long& seed)
 //	calcReferencePoints();
 //	//LOG<<"	OK after reference points\n"<<fmsy<<'\n';
 //	//exit(1);
-//	//	REPORT(fmsy);
-//	//	REPORT(msy);
-//	//	REPORT(bmsy);
+//	// REPORT(fmsy);
+//	// REPORT(msy);
+//	// REPORT(bmsy);
 //	LOG<<"___________________________________________________"<<'\n';
 //	ofstream ofs("iscam.sim");
 //	ofs<<"fmsy\n"<<fmsy<<'\n';
@@ -4016,132 +4016,105 @@ FUNCTION void simulationModel(const long& seed)
 //	//LOG<<N<<'\n';
 //	//exit(1);
 
-  	/**
-  	Purpose:  This function writes a simulated data file based on the simulation
-  		  model output when the user specifies the -sim option.  This is only
-  	      necessary if the user wishes to perform a retrospecrtive analysis on
-  	      simulated data.
-
-  	Author: Steven Martell
-
-  	Arguments:
-  	\param	seed -> the random number seed that is concatenated into the file name.
-
-  	NOTES:
-
-
-  	TODO list:
-  	[ ]
-  	*/
+	/*
+	  Purpose: This function writes a simulated data file based on the simulation
+	    model output when the user specifies the -sim option.  This is only
+	    necessary if the user wishes to perform a retrospecrtive analysis on
+	    simulated data.
+	  Arguments:
+	    \param seed -> the random number seed that is concatenated into the file name.
+	  NOTES:
+	  TODO list:
+	    [ ]
+	*/
 FUNCTION writeSimulatedDataFile
-  {
-  	adstring sim_datafile_name = "Simulated_Data_"+str(rseed)+".dat";
-  	ofstream dfs(sim_datafile_name);
-  	dfs<<"#Model dimensions"<<'\n';
-  	dfs<< narea 		<<'\n';
-  	dfs<< ngroup		<<'\n';
-  	dfs<< nsex			<<'\n';
-  	dfs<< syr   		<<'\n';
-  	dfs<< nyr   		<<'\n';
-  	dfs<< sage  		<<'\n';
-  	dfs<< nage  		<<'\n';
-  	dfs<< ngear 		<<'\n';
-
-  	dfs<<"#Allocation"	<<'\n';
-  	dfs<< dAllocation 	<<'\n';
-
-  	dfs<<"#Age-schedule and population parameters"<<'\n';
-  	dfs<< d_linf  			<<'\n';
-  	dfs<< d_vonbk  			<<'\n';
-  	dfs<< d_to  			<<'\n';
-  	dfs<< d_a  				<<'\n';
-  	dfs<< d_b  				<<'\n';
-  	dfs<< d_ah  			<<'\n';
-  	dfs<< d_gh  			<<'\n';
-  	dfs<< n_MAT				<<'\n';
-	dfs<< d_maturityVector <<'\n';
-
-  	dfs<<"#Observed catch data"<<'\n';
-  	dfs<< nCtNobs 		<<'\n';
-  	dfs<< dCatchData    <<'\n';
-
-  	dfs<<"#Abundance indices"	<<'\n';
-  	dfs<< nItNobs 					<<'\n';
-  	dfs<< n_it_nobs 				<<'\n';
-  	dfs<< n_survey_type 			<<'\n';
-  	dfs<< d3_survey_data 			<<'\n';
-
-  	dfs<<"#Age composition"		<<'\n';
-  	dfs<< nAgears				<<'\n';
-  	dfs<< n_A_nobs				<<'\n';
-  	dfs<< n_A_sage				<<'\n';
-  	dfs<< n_A_nage				<<'\n';
-  	dfs<< inp_nscaler 			<<'\n';
-  	dfs<< d3_A					<<'\n';
-
-  	dfs<<"#Empirical weight-at-age data"	<<'\n';
-  	dfs<< nWtTab 				<<'\n';
-  	dfs<< nWtNobs				<<'\n';
-	dfs<< d3_inp_wt_avg			<<'\n'; // not sure if this shoud be d3_inp_wt_avg, and how this would affect simDatfile
-
-	dfs<<"#EOF"	<<'\n';
-	dfs<< 999	<<'\n';
-
+	adstring sim_datafile_name = "Simulated_Data_"+str(rseed)+".dat";
+	ofstream dfs(sim_datafile_name);
+	dfs<<"#Model dimensions"<<'\n';
+	dfs<<narea<<'\n';
+	dfs<<ngroup<<'\n';
+	dfs<<nsex<<'\n';
+	dfs<<syr<<'\n';
+	dfs<<nyr<<'\n';
+	dfs<<sage<<'\n';
+	dfs<<nage<<'\n';
+	dfs<<ngear<<'\n';
+	dfs<<"#Allocation"<<'\n';
+	dfs<<dAllocation<<'\n';
+	dfs<<"#Age-schedule and population parameters"<<'\n';
+	dfs<<d_linf<<'\n';
+	dfs<<d_vonbk<<'\n';
+	dfs<<d_to<<'\n';
+	dfs<<d_a<<'\n';
+	dfs<<d_b<<'\n';
+	dfs<<d_ah<<'\n';
+	dfs<<d_gh<<'\n';
+	dfs<<n_MAT<<'\n';
+	dfs<<d_maturityVector<<'\n';
+	dfs<<"#Observed catch data"<<'\n';
+	dfs<<nCtNobs<<'\n';
+	dfs<<dCatchData <<'\n';
+	dfs<<"#Abundance indices"<<'\n';
+	dfs<<nItNobs<<'\n';
+	dfs<<n_it_nobs<<'\n';
+	dfs<<n_survey_type<<'\n';
+	dfs<<d3_survey_data<<'\n';
+	dfs<<"#Age composition"<<'\n';
+	dfs<<nAgears<<'\n';
+	dfs<<n_A_nobs<<'\n';
+	dfs<<n_A_sage<<'\n';
+	dfs<<n_A_nage<<'\n';
+	dfs<<inp_nscaler<<'\n';
+	dfs<<d3_A<<'\n';
+	dfs<<"#Empirical weight-at-age data"<<'\n';
+	dfs<<nWtTab<<'\n';
+	dfs<<nWtNobs<<'\n';
+	dfs<<d3_inp_wt_avg<<'\n'; // not sure if this shoud be d3_inp_wt_avg, and how this would affect simDatfile
+	dfs<<"#EOF"<<'\n';
+	dfs<< 999<<'\n';
 	// | END OF WRITING SIMULATED DATAFILE.
-  }
 
-
-
-  	/**
-  	Purpose:  This function returns a modified selectivity vector (va) based on
-  			  the assumption that age-based selectivity will operate on the principle
-  	          of ideal free distribution.
-  	Author: Steven Martell
-
-  	Arguments:
-  	\param	va -> age-specific vulnerability
-  	\param	ba -> age-specific biomass (relative abundance is fine)
-
-  	NOTES:
-
-
-  	TODO list:
-  	[ ]
-  	*/
+	/*
+	  Purpose: This function returns a modified selectivity vector (va) based on
+	    the assumption that age-based selectivity will operate on the principle
+	    of ideal free distribution.
+	  Arguments:
+	    \param  va -> age-specific vulnerability
+	    \param  ba -> age-specific biomass (relative abundance is fine)
+	  NOTES:
+	  TODO list:
+	    [ ]
+	*/
 FUNCTION dvector ifdSelex(const dvector& va, const dvector& ba, const double& mpow)
-  {
-
-  	dvector pa(sage,nage);
-
-  	pa = (elem_prod(va,pow(ba,mpow)));
-  	pa = pa/sum(pa);
-  	pa = exp( log(pa) - log(mean(pa)) );
-  	return (pa);
-  }
+	dvector pa(sage,nage);
+	pa = (elem_prod(va,pow(ba,mpow)));
+	pa = pa/sum(pa);
+	pa = exp( log(pa) - log(mean(pa)) );
+	return (pa);
 
 REPORT_SECTION
-
 	if(verbose){
-    LOG<<"Start of Report Section...\n";
-  }
+	  LOG<<"Start of Report Section...\n";
+	}
 	report<<"ObjectiveFunction\n"<<objfun<<'\n';
-  report<<"FuncEvals\n"<<nf<<'\n';
-  report<<"NumParams\n"<<npar<<'\n';
-  report<<"MaxGrad\n"<<objective_function_value::gmax<<'\n';
-  report<<"ExitCode\n"<<iexit<<'\n';
-  report<<"HangCode\n"<<ihang<<'\n';
-  report<<"Runtime\n"<<(long(difftime(finish,start))%3600)%60<<'\n';
-
+	report<<"FuncEvals\n"<<nf<<'\n';
+	report<<"NumParams\n"<<npar<<'\n';
+	report<<"MaxGrad\n"<<objective_function_value::gmax<<'\n';
+	report<<"ExitCode\n"<<iexit<<'\n';
+	report<<"HangCode\n"<<ihang<<'\n';
+	report<<"Runtime\n"<<(long(difftime(finish,start))%3600)%60<<'\n';
 	report<<DataFile<<'\n';
 	report<<ControlFile<<'\n';
 	report<<ProjectFileControl<<'\n';
 	REPORT(objfun);
-	if(!delaydiff) REPORT(nlvec);
-	if(delaydiff) REPORT(nlvec_dd);
+	if(!delaydiff)
+	  REPORT(nlvec);
+	if(delaydiff)
+	   REPORT(nlvec_dd);
 	REPORT(ro);
-	dvector rbar=value(exp(log_avgrec));
+	dvector rbar = value(exp(log_avgrec));
 	REPORT(rbar);
-	dvector rinit=value(exp(log_recinit));
+	dvector rinit = value(exp(log_recinit));
 	REPORT(rinit);
 	REPORT(sbo);
 	REPORT(kappa);
@@ -4156,7 +4129,6 @@ REPORT_SECTION
 	REPORT(tau);
 	REPORT(sig);
 	REPORT(age_tau2);
-
 	// |---------------------------------------------------------------------------------|
 	// | MODEL DIMENSIONS & AGE-SCHEDULE INFORMATION ON GROWTH AND MATURITY
 	// |---------------------------------------------------------------------------------|
@@ -4169,7 +4141,7 @@ REPORT_SECTION
 	REPORT(sage);
 	REPORT(nage);
 	//if(!delaydiff) REPORT(wa);
-  	//if(!delaydiff) REPORT(fec);
+	//if(!delaydiff) REPORT(fec);
 	REPORT(ngear);
 
 	ivector yr(syr,nyr);
@@ -4183,7 +4155,6 @@ REPORT_SECTION
 	REPORT(la);
 	REPORT(wa);
 	REPORT(ma);
-
 	// |---------------------------------------------------------------------------------|
 	// | OBSERVED AND PREDICTED DATA AND RESIDUALS
 	// |---------------------------------------------------------------------------------|
@@ -4194,61 +4165,49 @@ REPORT_SECTION
 	REPORT(dCatchData);
 	REPORT(ct);
 	REPORT(eta);
-
 	REPORT(q);
 	REPORT(qt);
 	REPORT(d3_survey_data);
 	REPORT(it_hat);
 	REPORT(it_wt);
 	REPORT(epsilon);
-
-	//RF changed this to 1
-	if(n_A_nobs(1) > 0)
-	{
-		REPORT(n_A_sage);
-		REPORT(n_A_nage);
-		REPORT(d3_A);
-		REPORT(A_hat);
-		REPORT(A_nu);
-
-		/// The following is a total hack job to get the effective sample size
-		/// for the multinomial distributions.
-
-		// FIXED the retrospective bug here near line 4507 (if iyr<=nyr)
-		report<<"Neff"<<'\n';
-		dvector nscaler(1,nAgears);
-		nscaler.initialize();
-   	 int naa;
-   	 int iyr;
-
-		for(k = 1; k<=nAgears; k++)
-		{
-			if( int(nCompLikelihood(k)) )
-			{
-				naa = 0;
-				//retrospective counter
-				for(i=1;i<=n_A_nobs(k);i++)
-				{
-					iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
-					if(iyr<=nyr) naa++; else continue;
-				}
-
-				dmatrix     O = trans(trans(d3_A_obs(k)).sub(n_A_sage(k),n_A_nage(k))).sub(1,naa);
-				dvar_matrix P = trans(trans(A_hat(k)).sub(n_A_sage(k),n_A_nage(k))).sub(1,naa);
-
-				for(j = 1; j<= naa; j++)
-				{
-					double effectiveN = neff(O(j)/sum(O(j)),P(j));
-					report<<sum(O(j))<<"\t"<<effectiveN<<'\n';
-					nscaler(k) += effectiveN;
-				}
-
-				nscaler(k) /= naa;
-			}
-		}
-		REPORT(nscaler);
+	if(n_A_nobs(1) > 0){
+	  REPORT(n_A_sage);
+	  REPORT(n_A_nage);
+	  REPORT(d3_A);
+	  REPORT(A_hat);
+	  REPORT(A_nu);
+	  // The following is a total hack job to get the effective sample size
+	  // for the multinomial distributions.
+	  // FIXED the retrospective bug here near line 4507 (if iyr<=nyr)
+	  report<<"Neff"<<'\n';
+	  dvector nscaler(1,nAgears);
+	  nscaler.initialize();
+	  int naa;
+	  int iyr;
+	  for(k = 1; k<=nAgears; k++){
+	    if(int(nCompLikelihood(k))){
+	      naa = 0;
+	      //retrospective counter
+	      for(i=1;i<=n_A_nobs(k);i++){
+	        iyr = d3_A(k)(i)(n_A_sage(k)-5); //index for year
+	        if(iyr<=nyr)
+	          naa++;
+	        else
+	          continue;
+	      }
+	      dmatrix O = trans(trans(d3_A_obs(k)).sub(n_A_sage(k),n_A_nage(k))).sub(1,naa);
+	      dvar_matrix P = trans(trans(A_hat(k)).sub(n_A_sage(k),n_A_nage(k))).sub(1,naa);
+	      for(j = 1; j<= naa; j++){
+	        double effectiveN = neff(O(j)/sum(O(j)),P(j));
+	        report<<sum(O(j))<<"\t"<<effectiveN<<'\n';
+	        nscaler(k) += effectiveN;
+	      }
+	      nscaler(k) /= naa;
+	    }
+	  }
+	  REPORT(nscaler);
 	}
-
 	// d3_wt_avg(1,n_ags,syr,nyr+1,sage,nage);
 	adstring tt = "\t";
 	//REPORT(xxinp_wt_avg);
@@ -4256,86 +4215,69 @@ REPORT_SECTION
 	// REPORT(d3_wt_avg);
 	REPORT(d3_wt_mat);
 	REPORT(d3_wt_dev);
-
 	report<<"d3_wt_avg"<<'\n';
-	for(int ig=1;ig<=n_ags;ig++)
-	{
-		f = n_area(ig);
-		g = n_group(ig);
-		h = n_sex(ig);
-
-		for(i=syr;i<=nyr;i++)
-		{
-			//year area stock sex |age columns (sage, nage) of weight at age data |
-			report<<i<<tt;
-			report<<f<<tt;
-			report<<g<<tt;
-			report<<h<<tt;
-			report<<d3_wt_avg(ig)(i)<<'\n';
-		}
-
+	for(int ig=1;ig<=n_ags;ig++){
+	  f = n_area(ig);
+	  g = n_group(ig);
+	  h = n_sex(ig);
+	  for(i=syr;i<=nyr;i++){
+	    //year area stock sex |age columns (sage, nage) of weight at age data |
+	    report<<i<<tt;
+	    report<<f<<tt;
+	    report<<g<<tt;
+	    report<<h<<tt;
+	    report<<d3_wt_avg(ig)(i)<<'\n';
+	  }
 	}
-
 	// |---------------------------------------------------------------------------------|
 	// | SELECTIVITIES (4darray)
 	// |---------------------------------------------------------------------------------|
 	// |
-  report<<"sel_par"<<'\n';
-	for(k=1;k<=ngear;k++)
-	{
-	  for (j=1;j<=jsel_npar(k);j++)
-	  {
-	  	report<<k<<"\t"<<j<<"\t"<<exp(sel_par(k)(j))<<'\n';
+	report<<"sel_par"<<'\n';
+	for(k=1;k<=ngear;k++){
+	  for(j=1;j<=jsel_npar(k);j++){
+	    report<<k<<"\t"<<j<<"\t"<<exp(sel_par(k)(j))<<'\n';
 	  }
 	}
-
 	report<<"log_sel"<<'\n';
-	for(k=1;k<=ngear;k++)
-	{
-		for(int ig=1;ig<=n_ags;ig++)
-		{
-			for(i=syr;i<=nyr;i++)
-			{
-				report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<log_sel(k)(ig)(i)<<'\n';
-			}
-		}
+	for(k=1;k<=ngear;k++){
+	  for(int ig=1;ig<=n_ags;ig++){
+	    for(i=syr;i<=nyr;i++){
+	      report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<log_sel(k)(ig)(i)<<'\n';
+	    }
+	  }
 	}
-
 	// |---------------------------------------------------------------------------------|
 	// | MORTALITY
 	// |---------------------------------------------------------------------------------|
 	// |
 	// REPORT(ft);
 	report<<"ft"<<'\n';
-	for(int ig = 1; ig <= n_ags; ig++ )
-	{
-		report<<ft(ig)<<'\n';
+	for(int ig = 1; ig <= n_ags; ig++ ){
+	  report<<ft(ig)<<'\n';
 	}
 	report<<"ut"<<'\n';
-	for(int ig = 1; ig <= n_ags; ig++ )
-	{
-		report<<1.0-exp(-ft(ig))<<'\n';
+	for(int ig = 1; ig <= n_ags; ig++ ){
+	  report<<1.0-exp(-ft(ig))<<'\n';
 	}
 	if(!delaydiff){
-		REPORT(M);
-		REPORT(F);
-		REPORT(Z);
+	  REPORT(M);
+	  REPORT(F);
+	  REPORT(Z);
 	}else{
-		REPORT(M_dd);
-		REPORT(F_dd);
-		REPORT(Z_dd);
-		REPORT(numbers);
-		REPORT(biomass);
-		REPORT(annual_mean_wt);
-		REPORT(wbar)
+	  REPORT(M_dd);
+	  REPORT(F_dd);
+	  REPORT(Z_dd);
+	  REPORT(numbers);
+	  REPORT(biomass);
+	  REPORT(annual_mean_wt);
+	  REPORT(wbar)
 	}
-
-
 	// |---------------------------------------------------------------------------------|
 	// | STOCK-RECRUITMENT
 	// |---------------------------------------------------------------------------------|
 	// |
-	int rectype=int(d_iscamCntrl(2));
+	int rectype = int(d_iscamCntrl(2));
 	REPORT(rectype);
 	REPORT(so);
 	REPORT(beta);
@@ -4343,544 +4285,464 @@ REPORT_SECTION
 	REPORT(bt);
 	REPORT(rt);
 	REPORT(delta);
-
-  report<<"vbt"<<'\n';
-		for(k=1;k<=ngear;k++){
-			for(int ig=1;ig<=ngroup;ig++){
-				for(i=syr;i<=nyr+1;i++){
-					report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<vbt(ig)(k)(i)<<'\n';
-				}
-			}
-	 }
-
+	report<<"vbt"<<'\n';
+	for(k=1;k<=ngear;k++){
+	  for(int ig=1;ig<=ngroup;ig++){
+	    for(i=syr;i<=nyr+1;i++){
+	      report<<k<<"\t"<<ig<<"\t"<<i<<"\t"<<vbt(ig)(k)(i)<<'\n';
+	    }
+	  }
+	}
 	dmatrix rep_rt = value( exp(trans(trans(log_rt).sub(syr,nyr))) );
-	for(int ig = 1; ig <= n_ag; ig++ )
-	{
-		rep_rt(ig)(syr) = value( exp( log_rt(ig)(syr-nage+sage) ) );
+	for(int ig = 1; ig <= n_ag; ig++){
+	  rep_rt(ig)(syr) = value( exp( log_rt(ig)(syr-nage+sage) ) );
 	}
 	REPORT(rep_rt);
-
 	// |---------------------------------------------------------------------------------|
 	// | ABUNDANCE IN NUMBERS
 	// |---------------------------------------------------------------------------------|
 	// |
 	REPORT(N);
-
-
-	//START_RF_ADD
 	// |---------------------------------------------------------------------------------|
 	// | ANNUAL MEAN WEIGHT DATA
 	// |---------------------------------------------------------------------------------|
 	// |
 	REPORT(obs_annual_mean_weight);
 	REPORT(annual_mean_weight);
-	//END_RF_ADD
-
 	// |---------------------------------------------------------------------------------|
 	// | MSY-BASED REFERENCE POINTS
 	// |---------------------------------------------------------------------------------|
 	// |
-	if( last_phase() )
-	{
-		LOG<<"Calculating MSY-based reference points\n";
-		calcReferencePoints();
-		LOG<<"Finished calcReferencePoints\n";
-		//exit(1);
-		REPORT(bo);
-		REPORT(fmsy);
-		REPORT(msy);
-		REPORT(bmsy);
-		// REPORT(Umsy);
-    LOG<<"Running Projections\n";
-    //RF RE-INSTATED PROJECTION_MODEL :: ONLY IMPLEMENTED FOR AGS=1 AND FOR GEAR 1 (FISHERY)
-    if(n_ags==1) {
-		  int ii;
-		  for(ii=1;ii<=n_tac;ii++){
-        //LOG<<ii<<" "<<tac(ii)<<'\n';
-		   	if(delaydiff){
-          projection_model_dd(tac(ii));
-        }else{
-          projection_model(tac(ii));
-        }
-		 	}
-		 }
-		 if(n_ags>1){
-       if(nf==1) LOG<<"************Projections not yet implemented for number of areas/groups > 1************\n\n";
-		 }
-     LOG<<" ______________________________ \n";
-     LOG<<"|    END OF REPORT SECTION     |\n";
-	   LOG<<"|______________________________|\n";
+	if(last_phase()){
+	  LOG<<"Calculating MSY-based reference points\n";
+	  calcReferencePoints();
+	  LOG<<"Finished calcReferencePoints\n";
+	  REPORT(bo);
+	  REPORT(fmsy);
+	  REPORT(msy);
+	  REPORT(bmsy);
+	  // REPORT(Umsy);
+	  LOG<<"Running Projections\n";
+	  // PROJECTION_MODEL ONLY IMPLEMENTED FOR AGS=1 AND FOR GEAR 1 (FISHERY)
+	  if(n_ags == 1){
+	    int ii;
+	    for(ii=1;ii<=n_tac;ii++){
+	      //LOG<<ii<<" "<<tac(ii)<<'\n';
+	      if(delaydiff){
+	        projection_model_dd(tac(ii));
+	      }else{
+	        projection_model(tac(ii));
+	      }
+	    }
+	  }
+	  if(n_ags>1){
+	    if(nf==1)
+	      LOG<<"************Projections not yet implemented for number of areas/groups > 1************\n\n";
+	  }
+	  LOG<<" ______________________________ \n";
+	  LOG<<"|    END OF REPORT SECTION     |\n";
+	  LOG<<"|______________________________|\n";
 	}
-
 	// |---------------------------------------------------------------------------------|
 	// | OUTPUT FOR OPERATING MODEL
 	// |---------------------------------------------------------------------------------|
 	// | Move to final section?
-	if( last_phase() )
-	{
-		ofstream ofs("iSCAM.res");
-
-		ofs<<"# Bo\n"<<bo<<'\n';
-		ofs<<"# Fmsy\n"<<fmsy<<'\n';
-		ofs<<"# MSY\n"<<msy<<'\n';
-		ofs<<"# Bmsy\n"<<bmsy<<'\n';
-		ofs<<"# Sbt\n";
-		for( g = 1; g <= ngroup; g++ )
-		{
-			ofs<<sbt(g)(nyr+1)<<"\t";
-		}
-		ofs<<'\n';
-
-		// projected biomass
-		// The total biomass for each stock
-		ofs<<"# Total biomass\n";
-		for( g = 1; g <= ngroup; g++ )
-		{
-			ofs<<bt(g)(nyr+1)<<"\t";
-		}
-		ofs<<'\n';
-
-		ofs<<"# Numbers-at-age\n";
-		for(int ig = 1; ig <= n_ags; ig++ )
-		{
-			ofs<<N(ig)(nyr+1)<<'\n';
-		}
-
-		ofs<<"# Weight-at-age\n";
-		for(int ig = 1; ig <= n_ags; ig++ )
-		{
-			ofs<<d3_wt_avg(ig)(nyr+1)<<'\n';
-		}
-
-		ofs<<"# Natural mortality-at-age\n";
-		for(int ig = 1; ig <= n_ags; ig++ )
-		{
-			ofs<<M(ig)(nyr)<<'\n';
-		}
-
-
-		// 4darray log_sel(1,ngear,1,n_ags,syr,nyr,sage,nage);
-		ofs<<"# log_selectivity\n";
-		for(int k = 1; k <= ngear; k++ )
-		{
-			for(int ig = 1; ig <= n_ags; ig++ )
-			{
-				ofs<<log_sel(k)(ig)(nyr)<<'\n';
-			}
-		}
+	if(last_phase()){
+	  ofstream ofs("iSCAM.res");
+	  ofs<<"# Bo\n"<<bo<<'\n';
+	  ofs<<"# Fmsy\n"<<fmsy<<'\n';
+	  ofs<<"# MSY\n"<<msy<<'\n';
+	  ofs<<"# Bmsy\n"<<bmsy<<'\n';
+	  ofs<<"# Sbt\n";
+	  for(g = 1; g <= ngroup; g++){
+	    ofs<<sbt(g)(nyr+1)<<"\t";
+	  }
+	  ofs<<'\n';
+	  // projected biomass
+	  // The total biomass for each stock
+	  ofs<<"# Total biomass\n";
+	  for(g = 1; g <= ngroup; g++){
+	    ofs<<bt(g)(nyr+1)<<"\t";
+	  }
+	  ofs<<'\n';
+	  ofs<<"# Numbers-at-age\n";
+	  for(int ig = 1; ig <= n_ags; ig++){
+	    ofs<<N(ig)(nyr+1)<<'\n';
+	  }
+	  ofs<<"# Weight-at-age\n";
+	  for(int ig = 1; ig <= n_ags; ig++){
+	    ofs<<d3_wt_avg(ig)(nyr+1)<<'\n';
+	  }
+	  ofs<<"# Natural mortality-at-age\n";
+	  for(int ig = 1; ig <= n_ags; ig++ ){
+	    ofs<<M(ig)(nyr)<<'\n';
+	  }
+	  // 4darray log_sel(1,ngear,1,n_ags,syr,nyr,sage,nage);
+	  ofs<<"# log_selectivity\n";
+	  for(int k = 1; k <= ngear; k++){
+	    for(int ig = 1; ig <= n_ags; ig++){
+	      ofs<<log_sel(k)(ig)(nyr)<<'\n';
+	    }
+	  }
+	}
+	/*
+	  Stock status info
+	  Bstatus = sbt/bmsy;
+	  Fstatus = ft/fmsy; If fmsy > 0
+	  if(bmsy>0){
+	    dvector Bstatus=value(sbt/bmsy);
+	    REPORT(Bstatus);
+	  }
+	  dmatrix Fstatus(1,ngear,syr,nyr);
+	  Fstatus.initialize();
+	  for(k = 1; k <= nfleet; k++){
+	    if(fmsy(k) >0){
+	      j = nFleetIndex(k);
+	      Fstatus(j) = value(ft(j) / fmsy(k));
+	    }
+	  }
+	  REPORT(Fstatus);
+	*/
+	if(verbose){
+	  LOG<<"END of Report Section...\n";;
 	}
 
 
-// 	/*
-// 	Stock status info
-// 	Bstatus = sbt/bmsy;
-// 	Fstatus = ft/fmsy; If fmsy > 0
-// 	*/
-// 	if(bmsy>0)
-// 	{
-// 		dvector Bstatus=value(sbt/bmsy);
-// 		REPORT(Bstatus);
-// 	}
-
-// 	dmatrix Fstatus(1,ngear,syr,nyr);
-// 	Fstatus.initialize();
-// 	for(k = 1; k <= nfleet; k++)
-// 	{
-// 		if(fmsy(k) >0 )
-// 		{
-// 			j    = nFleetIndex(k);
-// 			Fstatus(j) = value(ft(j)/fmsy(k));
-// 		}
-// 	}
-// 	REPORT(Fstatus);
-
-// 	//Parameter controls
-// 	dmatrix ctrl=theta_control;
-// 	REPORT(ctrl);
-
-
-// 	if(last_phase()) decision_table();
-
-
-// 	dvector rt3(1,3);
-// 	if(last_phase())
-// 	{
-// 		dvector rt3 = age3_recruitment(value(column(N,3)),d3_wt_avg(nyr+1,3),value(M_tot(nyr,3)));
-// 		REPORT(rt3);
-// 	}
-
-// 	//dvector future_bt = value(elem_prod(elem_prod(N(nyr+1),exp(-M_tot(nyr))),d3_wt_avg(nyr+1)));
-// 	dvector future_bt = value(elem_prod(N(nyr+1)*exp(-m_bar),d3_wt_avg(nyr+1)));
-// 	REPORT(future_bt);
-// 	double future_bt4 = sum(future_bt(4,nage));
-// 	REPORT(future_bt4);
-
-
-	if(verbose){
-    LOG<<"END of Report Section...\n";;
-  }
-
-//FUNCTION decision_table
-//   {
- 	/*
- 	This function takes a vector of projected catches and computes the following
- 	Reference points: Bmsy, Bo, Fmsy, Umsy.
-
- 	Biomass Metrics for the decision table:
- 	1) P(SB_{t+1} < SB_{t})
- 	2) P(SB_{t+1} < 0.25 B_{0})
- 	3) P(SB_{t+1} < 0.75 B_{0})
- 	4) P(SB_{t+1} < 0.40 B_{MSY})
- 	5) P(SB_{t+1} < 0.80 B_{MSY})
-
- 	Harvest Metrics for the decision table:
- 	1) P(U_{t+1} > Target harvest rate)
- 	2) P(U_{t+1} > 1/2 Fmsy)
- 	3) P(U_{t+1} > 2/3 Fmsy)
- 	4) P(tac/3+  > 20%)
-
- 	Key to the harvest metric is the definition of Umsy and dAllocation to fleets.
-
- 	Pseudocode:
- 		1) Calculate reference points (Fmsy, Bmsy)
- 		2) Loop over vector of proposed catches
- 		3) Evaluate biomass metrics for each posterior sample
- 		4) Evaluate harvest metrics for each posterior sample
-
- 	*/
- 	//int i;
- 	//for(i=1;i<=n_tac;i++)
- 	//{
- 	//	LOG<<i<<" "<<tac<<'\n';
- 	//	projection_model(tac(i));
- 	//}
- 	// LOG<<"Ok to here"<<'\n';			       a
-     //}
+	/*
+	  This function takes a vector of projected catches and computes the following
+	  Reference points: Bmsy, Bo, Fmsy, Umsy.
+	  Biomass Metrics for the decision table:
+	  1) P(SB_{t+1} < SB_{t})
+	  2) P(SB_{t+1} < 0.25 B_{0})
+	  3) P(SB_{t+1} < 0.75 B_{0})
+	  4) P(SB_{t+1} < 0.40 B_{MSY})
+	  5) P(SB_{t+1} < 0.80 B_{MSY})
+	  Harvest Metrics for the decision table:
+	  1) P(U_{t+1} > Target harvest rate)
+	  2) P(U_{t+1} > 1/2 Fmsy)
+	  3) P(U_{t+1} > 2/3 Fmsy)
+	  4) P(tac/3+  > 20%)
+	  Key to the harvest metric is the definition of Umsy and dAllocation to fleets.
+	  Pseudocode:
+	    1) Calculate reference points (Fmsy, Bmsy)
+	    2) Loop over vector of proposed catches
+	    3) Evaluate biomass metrics for each posterior sample
+	    4) Evaluate harvest metrics for each posterior sample
+	*/
+FUNCTION decision_table
+	int i;
+	for(i=1;i<=n_tac;i++){
+	  LOG<<i<<" "<<tac<<'\n';
+	  projection_model(tac(i));
+	}
+	LOG<<"Ok to here"<<'\n';
 
 FUNCTION mcmc_output
-  int iter;
-  if(nf==1){
-    // Open the files and write the headers
-    ofstream ofs("iscam_mcmc.csv");
-    // The structure for these objects can be found at roughly lines 924 and 1409.
-    // they are set up as vector_vectors to increase dimensionality
-    // for the split sex case and also for areas and groups
-    // The format for the mcmc output headers will be one of:
-    // parametername_gr[0-9]+  - for unique group only
-    // parametername_gs[0-9]+  - for unique group and sex
-    // paramatername_ag[0-9]+  - for unique area and gear
-    for(int group=1;group<=ngroup;group++){
-      ofs<<"ro_gr"<<group;
-    }
-    for(int group=1;group<=ngroup;group++){
-      ofs<<","<<"h_gr"<<group;
-    }
-    for(int gs=1;gs<=n_gs;gs++){
-      ofs<<","<<"m_gs"<<gs;
-    }
-    for(int ag=1;ag<=n_ag;ag++){
-      ofs<<","<<"rbar_ag"<<ag;
-    }
-    for(int ag=1;ag<=n_ag;ag++){
-      ofs<<","<<"rinit_ag"<<ag;
-    }
-    for(int group=1;group<=ngroup;group++){
-      ofs<<","<<"rho_gr"<<group;
-    }
-    for(int group=1;group<=ngroup;group++){
-      ofs<<","<<"vartheta_gr"<<group;
-    }
-    ofs<<","<<"bo";
-    ofs<<","<<"sbo";
-    if(!d_iscamCntrl(13) ||
-       (d_iscamCntrl(13) && !d_iscamCntrl(20))){
-      ofs<<","<<"bmsy";
-      for(int fleet=1;fleet<=nfleet;fleet++){
-        ofs<<","<<"msy"<<fleet;
-      }
-      for(int fleet=1;fleet<=nfleet;fleet++){
-        ofs<<","<<"fmsy"<<fleet;
-      }
-      for(int fleet=1;fleet<=nfleet;fleet++){
-        ofs<<","<<"umsy"<<fleet;
-      }
-    }
-    for(int i=1;i<=nItNobs;i++){
-      ofs<<","<<"q"<<i;
-    }
-    for(int group=1;group<=ngroup;group++){
-      ofs<<","<<"SSB"<<group;
-    }
-    for(k=1;k<=ngear;k++){
-      for (j=1;j<=jsel_npar(k);j++){
-        ofs<<","<<"sel_g"<<k;
-        ofs<<","<<"sel_sd"<<k;
-      }
-    }
-    ofs<<","<<"f";
-    ofs<<'\n';
-
-    ofstream of1("iscam_sbt_mcmc.csv");
-    for(int group=1;group<=ngroup;group++){
-      for(int yr=syr;yr<=nyr+1;yr++){
-        if(yr == syr){
-          of1<<"sbt"<<group<<"_"<<yr;
-        }else{
-          of1<<",sbt"<<group<<"_"<<yr;
-        }
-      }
-    }
-    of1<<'\n';
-
-    ofstream of2("iscam_rt_mcmc.csv");
-    for(int group=1;group<=ngroup;group++){
-      for(int yr=syr+sage;yr<=nyr;yr++){
-        if(yr == syr+sage){
-          of2<<"rt"<<group<<"_"<<yr;
-        }else{
-          of2<<",rt"<<group<<"_"<<yr;
-        }
-      }
-    }
-    of2<<'\n';
-
-    ofstream of3("iscam_ft_mcmc.csv");
-    iter = 1;
-    for(int ag=1;ag<=n_ags;ag++){
-      for(int gear=1;gear<=ngear;gear++){
-        for(int yr=syr;yr<=nyr;yr++){
-          if(iter == 1){
-            of3<<"ft"<<ag<<"_gear"<<gear<<"_"<<yr;
-          }else{
-            of3<<",ft"<<ag<<"_gear"<<gear<<"_"<<yr;
-          }
-          iter++;
-        }
-      }
-    }
-    of3<<'\n';
-
-    ofstream of4("iscam_rdev_mcmc.csv");
-    iter = 1;
-    for(int ag=1;ag<=n_ag;ag++){
-      for(int yr=syr+sage;yr<=nyr;yr++){
-        if(iter == 1){
-          of4<<"rdev"<<ag<<"_"<<yr;
-        }else{
-          of4<<",rdev"<<ag<<"_"<<yr;
-        }
-        iter++;
-      }
-    }
-    of4<<'\n';
-
-    ofstream of5("iscam_vbt_mcmc.csv");
-    iter = 1;
-    for(int ag=1;ag<=ngroup;ag++){
-      for(int gear=1;gear<=ngear;gear++){
-        for(int yr=syr;yr<=nyr+1;yr++){
-          if(iter == 1){
-            of5<<"vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
-          }else{
-            of5<<",vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
-          }
-          iter++;
-        }
-      }
-    }
-    of5<<'\n';
-
-    ofstream of6("iscam_ut_mcmc.csv");
-    iter = 1;
-    for(int ag=1;ag<=n_ags;ag++){
-      for(int gear=1;gear<=ngear;gear++){
-        for(int yr=syr;yr<=nyr;yr++){
-          if(iter == 1){
-            of6<<"ut"<<ag<<"_gear"<<gear<<"_"<<yr;
-          }else{
-            of6<<",ut"<<ag<<"_gear"<<gear<<"_"<<yr;
-          }
-          iter++;
-        }
-      }
-    }
-    of6<<'\n';
-
-    ofstream of7("iscam_m_mcmc.csv");
-    iter = 1;
-    for(int yr=syr;yr<=nyr;yr++){
-      if(iter == 1){
-        of7<<"m_age2_"<<yr;
-      }else{
-        of7<<",m_age2_"<<yr;
-      }
-      iter++;
-    }
-    of7<<'\n';
-
-    ofstream of8("iscam_Na1951_mcmc.csv");
-    iter = 1;
-    for( int ag=1;ag <= n_ags; ag++)
-	    for( int age = sage; age <= nage; age++){
-	    	if(iter == 1){
-	    		of8<<"N_ag"<<ag<<"_age"<<age<<"_1951";
-	    	} else {
-	    		of8<<",N_ag"<<ag<<"_age"<<age<<"_1951";
-	    	}
-	    	iter++;
+	int iter;
+	if(nf == 1){
+	  // Open the files and write the headers
+	  ofstream ofs("iscam_mcmc.csv");
+	  // The structure for these objects can be found at roughly lines 924 and 1409.
+	  // they are set up as vector_vectors to increase dimensionality
+	  // for the split sex case and also for areas and groups
+	  // The format for the mcmc output headers will be one of:
+	  // parametername_gr[0-9]+  - for unique group only
+	  // parametername_gs[0-9]+  - for unique group and sex
+	  // paramatername_ag[0-9]+  - for unique area and gear
+	  for(int group=1;group<=ngroup;group++){
+	    ofs<<"ro_gr"<<group;
+	  }
+	  for(int group=1;group<=ngroup;group++){
+	    ofs<<","<<"h_gr"<<group;
+	  }
+	  for(int gs=1;gs<=n_gs;gs++){
+	    ofs<<","<<"m_gs"<<gs;
+	  }
+	  for(int ag=1;ag<=n_ag;ag++){
+	    ofs<<","<<"rbar_ag"<<ag;
+	  }
+	  for(int ag=1;ag<=n_ag;ag++){
+	    ofs<<","<<"rinit_ag"<<ag;
+	  }
+	  for(int group=1;group<=ngroup;group++){
+	    ofs<<","<<"rho_gr"<<group;
+	  }
+	  for(int group=1;group<=ngroup;group++){
+	    ofs<<","<<"vartheta_gr"<<group;
+	  }
+	  ofs<<","<<"bo";
+	  ofs<<","<<"sbo";
+	  if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
+	    ofs<<","<<"bmsy";
+	    for(int fleet=1;fleet<=nfleet;fleet++){
+	      ofs<<","<<"msy"<<fleet;
 	    }
-    of8<<"\n";
-
-    ofstream of9("iscam_Nage2t_mcmc.csv");
-    iter = 1;
-    for( int ag=1;ag <= n_ags; ag++)
+	    for(int fleet=1;fleet<=nfleet;fleet++){
+	      ofs<<","<<"fmsy"<<fleet;
+	    }
+	    for(int fleet=1;fleet<=nfleet;fleet++){
+	      ofs<<","<<"umsy"<<fleet;
+	    }
+	  }
+	  for(int i=1;i<=nItNobs;i++){
+	    ofs<<","<<"q"<<i;
+	  }
+	  for(int group=1;group<=ngroup;group++){
+	    ofs<<","<<"SSB"<<group;
+	  }
+	  for(k=1;k<=ngear;k++){
+	    for (j=1;j<=jsel_npar(k);j++){
+	      ofs<<","<<"sel_g"<<k;
+	      ofs<<","<<"sel_sd"<<k;
+	    }
+	  }
+	  ofs<<","<<"f";
+	  ofs<<'\n';
+	  ofstream of1("iscam_sbt_mcmc.csv");
+	  for(int group=1;group<=ngroup;group++){
+	    for(int yr=syr;yr<=nyr+1;yr++){
+	      if(yr == syr){
+	        of1<<"sbt"<<group<<"_"<<yr;
+	      }else{
+	        of1<<",sbt"<<group<<"_"<<yr;
+	      }
+	    }
+	  }
+	  of1<<'\n';
+	  ofstream of2("iscam_rt_mcmc.csv");
+	  for(int group=1;group<=ngroup;group++){
+	    for(int yr=syr+sage;yr<=nyr;yr++){
+	      if(yr == syr+sage){
+	        of2<<"rt"<<group<<"_"<<yr;
+	      }else{
+	        of2<<",rt"<<group<<"_"<<yr;
+	      }
+	    }
+	  }
+	  of2<<'\n';
+	  ofstream of3("iscam_ft_mcmc.csv");
+	  iter = 1;
+	  for(int ag=1;ag<=n_ags;ag++){
+	    for(int gear=1;gear<=ngear;gear++){
+	      for(int yr=syr;yr<=nyr;yr++){
+	        if(iter == 1){
+	          of3<<"ft"<<ag<<"_gear"<<gear<<"_"<<yr;
+	        }else{
+	          of3<<",ft"<<ag<<"_gear"<<gear<<"_"<<yr;
+	        }
+	        iter++;
+	      }
+	    }
+	  }
+	  of3<<'\n';
+	  ofstream of4("iscam_rdev_mcmc.csv");
+	  iter = 1;
+	  for(int ag=1;ag<=n_ag;ag++){
+	    for(int yr=syr+sage;yr<=nyr;yr++){
+	      if(iter == 1){
+	        of4<<"rdev"<<ag<<"_"<<yr;
+	      }else{
+	        of4<<",rdev"<<ag<<"_"<<yr;
+	      }
+	      iter++;
+	    }
+	  }
+	  of4<<'\n';
+	  ofstream of5("iscam_vbt_mcmc.csv");
+	  iter = 1;
+	  for(int ag=1;ag<=ngroup;ag++){
+	    for(int gear=1;gear<=ngear;gear++){
+	      for(int yr=syr;yr<=nyr+1;yr++){
+	        if(iter == 1){
+	          of5<<"vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
+	        }else{
+	          of5<<",vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
+	        }
+	        iter++;
+	      }
+	    }
+	  }
+	  of5<<'\n';
+	  ofstream of6("iscam_ut_mcmc.csv");
+	  iter = 1;
+	  for(int ag=1;ag<=n_ags;ag++){
+	    for(int gear=1;gear<=ngear;gear++){
+	      for(int yr=syr;yr<=nyr;yr++){
+	        if(iter == 1){
+	          of6<<"ut"<<ag<<"_gear"<<gear<<"_"<<yr;
+	        }else{
+	          of6<<",ut"<<ag<<"_gear"<<gear<<"_"<<yr;
+	        }
+	        iter++;
+	      }
+	    }
+	  }
+	  of6<<'\n';
+	  ofstream of7("iscam_m_mcmc.csv");
+	  iter = 1;
+	  for(int yr=syr;yr<=nyr;yr++){
+	    if(iter == 1){
+	      of7<<"m_age2_"<<yr;
+	    }else{
+	      of7<<",m_age2_"<<yr;
+	    }
+	    iter++;
+	  }
+	  of7<<'\n';
+	  ofstream of8("iscam_Na1951_mcmc.csv");
+	  iter = 1;
+	  for(int ag=1;ag <= n_ags; ag++){
+	    for(int age = sage; age <= nage; age++){
+	      if(iter == 1){
+	        of8<<"N_ag"<<ag<<"_age"<<age<<"_1951";
+	      }else{
+	        of8<<",N_ag"<<ag<<"_age"<<age<<"_1951";
+	      }
+	      iter++;
+	    }
+	  }
+	  of8<<"\n";
+	  ofstream of9("iscam_Nage2t_mcmc.csv");
+	  iter = 1;
+	  for(int ag=1;ag <= n_ags; ag++){
 	    for( int t = syr; t <= nyr + 1; t++){
-	    	if(iter == 1){
-	    		of9<<"N_ag"<<ag<<"_age2_t"<<t;
-	    	} else {
-	    		of9<<",N_ag"<<ag<<"_age2_t"<<t;
-	    	}
-	    	iter++;
+	      if(iter == 1){
+	        of9<<"N_ag"<<ag<<"_age2_t"<<t;
+	      }else{
+	        of9<<",N_ag"<<ag<<"_age2_t"<<t;
+	      }
+	     iter++;
 	    }
-    of9<<"\n";
+	  }
+	  of9<<"\n";
+	}
+	// Leading parameters & reference points
+	// Delay difference/Age-structured switch is in calcReferencePoints
+	if(d_iscamCntrl(13)){
+	  if(d_iscamCntrl(20)){
+	    // Only report B0 - calc_bo() is in slowmsy.cpp
+	    double B0;
+	    calc_bo(B0, sage, nage, M,
+	            dWt_bar, ma, ro,
+	            d_iscamCntrl, pf_cntrl);
+	    bo = B0;
+	  }else{
+	    calcReferencePoints();
+	  }
+	}else{
+	  calcReferencePoints();
+	}
 
-
-  }
-
-  // Leading parameters & reference points
-  // Delay difference/Age-structured switch is in calcReferencePoints
-  if(d_iscamCntrl(13)){
-    if(d_iscamCntrl(20)){
-      // Only report B0 - calc_bo() is in slowmsy.cpp
-      double B0;
-      calc_bo(B0, sage, nage, M,
-              dWt_bar, ma, ro,
-              d_iscamCntrl, pf_cntrl);
-      bo = B0;
-    }else{
-      calcReferencePoints();
-    }
-  }else{
-    calcReferencePoints();
-  }
-
-  // Append the values to the files
-  //these should be named parameters
-  ofstream ofs("iscam_mcmc.csv",ios::app);
-  for(int group=1;group<=ngroup;group++){
-    ofs<<exp(theta(1)(group));
-  }
-  for(int group=1;group<=ngroup;group++){
-    ofs<<","<<theta(2)(group);
-  }
-  for(int gs=1;gs<=n_gs;gs++){
-    ofs<<","<<exp(theta(3)(gs));
-  }
-  for(int ag=1;ag<=n_ag;ag++){
-    //ofs<<","<<exp(theta(4)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
-     ofs<<","<<exp(log_avgrec(ag));
-  }
-  for(int ag=1;ag<=n_ag;ag++){
-    //ofs<<","<<exp(theta(5)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
-    ofs<<","<<exp(log_recinit(ag));
-  }
-  for(int group=1;group<=ngroup;group++){
-    ofs<<","<<theta(6)(group);
-  }
-  for(int group=1;group<=ngroup;group++){
-    ofs<<","<<theta(7)(group);
-  }
-  ofs<<","<<bo;
-  ofs<<","<<sbo;
-  if(!d_iscamCntrl(13) ||
-     (d_iscamCntrl(13) && !d_iscamCntrl(20))){
-    ofs<<","<<bmsy;
-    for(int fleet=1;fleet<=nfleet;fleet++){
-      ofs<<","<<msy(fleet);
-    }
-    for(int fleet=1;fleet<=nfleet;fleet++){
-      ofs<<","<<fmsy(fleet);
-    }
-    for(int fleet=1;fleet<=nfleet;fleet++){
-      ofs<<","<<1.0-exp(-fmsy(fleet));
-    }
-  }
-  for(int it=1;it<=nItNobs;it++){
-    ofs<<","<<q(it);
-  }
-  for(int group=1;group<=ngroup;group++){
-    ofs<<","<<sbt(group)(nyr);
-  }
-  for(k=1;k<=ngear;k++){
-    for (j=1;j<=jsel_npar(k);j++){
-      ofs<<","<<exp(sel_par(k)(j)(1));
-      ofs<<","<<exp(sel_par(k)(j)(2));
-    }
-  }
-
-  ofs<<","<<objfun;
-  ofs<<'\n';
-
-  // output spawning stock biomass
-  ofstream of1("iscam_sbt_mcmc.csv",ios::app);
-  for(int group=1;group<=ngroup;group++){
-    for(int yr=syr;yr<=nyr+1;yr++){
-      if(yr == syr){
-        of1<<sbt(group)(yr);
-      }else{
-        of1<<","<<sbt(group)(yr);
-      }
-    }
-  }
-  of1<<'\n';
-
-  // output age-1 recruits
-  ofstream of2("iscam_rt_mcmc.csv",ios::app);
-  for(int group=1;group<=ngroup;group++){
-    for(int yr=syr+sage;yr<=nyr;yr++){
-      if(yr == syr+sage){
-        of2<<rt(group)(yr);
-      }else{
-        of2<<","<<rt(group)(yr);
-      }
-    }
-  }
-  of2<<'\n';
-
-  // output fishing mortality
-  ofstream of3("iscam_ft_mcmc.csv",ios::app);
-  iter = 1;
-  for(int ag=1;ag<=n_ags;ag++){
-    for(int gear=1;gear<=ngear;gear++){
-      for(int yr=syr;yr<=nyr;yr++){
-        if(iter == 1){
-          of3<<ft(ag)(gear)(yr);
-        }else{
-          of3<<","<<ft(ag)(gear)(yr);
-        }
-        iter++;
-      }
-    }
-  }
-  of3<<'\n';
-
-  // output recruitment deviations
-  // This is what the declaration of log_dev_recs looks like:
-  // init_bounded_matrix log_rec_devs(1,n_ag,syr,nyr,-15.,15.,2);
-  ofstream of4("iscam_rdev_mcmc.csv",ios::app);
-  iter = 1;
-  for(int ag=1;ag<=n_ag;ag++){
-    for(int yr=syr+sage;yr<=nyr;yr++){
-      if(iter == 1){
-        of4<<log_rec_devs(ag)(yr);
-      }else{
-        of4<<","<<log_rec_devs(ag)(yr);
-      }
-      iter++;
-    }
-  }
-  of4<<'\n';
-
+	// Append the values to the files
+	//these should be named parameters
+	ofstream ofs("iscam_mcmc.csv",ios::app);
+	for(int group=1;group<=ngroup;group++){
+	  ofs<<exp(theta(1)(group));
+	}
+	for(int group=1;group<=ngroup;group++){
+	  ofs<<","<<theta(2)(group);
+	}
+	for(int gs=1;gs<=n_gs;gs++){
+	  ofs<<","<<exp(theta(3)(gs));
+	}
+	for(int ag=1;ag<=n_ag;ag++){
+	  //ofs<<","<<exp(theta(4)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
+	  ofs<<","<<exp(log_avgrec(ag));
+	}
+	for(int ag=1;ag<=n_ag;ag++){
+	  //ofs<<","<<exp(theta(5)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
+	  ofs<<","<<exp(log_recinit(ag));
+	}
+	for(int group=1;group<=ngroup;group++){
+	  ofs<<","<<theta(6)(group);
+	}
+	for(int group=1;group<=ngroup;group++){
+	  ofs<<","<<theta(7)(group);
+	}
+	ofs<<","<<bo;
+	ofs<<","<<sbo;
+	if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
+	  ofs<<","<<bmsy;
+	  for(int fleet=1;fleet<=nfleet;fleet++){
+	    ofs<<","<<msy(fleet);
+	  }
+	  for(int fleet=1;fleet<=nfleet;fleet++){
+	    ofs<<","<<fmsy(fleet);
+	  }
+	  for(int fleet=1;fleet<=nfleet;fleet++){
+	    ofs<<","<<1.0-exp(-fmsy(fleet));
+	  }
+	}
+	for(int it=1;it<=nItNobs;it++){
+	  ofs<<","<<q(it);
+	}
+	for(int group=1;group<=ngroup;group++){
+	  ofs<<","<<sbt(group)(nyr);
+	}
+	for(k=1;k<=ngear;k++){
+	  for(j=1;j<=jsel_npar(k);j++){
+	    ofs<<","<<exp(sel_par(k)(j)(1));
+	    ofs<<","<<exp(sel_par(k)(j)(2));
+	  }
+	}
+	ofs<<","<<objfun;
+	ofs<<'\n';
+	// output spawning stock biomass
+	ofstream of1("iscam_sbt_mcmc.csv",ios::app);
+	for(int group=1;group<=ngroup;group++){
+	  for(int yr=syr;yr<=nyr+1;yr++){
+	    if(yr == syr){
+	      of1<<sbt(group)(yr);
+	    }else{
+	      of1<<","<<sbt(group)(yr);
+	    }
+	  }
+	}
+	of1<<'\n';
+	// output age-1 recruits
+	ofstream of2("iscam_rt_mcmc.csv",ios::app);
+	for(int group=1;group<=ngroup;group++){
+	  for(int yr=syr+sage;yr<=nyr;yr++){
+	    if(yr == syr + sage){
+	      of2<<rt(group)(yr);
+	    }else{
+	      of2<<","<<rt(group)(yr);
+	    }
+	  }
+	}
+	of2<<'\n';
+	// output fishing mortality
+	ofstream of3("iscam_ft_mcmc.csv",ios::app);
+	iter = 1;
+	for(int ag=1;ag<=n_ags;ag++){
+	  for(int gear=1;gear<=ngear;gear++){
+	    for(int yr=syr;yr<=nyr;yr++){
+	      if(iter == 1){
+	        of3<<ft(ag)(gear)(yr);
+	      }else{
+	        of3<<","<<ft(ag)(gear)(yr);
+	      }
+	      iter++;
+	    }
+	  }
+	}
+	of3<<'\n';
+	// output recruitment deviations
+	// This is what the declaration of log_dev_recs looks like:
+	// init_bounded_matrix log_rec_devs(1,n_ag,syr,nyr,-15.,15.,2);
+	ofstream of4("iscam_rdev_mcmc.csv",ios::app);
+	iter = 1;
+	for(int ag=1;ag<=n_ag;ag++){
+	  for(int yr=syr+sage;yr<=nyr;yr++){
+	    if(iter == 1){
+	      of4<<log_rec_devs(ag)(yr);
+	    }else{
+	      of4<<","<<log_rec_devs(ag)(yr);
+	    }
+	    iter++;
+	  }
+	}
+	of4<<'\n';
   // output vulnerable biomass to all gears //Added by RF March 19 2015
   ofstream of5("iscam_vbt_mcmc.csv",ios::app);
   iter = 1;

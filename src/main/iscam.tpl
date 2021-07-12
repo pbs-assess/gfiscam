@@ -709,6 +709,7 @@ DATA_SECTION
 	ivector theta_phz(1,npar);
 	ivector theta_prior(1,npar);
 	ivector ipar_vector(1,npar);
+	init_number m_female;
 	LOC_CALCS
 	  theta_ival = column(theta_control,1);
 	  theta_lb = column(theta_control,2);
@@ -1596,6 +1597,9 @@ FUNCTION void initParameters()
 	ro = mfexp(theta(1));
 	steepness = theta(2);
 	m = mfexp(theta(3));
+	if(nsex == 2){
+	  m(2) = mfexp(m_female);
+	}
 	rho = theta(6);
 	varphi = sqrt(1.0/theta(7));
 	sig = elem_prod(sqrt(rho) , varphi);

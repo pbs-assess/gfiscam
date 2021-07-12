@@ -139,6 +139,7 @@ DATA_SECTION
 	init_int sage;
 	init_int nage;
 	init_int ngear;
+	init_number propfemale;
 	vector age(sage,nage);
 	// |---------------------------------------------------------------------------------|
 	// | LINKS TO MANAGE ARRAY INDEXING
@@ -199,6 +200,7 @@ DATA_SECTION
 	    LOG<<"| sage         "<<sage<<'\n';
 	    LOG<<"| nage         "<<nage<<'\n';
 	    LOG<<"| ngear        "<<ngear<<'\n';
+	    LOG<<"| propfemale   "<<propfemale<<'\n';
 	    LOG<<"| n_area       "<<n_area<<'\n';
 	    LOG<<"| n_group      "<<n_group<<'\n';
 	    LOG<<"| n_sex        "<<n_sex<<'\n';
@@ -2355,8 +2357,7 @@ FUNCTION void calcStockRecruitment()
 	dvar_vector tmp_rt(syr+sage,nyr);
 	dvar_vector lx(sage,nage);
 	dvar_vector lw(sage,nage);
-	double female_prop = 0.7;
-	double male_prop = 0.3;
+	double propmale = 1.0 - propfemale;
 	for(g = 1; g <= ngroup; g++){
 	  lx.initialize();
 	  lw.initialize();
@@ -2383,9 +2384,9 @@ FUNCTION void calcStockRecruitment()
 	        phib += 1. / narea * lw * fa;
 	      }else if(nsex == 2){
 	        if(h == 1){
-	          phib += male_prop / narea * lw * fa;
+	          phib += propmale / narea * lw * fa;
 	        }else{
-	          phib += female_prop / narea * lw * fa;
+	          phib += propfemale / narea * lw * fa;
 	        }
 	      }else{
 	        ad_exit(1);

@@ -851,45 +851,58 @@ DATA_SECTION
 	// |  9  -> lambda_3  - penalty weight for 2nd difference in time-varying selectivity.
 	// |  10 -> Number of discrete selectivity blocks.
 
-	init_matrix selex_controls(1,10,1,ngear);
+	init_matrix selex_controls(1,12,1,ngear);
 	ivector isel_npar(1,ngear);
 	ivector jsel_npar(1,ngear);
 	ivector isel_type(1,ngear);
 	ivector sel_phz(1,ngear);
 	ivector n_sel_blocks(1,ngear);
-	vector ahat_agemin(1,ngear);
-	vector ghat_agemax(1,ngear);
+	vector ahat_agemin_f(1,ngear);
+	vector ghat_agemax_f(1,ngear);
+	vector ahat_agemin_m(1,ngear);
+	vector ghat_agemax_m(1,ngear);
 	vector age_nodes(1,ngear);
 	vector yr_nodes(1,ngear);
 	vector lambda_1(1,ngear);
 	vector lambda_2(1,ngear);
 	vector lambda_3(1,ngear);
 	LOC_CALCS
-	  ahat_agemin = selex_controls(2);
-	  ghat_agemax = selex_controls(3);
-	  age_nodes = selex_controls(4);
-	  yr_nodes = selex_controls(5);
-	  lambda_1 = selex_controls(7);
-	  lambda_2 = selex_controls(8);
-	  lambda_3 = selex_controls(9);
-
+	  ahat_agemin_f = selex_controls(2);
+	  ghat_agemax_f = selex_controls(3);
+	  ahat_agemin_m = selex_controls(4);
+	  ghat_agemax_m = selex_controls(5);
+	  age_nodes = selex_controls(6);
+	  yr_nodes = selex_controls(7);
+	  lambda_1 = selex_controls(9);
+	  lambda_2 = selex_controls(10);
+	  lambda_3 = selex_controls(11);
 	  isel_type = ivector(selex_controls(1));
-	  sel_phz = ivector(selex_controls(6));
-	  n_sel_blocks = ivector(selex_controls(10));
+	  sel_phz = ivector(selex_controls(8));
+	  n_sel_blocks = ivector(selex_controls(12));
 	  LOG<<"| ------------------------------------- |\n";
 	  LOG<<"| Selectivity types                     |"<<'\n';
 	  LOG<<"| ------------------------------------- |\n";
 	  LOG<<isel_type<<'\n';
 	  LOG<<"| ------------------------------------- |\n\n";
 	  LOG<<"| ------------------------------------- |\n";
-	  LOG<<"| Age/length at 50% selectivity         |"<<'\n';
+	  LOG<<"| Female Age/length at 50% selectivity  |"<<'\n';
 	  LOG<<"| ------------------------------------- |\n";
-	  LOG<<ahat_agemin<<'\n';
+	  LOG<<ahat_agemin_f<<'\n';
 	  LOG<<"| ------------------------------------- |\n\n";
 	  LOG<<"| ------------------------------------- |\n";
-	  LOG<<"| STD ot 50% selectivity                |"<<'\n';
+	  LOG<<"| Female STD ot 50% selectivity         |"<<'\n';
 	  LOG<<"| ------------------------------------- |\n";
-	  LOG<<ghat_agemax<<'\n';
+	  LOG<<ghat_agemax_f<<'\n';
+	  LOG<<"| ------------------------------------- |\n\n";
+	  LOG<<"| ------------------------------------- |\n";
+	  LOG<<"| Male Age/length at 50% selectivity    |"<<'\n';
+	  LOG<<"| ------------------------------------- |\n";
+	  LOG<<ahat_agemin_m<<'\n';
+	  LOG<<"| ------------------------------------- |\n\n";
+	  LOG<<"| ------------------------------------- |\n";
+	  LOG<<"| Male STD ot 50% selectivity           |"<<'\n';
+	  LOG<<"| ------------------------------------- |\n";
+	  LOG<<ghat_agemax_m<<'\n';
 	  LOG<<"| ------------------------------------- |\n\n";
 	  LOG<<"| ------------------------------------- |\n";
 	  LOG<<"| No. age nodes for each gear           |"<<'\n';
@@ -994,7 +1007,7 @@ DATA_SECTION
 	        break;
 	      case 13:
 	        // age-specific coefficients for agemin to agemax
-	        isel_npar(i) = (ghat_agemax(i)-ahat_agemin(i)+1);
+	        isel_npar(i) = (ghat_agemax_f(i)-ahat_agemin_f(i)+1);
 	        jsel_npar(i) = n_sel_blocks(i);
 	      default: break;
 	    }
@@ -1281,28 +1294,39 @@ PARAMETER_SECTION
 	// |   based on ahat and ghat in the control file for logistic selectivities.
 	// | Special case: if SimFlag=TRUE, then add some random noise to ahat.
 	// | NB sel_par is in log space.
-	init_bounded_matrix_vector sel_par(1,ngear,1,jsel_npar,1,isel_npar,-25.,25.,sel_phz);
+	init_bounded_matrix_vector sel_par_f(1,ngear,1,jsel_npar,1,isel_npar,-25.,25.,sel_phz);
+	init_bounded_matrix_vector sel_par_m(1,ngear,1,jsel_npar,1,isel_npar,-25.,25.,sel_phz);
 
 	LOC_CALCS
+	  LOG<<"global_parfile = "<<global_parfile<<"\n\n";
 	  if(!global_parfile){
 	    for(int k=1; k<=ngear; k++){
 	      if(isel_type(k) == 1 ||
 	         isel_type(k) == 6 ||
-	        (isel_type(k)>= 7 &&
+	        (isel_type(k) >= 7 &&
 	         isel_type(k) <= 12)){
+	        LOG<<"SEL_PARS: gear = "<<k<<", n_sel_blocks(k) = "<<n_sel_blocks(k)<<"\n"; 
 	        for(int j = 1; j <= n_sel_blocks(k); j++ ){
 	          double uu = 0;
 	          if(SimFlag && j > 1){
 	            uu = 0.05 * randn(j + rseed);
 	          }
-	          sel_par(k,j,1) = log(ahat_agemin(k)*exp(uu));
-	          sel_par(k,j,2) = log(ghat_agemax(k));
+	          sel_par_f(k,j,1) = log(ahat_agemin_f(k) * exp(uu));
+	          sel_par_f(k,j,2) = log(ghat_agemax_f(k));
+	          if(nsex == 2){
+	            sel_par_m(k,j,1) = log(ahat_agemin_m(k) * exp(uu));
+	            sel_par_m(k,j,2) = log(ghat_agemax_m(k));
+	          }
 	        }
 	      }else if(isel_type(k) ==13){
 	        for(int j = 1; j <= n_sel_blocks(k); j++){
 	          double dd = 1.e-8;
-	          double stp = 1.0 / (ghat_agemax(k) - ahat_agemin(k));
-	          sel_par(k)(j).fill_seqadd(dd,stp);
+	          double stp = 1.0 / (ghat_agemax_f(k) - ahat_agemin_f(k));
+	          sel_par_f(k)(j).fill_seqadd(dd,stp);
+	          if(nsex == 2){
+	            stp = 1.0 / (ghat_agemax_m(k) - ahat_agemin_m(k));
+	            sel_par_m(k)(j).fill_seqadd(dd,stp);
+	          }
 	        }
 	      }
 	    }
@@ -1728,7 +1752,10 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	  k = kgear;
 	  if(sel_phz(k) < 0){
 	    k = abs(sel_phz(kgear));
-	    sel_par(kgear) = sel_par(k);
+	    sel_par_f(kgear) = sel_par_f(k);
+	    if(nsex == 2){
+	      sel_par_m(kgear) = sel_par_m(k);
+	    }
 	  }
 	  for(ig = 1; ig <= n_ags; ig++){
 	    tmp.initialize(); tmp2.initialize();
@@ -1747,15 +1774,36 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	          // LOG<<"Testing selex class"<<'\n';
 	          // log_sel(k)(ig)(i) = log(cSelex.logistic(sel_par(k)(bpar)));
 	          // log_sel(k)(ig)(i) = log(cLogisticSelex(sel_par(k)(bpar)));
-	          p1 = mfexp(sel_par(k, bpar, 1));
-	          p2 = mfexp(sel_par(k, bpar, 2));
 	          // log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny );
+	          if(ig == 2){
+	            p1 = mfexp(sel_par_f(k, bpar, 1));
+	            p2 = mfexp(sel_par_f(k, bpar, 2));
+	          }else{
+	            p1 = mfexp(sel_par_m(k, bpar, 1));
+	            p2 = mfexp(sel_par_m(k, bpar, 2));
+	          }
 	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2) + tiny);
+	          if(i == 2021){
+	            // XXX
+		    LOG<<"sel_par_f(k, bpar, 1) = "<<sel_par_f(k, bpar, 1)<<"\n";
+		    LOG<<"sel_par_f(k, bpar, 2) = "<<sel_par_f(k, bpar, 2)<<"\n";
+		    LOG<<"sel_par_m(k, bpar, 1) = "<<sel_par_m(k, bpar, 1)<<"\n";
+		    LOG<<"sel_par_m(k, bpar, 2) = "<<sel_par_m(k, bpar, 2)<<"\n";
+	            LOG<<"k = "<<k<<", byr = "<<byr<<"\nsel_blocks(k, byr)\n"<<sel_blocks(k, byr)<<"\n";
+	            LOG<<"kgear = "<<kgear<<", ig == "<<ig<<", i = "<<i<<"\n";
+	            LOG<<"age = "<<age<<", p1 = "<<p1<<", p2 = "<<p2<<"\n";
+	            LOG<<"log_sel(kgear)(ig)(i) = "<<log_sel(kgear)(ig)(i)<<"\n\n";
+	          }
 	        }
 	        break;
 	      case 6: // fixed logistic selectivity
-	        p1 = mfexp(sel_par(k, 1, 1));
-	        p2 = mfexp(sel_par(k, 1, 2));
+	        if(ig == 2){
+	          p1 = mfexp(sel_par_f(k, 1, 1));
+	          p2 = mfexp(sel_par_f(k, 1, 2));
+	        }else{
+	          p1 = mfexp(sel_par_m(k, 1, 1));
+	          p2 = mfexp(sel_par_m(k, 1, 2));
+		}
 	        for(i = syr; i <= nyr; i++){
 	          //log_sel(kgear)(ig)(i) = log(plogis<dvar_vector>(age, p1, p2) );
 	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2));
@@ -1770,7 +1818,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	              byr++;
 	          }
 	          for(j=sage;j<=nage-1;j++){
-	            log_sel(kgear)(ig)(i)(j) = sel_par(k)(bpar)(j-sage+1);
+	            log_sel(kgear)(ig)(i)(j) = sel_par_f(k)(bpar)(j-sage+1);
 	          }
 	          log_sel(kgear)(ig)(i,nage) = log_sel(kgear)(ig)(i,nage-1);
 	        }
@@ -1779,7 +1827,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        for(i=syr; i<nyr; i++){
 	          if(i==sel_blocks(k,byr)){
 	            bpar ++;
-	            log_sel(k)(ig)(i) = cubic_spline(sel_par(k)(bpar));
+	            log_sel(k)(ig)(i) = cubic_spline(sel_par_f(k)(bpar));
 	            if(byr < n_sel_blocks(k))
 	              byr++;
 	          }
@@ -1788,13 +1836,13 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        break;
 	      case 4: // time-varying cubic spline every year
 	        for(i=syr; i<=nyr; i++){
-	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par(k)(i-syr+1));
+	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par_f(k)(i-syr+1));
 	        }
 	        break;
 	      case 5: // time-varying bicubic spline
 	        ia.fill_seqadd(0,1./(age_nodes(k)-1));
 	        iy.fill_seqadd( 0,1. / (yr_nodes(k)-1));
-	        bicubic_spline(iy,ia,sel_par(k),tmp2);
+	        bicubic_spline(iy,ia,sel_par_f(k),tmp2);
 	        log_sel(kgear)(ig) = tmp2;
 	        break;
 	      case 7:
@@ -1802,8 +1850,8 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        // CHANGED This is not working and should not be used. (May 5, 2011)
 	        // SkDM:  I was not able to get this to run very well.
 	        // AUG 5, CHANGED so it no longer has the random walk component.
-	        p1 = mfexp(sel_par(k,1,1));
-	        p2 = mfexp(sel_par(k,1,2));
+	        p1 = mfexp(sel_par_f(k,1,1));
+	        p2 = mfexp(sel_par_f(k,1,2));
 	        for(i = syr; i<=nyr; i++){
 	          dvar_vector tmpwt = log(d3_wt_avg(ig)(i) * 1000) / mean(log(d3_wt_avg(ig) * 1000.));
 	          log_sel(kgear)(ig)(i) = log( plogis(tmpwt,p1,p2)+tiny );
@@ -1813,9 +1861,9 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        //Alternative time-varying selectivity based on weight
 	        //deviations (d3_wt_dev) d3_wt_dev is a matrix(syr,nyr+1,sage,nage)
 	        //p3 is the coefficient that describes variation in log_sel.
-	        p1 = mfexp(sel_par(k,1,1));
-	        p2 = mfexp(sel_par(k,1,2));
-	        p3 = sel_par(k,1,3);
+	        p1 = mfexp(sel_par_f(k,1,1));
+	        p2 = mfexp(sel_par_f(k,1,2));
+	        p3 = sel_par_f(k,1,3);
 	        for(i=syr; i<=nyr; i++){
 	          tmp2(i) = p3 * d3_wt_dev(ig)(i);
 	          //log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny ) + tmp2(i);
@@ -1829,8 +1877,8 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	            if(byr < n_sel_blocks(k))
 	              byr++;
 	          }
-	          p1 = mfexp(sel_par(k,bpar,1));
-	          p2 = mfexp(sel_par(k,bpar,2));
+	          p1 = mfexp(sel_par_f(k,bpar,1));
+	          p2 = mfexp(sel_par_f(k,bpar,2));
 	          dvector len = pow(d3_wt_avg(ig)(i) / d_a(ig), 1. / d_b(ig));
 	          log_sel(kgear)(ig)(i) = log(plogis(len,p1,p2));
 	        }
@@ -1843,7 +1891,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	              byr++;
 	          }
 	          dvector len = pow(d3_wt_avg(ig)(i) / d_a(ig), 1. / d_b(ig));
-	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par(k)(bpar), len);
+	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par_f(k)(bpar), len);
 	        }
 	        break;
 	      case 13: // truncated age-specific selectivity coefficients
@@ -1853,14 +1901,14 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	            if(byr < n_sel_blocks(k))
 	              byr++;
 	          }
-	          for(j=ahat_agemin(k); j<=ghat_agemax(k); j++){
-	            log_sel(k)(ig)(i)(j) = sel_par(k)(bpar)(j-ahat_agemin(k)+1);
+	          for(j = ahat_agemin_f(k); j <= ghat_agemax_f(k); j++){
+	            log_sel(k)(ig)(i)(j) = sel_par_f(k)(bpar)(j-ahat_agemin_f(k)+1);
 	          }
-	          for(j=ghat_agemax(k)+1; j<=nage; j++){
-	            log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ghat_agemax(k));
+	          for(j = ghat_agemax_f(k) + 1; j <= nage; j++){
+	            log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ghat_agemax_f(k));
 	          }
-	          for(j=sage; j<ahat_agemin(k); j++){
-	              log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ahat_agemin(k));
+	          for(j = sage; j < ahat_agemin_f(k); j++){
+	              log_sel(kgear)(ig)(i,j) = log_sel(kgear)(ig)(i,ahat_agemin_f(k));
 	          }
 	        }
 	        break;
@@ -3157,7 +3205,8 @@ FUNCTION calcObjectiveFunction
 
 	if(!delaydiff){
 	  for(k = 1; k <= ngear; k++){
-	    if(active(sel_par(k))){
+	    LOG<<"ACTIVE: k = "<<k<<", active(sel_par_f(k)) = "<<active(sel_par_f(k))<<", active(sel_par_m(k)) = "<<active(sel_par_m(k))<<"\n";
+	    if(active(sel_par_f(k)) | active(sel_par_m(k))){
 	      //if not using logistic selectivity then
 	      if(isel_type(k) != 1 &&
 	         isel_type(k) != 7 &&
@@ -3167,7 +3216,7 @@ FUNCTION calcObjectiveFunction
 	          for(i = syr; i <= nyr; i++){
 	            //curvature in selectivity parameters
 	            dvar_vector df2 = first_difference(first_difference(log_sel(k)(ig)(i)));
-	            nlvec(5,k) += lambda_1(k)/(nage-sage+1)*df2*df2;
+	            nlvec(5,k) += lambda_1(k) / (nage-sage+1) * df2 * df2;
 	            //penalty for dome-shapeness
 	            for(j = sage; j <= nage - 1; j++)
 	              if(log_sel(k,ig,i,j) > log_sel(k,ig,i,j+1))
@@ -3193,14 +3242,14 @@ FUNCTION calcObjectiveFunction
 	// | [?] - TODO for isel_type==2 ensure mean 0 as well.
 	// |
 	  for(k = 1; k <= ngear; k++){
-	    if(active(sel_par(k)) &&
+	    if(active(sel_par_f(k)) &&
 	       isel_type(k) != 1 &&
 	       isel_type(k) != 7 &&
 	       isel_type(k) != 8 &&
 	       isel_type(k) != 11){
 	      dvariable s = 0;
 	      if(isel_type(k) == 5){ //bicubic spline version ensure column mean = 0
-	        dvar_matrix tmp = trans(sel_par(k));
+	        dvar_matrix tmp = trans(sel_par_f(k));
 	        for(j = 1; j <= tmp.rowmax(); j++){
 	          s = mean(tmp(j));
 	          lvec(1) += 10000.0 * s * s;
@@ -3210,7 +3259,31 @@ FUNCTION calcObjectiveFunction
 	         isel_type(k) == 3 ||
 	         isel_type(k) == 4 ||
 	         isel_type(k) == 12){
-	        dvar_matrix tmp = sel_par(k);
+	        dvar_matrix tmp = sel_par_f(k);
+	        for(j=1;j<=tmp.rowmax();j++){
+	          s = mean(tmp(j));
+	          lvec(1) += 10000.0 * s * s;
+	        }
+	      }
+	    }
+	    if(active(sel_par_m(k)) &&
+	       isel_type(k) != 1 &&
+	       isel_type(k) != 7 &&
+	       isel_type(k) != 8 &&
+	       isel_type(k) != 11){
+	      dvariable s = 0;
+	      if(isel_type(k) == 5){ //bicubic spline version ensure column mean = 0
+	        dvar_matrix tmp = trans(sel_par_m(k));
+	        for(j = 1; j <= tmp.rowmax(); j++){
+	          s = mean(tmp(j));
+	          lvec(1) += 10000.0 * s * s;
+	        }
+	      }
+	      if(isel_type(k) == 2 ||
+	         isel_type(k) == 3 ||
+	         isel_type(k) == 4 ||
+	         isel_type(k) == 12){
+	        dvar_matrix tmp = sel_par_m(k);
 	        for(j=1;j<=tmp.rowmax();j++){
 	          s = mean(tmp(j));
 	          lvec(1) += 10000.0 * s * s;
@@ -3328,7 +3401,7 @@ FUNCTION calcObjectiveFunction
 	if(active(log_m_nodes)){
 	  double std_mdev = d_iscamCntrl(11);
 	  dvar_vector fd_mdevs = first_difference(log_m_devs);
-	  pvec(2)  = dnorm(fd_mdevs, std_mdev);
+	  pvec(2) = dnorm(fd_mdevs, std_mdev);
 	  pvec(2) += 0.5 * norm2(log_m_nodes);
 	}
 	switch(delaydiff){
@@ -3433,21 +3506,27 @@ FUNCTION void calcReferencePoints()
 	  }
 	  if(!d_iscamCntrl(13)){
 	    int kk, ig;
-	    // | (1) : Matrix of selectivities for directed fisheries.
-	    // |     : log_sel(gear)(n_ags)(year)(age)
-	    // |     : ensure dAllocation sums to 1.
+	    // Matrix of selectivities for directed fisheries.
+	    // log_sel(gear)(n_ags)(year)(age)
+	    // ensure dAllocation sums to 1.
 	    dvector d_ak(1,nfleet);
 	    d3_array d_V(1,n_ags,1,nfleet,sage,nage);
 	    dvar3_array dvar_V(1,n_ags,1,nfleet,sage,nage);
 	    for(k = 1;k <= nfleet;k++){
 	      kk = nFleetIndex(k);
 	      d_ak(k) = dAllocation(kk);
+	      LOG<<"kk = nFleetIndex(k) = "<<nFleetIndex(k)<<"\n";
+	      LOG<<"dAllocation(kk) = "<<dAllocation(kk)<<"\n\n";
 	      for(ig = 1;ig <= n_ags;ig++){
 	        d_V(ig)(k) = value(exp(log_sel(kk)(ig)(nyr)));
 	        dvar_V(ig)(k) = exp(log_sel(kk)(ig)(nyr));
 	      }
 	    }
+	    LOG<<"d_ak\n"<<d_ak<<"\n";
 	    d_ak /= sum(d_ak);
+	    LOG<<"d_ak After normalization\n"<<d_ak<<"\n";
+	    LOG<<"pf_cntrl(3) = "<<pf_cntrl(3)<<"\n";
+	    LOG<<"pf_cntrl(4) = "<<pf_cntrl(4)<<"\n";
 	    // Average weight and mature spawning biomass for reference years
 	    // dWt_bar(1,n_ags,sage,nage)
 	    dmatrix fa_bar(1,n_ags,sage,nage);
@@ -3466,22 +3545,31 @@ FUNCTION void calcReferencePoints()
 	    dvar_vector dftry(1,nfleet);
 	    dftry = 0.6/nfleet * mean(M_bar);
 	    // Instantiate msy class for each stock
-	    if(verbose){
+	    if(verbose & last_phase()){
 	      for(g = 1; g <= ngroup; g++){
 	        // Check that average weights are the same in calcReferencePoints as in the slow_MSY code
 	        double d_rho = d_iscamCntrl(13);
 	        dvector d_mbar = M_bar(g);
 	        dvector d_wa = dWt_bar(g);
 	        dvector d_fa = fa_bar(g);
-	        LOG<<"g = "<<g<<"\n\n";
-	        LOG<<"Weight-at-age - dWt_bar(g)\n"<<dWt_bar(g)<<"\n\n";
-	        LOG<<"Fecundity-at-age - fa_bar(g)\n"<<fa_bar(g)<<"\n\n";
-	        LOG<<"Natural mortality - M_bar(g)\n"<<M_bar(g)<<"\n\n";
-	        LOG<<"Selectivity - dvar_V:\n"<<dvar_V<<"\n\n";
-	        LOG<<"ro(g)\n"<<ro(g)<<"\n\n";
-	        LOG<<"steepness(g)\n"<<steepness(g)<<"\n\n";
-	        LOG<<"nfleet\n"<<nfleet<<"\n\n";
-	        LOG<<"d_rho\n"<<d_rho<<"\n\n";
+	        LOG<<"g = "<<g<<"\n";
+	        LOG<<"Weight-at-age - dWt_bar(g)\n"<<dWt_bar(g)<<"\n";
+	        LOG<<"Fecundity-at-age - fa_bar(g)\n"<<fa_bar(g)<<"\n";
+	        LOG<<"One sex or Male Natural mortality - M(1)\n"<<M(1)<<"\n";
+	        if(nsex == 2){
+	          LOG<<"Female Natural mortality - M(2)\n"<<M(2)<<"\n";
+	        }
+	        LOG<<"One sex or Male Mean Natural mortality - M_bar(1)\n"<<M_bar(1)<<"\n";
+	        if(nsex == 2){
+	          LOG<<"Female Mean Natural mortality - M_bar(2)\n"<<M_bar(2)<<"\n";
+	        }
+	        LOG<<"nfleet = "<<nfleet<<"\n";
+	        LOG<<"mean(M_bar) = "<<mean(M_bar)<<"\n";
+	        LOG<<"dftry = 0.6/nfleet * mean(M_bar) = "<<dftry<<"\n";
+	        LOG<<"Selectivity - dvar_V:\n"<<dvar_V<<"\n";
+	        LOG<<"ro(g) = "<<ro(g)<<"\n";
+	        LOG<<"steepness(g) = "<<steepness(g)<<"\n";
+	        LOG<<"d_rho = "<<d_rho<<"\n\n";
 	      }
 	    }
 	    // Data-type version of MSY-based reference points.
@@ -3496,7 +3584,7 @@ FUNCTION void calcReferencePoints()
 	      double d_rho = d_iscamCntrl(13);
 	      Msy c_msy(d_ro, d_h, M_bar, d_rho, dWt_bar, fa_bar, &d_V);
 	      fmsy(g) = 0.1;
-	      c_msy.get_fmsy(fmsy(g));
+	      c_msy.get_fmsy(fmsy(g), d_ak);
 	      bmsy(g) = c_msy.getBmsy();
 	      msy(g) = c_msy.getMsy();
 	      bo = c_msy.getBo();
@@ -4053,10 +4141,16 @@ REPORT_SECTION
 	// | SELECTIVITIES (4darray)
 	// |---------------------------------------------------------------------------------|
 	// |
-	report<<"sel_par"<<'\n';
-	for(k=1;k<=ngear;k++){
+	report<<"sel_par_f"<<'\n';
+	for(k = 1; k <= ngear; k++){
 	  for(j = 1; j <= jsel_npar(k); j++){
-	    report<<k<<"\t"<<j<<"\t"<<exp(sel_par(k)(j))<<'\n';
+	    report<<k<<"\t"<<j<<"\t"<<exp(sel_par_f(k)(j))<<'\n';
+	  }
+	}
+	report<<"sel_par_m"<<'\n';
+	for(k = 1; k <= ngear; k++){
+	  for(j = 1; j <= jsel_npar(k); j++){
+	    report<<k<<"\t"<<j<<"\t"<<exp(sel_par_m(k)(j))<<'\n';
 	  }
 	}
 	report<<"log_sel"<<'\n';
@@ -4491,10 +4585,12 @@ FUNCTION mcmc_output
 	for(int group=1;group<=ngroup;group++){
 	  ofs<<","<<sbt(group)(nyr);
 	}
-	for(k=1;k<=ngear;k++){
-	  for(j=1;j<=jsel_npar(k);j++){
-	    ofs<<","<<exp(sel_par(k)(j)(1));
-	    ofs<<","<<exp(sel_par(k)(j)(2));
+	for(k = 1; k <= ngear; k++){
+	  for(j = 1; j <= jsel_npar(k); j++){
+	    ofs<<","<<exp(sel_par_f(k)(j)(1));
+	    ofs<<","<<exp(sel_par_f(k)(j)(2));
+	    ofs<<","<<exp(sel_par_m(k)(j)(1));
+	    ofs<<","<<exp(sel_par_m(k)(j)(2));
 	  }
 	}
 	ofs<<","<<objfun;

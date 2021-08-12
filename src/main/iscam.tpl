@@ -206,7 +206,7 @@ DATA_SECTION
 	    LOG<<"| n_sex        "<<n_sex<<'\n';
 	    LOG<<"| pntr_ag      "<<pntr_ag<<'\n';
 	    LOG<<"| pntr_gs      "<<pntr_gs<<'\n';
-	    LOG<<"| pntr_ags     "<<pntr_ags(1)<<'\n';
+	    LOG<<"| pntr_ags     "<<pntr_ags<<'\n';
 	    LOG<<"| ----------------------- |\n\n";
 	  }
 	  // Check for dimension errors in projection control file.
@@ -307,10 +307,12 @@ DATA_SECTION
 	      ma(ig) = d_maturityVector;
 	    }
 	  }
-	  LOG<<"d_a = "<<d_a<<"\n\n";
-	  LOG<<"d_b = "<<d_b<<"\n\n";
-	  LOG<<"la = "<<la<<"\n\n";
-	  LOG<<"wa = "<<wa<<"\n\n";
+	  if(verbose){
+	    LOG<<"d_a = "<<d_a<<"\n\n";
+	    LOG<<"d_b = "<<d_b<<"\n\n";
+	    LOG<<"la = "<<la<<"\n\n";
+	    LOG<<"wa = "<<wa<<"\n\n";
+	  }
 	END_CALCS
 
 	//age at knife-edge recruitment
@@ -347,26 +349,81 @@ DATA_SECTION
 	    LOG<<"| TAIL(dCatchData)        |\n";
 	    LOG<<"| ----------------------- |\n";
 	    LOG<<dCatchData.sub(nCtNobs-3,nCtNobs)<<'\n';
-	    LOG<<"| ----------------------- |\n\n";
+	    LOG<<"| ----------------------- |\n";
+	    LOG<<"| All Catch               |\n";
+	    LOG<<dCatchData<<"\n\n";
 	  }
 	  d3_Ct.initialize();
 	  int k;
+	  if(verbose){
+	    LOG<<"Debug reading of catch data\n";
+	  }
 	  for(int ii = 1; ii <= nCtNobs; ii++){
 	    i = dCatchData(ii)(1); // year
 	    k = dCatchData(ii)(2); // gear
 	    f = dCatchData(ii)(3); // area
 	    g = dCatchData(ii)(4); // group
 	    h = dCatchData(ii)(5); // sex
+	    if(verbose){
+	      LOG<<"Year = "<<i<<"\n";
+	      LOG<<"ii = row number = "<<ii<<"\n";
+	      LOG<<"i = year = "<<i<<"\n";
+	      LOG<<"k = gear = "<<k<<"\n";
+	      LOG<<"f = area = "<<f<<"\n";
+	      LOG<<"g = group = "<<g<<"\n";
+	    }
 	    if(h){
 	      ig = pntr_ags(f,g,h);
+	      if(verbose){
+	        LOG<<"h = sex = "<<h<<"\n";
+	        LOG<<"ig = area,group,sex = "<<ig<<"\n";
+	        LOG<<"Data row = dCatchData(ii) =  "<<dCatchData(ii)<<"\n";
+	      }
 	      d3_Ct(ig)(i)(k) = dCatchData(ii)(7);
+	      if(verbose){
+	        LOG<<"Catch value = d3_Ct(ig)(i)(k) = "<<d3_Ct(ig)(i)(k)<<"\n";
+	      }
 	    }else{
 	      for(h = 1; h <= nsex; h++){
 	        ig = pntr_ags(f,g,h);
-	        d3_Ct(ig)(i)(k) = 1. / nsex * dCatchData(ii)(7);
+	        if(verbose){
+	          LOG<<"h = sex = "<<h<<"\n";
+	          LOG<<"ig = area,group,sex = "<<ig<<"\n";
+	          LOG<<"Data row = dCatchData(ii) = "<<dCatchData(ii)<<"\n";
+	        }
+	        if(ig == 1){
+	          if(verbose){
+	            LOG<<"Multiplying catch by proportion male ("<<(1.0 - propfemale)<<")\n";
+	          }
+	          d3_Ct(ig)(i)(k) = (1.0 - propfemale) * dCatchData(ii)(7);
+	        }else{
+	          if(verbose){
+	            LOG<<"Multiplying catch by proportion female ("<<propfemale<<")\n";
+	          }
+	          d3_Ct(ig)(i)(k) = propfemale * dCatchData(ii)(7);
+	        }
+	        if(verbose){
+	          LOG<<"Catch value = d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
+	        }
+	      }
+	      if(verbose){
+	        LOG<<"\n";
 	      }
 	    }
 	  }
+	  for(ig = 1; ig<= 2; ig++){
+	    for(i = 1996; i <= 2021; i++){
+	      LOG<<"ig = "<<ig<<"\n";
+	      LOG<<"i (year) = "<<i<<"\n";
+	      for(k = 1; k<=ngear; k++){
+	        LOG<<"k = gear = "<<k<<"\n";
+	        LOG<<"d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
+	      }
+	      LOG<<"\n";
+	    }
+	    LOG<<"\n";
+	  }
+	  LOG<<"\n\n";
 	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | RELATIVE ABUNDANCE INDICIES (ragged array)
@@ -4746,16 +4803,16 @@ FUNCTION void projection_model(const double& tac);
 	// Note that the historical model already projects a year. This code will replace that year and project one more
 	int pyr = nyr + 1;
 	BaranovCatchEquation cBaranov;
-	// (2) : Average weight and mature spawning biomass for reference years  (copied from calcReferencePoints() but only implemented for ig=1)
-	//     : dWt_bar(1,n_ags,sage,nage)
+	// Average weight and mature spawning biomass for reference years  (copied from calcReferencePoints() but only implemented for ig=1)
+	// dWt_bar(1,n_ags,sage,nage)
 	dvector fa_bar(sage, nage);
 	dvector M_bar(sage, nage);
 	fa_bar = elem_prod(dWt_bar(1), ma(1));
 	// See notes above about average fecundity
 	M_bar  = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4))));
 	M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
-	// --derive stock re4cruitment parameters
-	// --survivorship of spawning biomass
+	// derive stock recruitment parameters
+	// survivorship of spawning biomass
 	dvector lx(sage, nage);
 	double tau = value(sqrt(1. - rho) * varphi);
 	//double m_rho = d_iscamCntrl(13);

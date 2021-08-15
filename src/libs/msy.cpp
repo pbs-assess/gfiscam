@@ -119,13 +119,13 @@ void Msy::get_fmsy(dvector& fe, dvector& ak){
   // int i;
   int n = size_count(fe);
   int iter =1;
-  LOG<<"ak = "<<ak<<"\n";
-  LOG<<"initial fe:\n"<<fe<<"\n";
+  //LOG<<"ak = "<<ak<<"\n";
+  //LOG<<"initial fe:\n"<<fe<<"\n";
   ak = ak/sum(ak);
   double fbar = mean(fe);
   dvector lambda = ak/mean(ak);
-  LOG<<"lambda = "<<lambda<<"\n";
-  LOG<<"fk = "<<elem_prod(fe,lambda)<<"\n";
+  //LOG<<"lambda = "<<lambda<<"\n";
+  //LOG<<"fk = "<<elem_prod(fe,lambda)<<"\n";
   dvector fk = elem_prod(fe,lambda);
   dvector p(1,n);
   double x1, x2;
@@ -133,27 +133,27 @@ void Msy::get_fmsy(dvector& fe, dvector& ak){
   x2 = 3.0e02;
   // Spawning biomass per recruit for unfished conditions
   calc_phie(m_dM,m_dFa);
-  LOG<<"Done calc_phie()\n";
+  //LOG<<"Done calc_phie()\n";
   do{
-    LOG<<"In do\n";
+      //LOG<<"In do\n";
     // Run the model with constant fk = fbar to get
     // lambda multipliers.
     fk = fbar;
     calcEquilibrium(fk);
     lambda = elem_div(ak,m_ye/sum(m_ye));
-    LOG<<"lambda = "<<lambda<<"\n";
+    //LOG<<"lambda = "<<lambda<<"\n";
     // Run the model with fk = lambda * fbar to get
     // derivatives of the total catch equation to update fbar;
     fk = fbar * lambda;
     calcEquilibrium(fk);
-    LOG<<"iter = "<<iter<<"\nfbar "<<fbar<<"\ndYe "<<fabs(m_dYe)<<"\nfk "<<fk<<'\n';
+    //LOG<<"iter = "<<iter<<"\nfbar "<<fbar<<"\ndYe "<<fabs(m_dYe)<<"\nfk "<<fk<<'\n';
 
     fbar = fbar - m_dYe/m_d2Ye;
     iter++;
 
     // Check boundary conditions and reduce step size if necessary.
     if((x1 - fbar) * (fbar - x2) < 0.0){
-      LOG<<"get_fmsy:: reducing Newton-step"<<'\n';
+	//LOG<<"get_fmsy:: reducing Newton-step"<<'\n';
       fbar += 0.98 * m_dYe/m_d2Ye;
       //exit(1);
     }

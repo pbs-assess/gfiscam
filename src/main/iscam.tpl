@@ -381,7 +381,7 @@ DATA_SECTION
 	      }
 	      d3_Ct(ig)(i)(k) = dCatchData(ii)(7);
 	      if(verbose){
-	        LOG<<"Catch value = d3_Ct(ig)(i)(k) = "<<d3_Ct(ig)(i)(k)<<"\n";
+	        //LOG<<"Catch value = d3_Ct(ig)(i)(k) = "<<d3_Ct(ig)(i)(k)<<"\n";
 	      }
 	    }else{
 	      for(h = 1; h <= nsex; h++){
@@ -393,17 +393,17 @@ DATA_SECTION
 	        }
 	        if(ig == 1){
 	          if(verbose){
-	            LOG<<"Multiplying catch by proportion male ("<<(1.0 - propfemale)<<")\n";
-	          }
-	          d3_Ct(ig)(i)(k) = (1.0 - propfemale) * dCatchData(ii)(7);
-	        }else{
-	          if(verbose){
 	            LOG<<"Multiplying catch by proportion female ("<<propfemale<<")\n";
 	          }
 	          d3_Ct(ig)(i)(k) = propfemale * dCatchData(ii)(7);
+	        }else{
+	          if(verbose){
+	            LOG<<"Multiplying catch by proportion male ("<<(1.0 - propfemale)<<")\n";
+	          }
+	          d3_Ct(ig)(i)(k) = (1.0 - propfemale) * dCatchData(ii)(7);
 	        }
 	        if(verbose){
-	          LOG<<"Catch value = d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
+	          //LOG<<"Catch value = d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
 	        }
 	      }
 	      if(verbose){
@@ -417,7 +417,7 @@ DATA_SECTION
 	      LOG<<"i (year) = "<<i<<"\n";
 	      for(k = 1; k<=ngear; k++){
 	        LOG<<"k = gear = "<<k<<"\n";
-	        LOG<<"d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
+	        //LOG<<"d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
 	      }
 	      LOG<<"\n";
 	    }
@@ -1362,7 +1362,9 @@ PARAMETER_SECTION
 	         isel_type(k) == 6 ||
 	        (isel_type(k) >= 7 &&
 	         isel_type(k) <= 12)){
-	        LOG<<"SEL_PARS: gear = "<<k<<", n_sel_blocks(k) = "<<n_sel_blocks(k)<<"\n"; 
+	        if(verbose){
+	          LOG<<"SEL_PARS: gear = "<<k<<", n_sel_blocks(k) = "<<n_sel_blocks(k)<<"\n";
+	        }
 	        for(int j = 1; j <= n_sel_blocks(k); j++ ){
 	          double uu = 0;
 	          if(SimFlag && j > 1){
@@ -1401,6 +1403,7 @@ PARAMETER_SECTION
 	LOC_CALCS
 	  if(!SimFlag)
 	    log_ft_pars = log(0.10);
+	  LOG<<"ft_count = "<<ft_count<<"\n";
 	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
@@ -1832,7 +1835,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	          // log_sel(k)(ig)(i) = log(cSelex.logistic(sel_par(k)(bpar)));
 	          // log_sel(k)(ig)(i) = log(cLogisticSelex(sel_par(k)(bpar)));
 	          // log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny );
-	          if(ig == 2){
+	          if(ig == 1){
 	            p1 = mfexp(sel_par_f(k, bpar, 1));
 	            p2 = mfexp(sel_par_f(k, bpar, 2));
 	          }else{
@@ -1840,12 +1843,11 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	            p2 = mfexp(sel_par_m(k, bpar, 2));
 	          }
 	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2) + tiny);
-	          if(i == 2021){
-	            // XXX
-		    LOG<<"sel_par_f(k, bpar, 1) = "<<sel_par_f(k, bpar, 1)<<"\n";
-		    LOG<<"sel_par_f(k, bpar, 2) = "<<sel_par_f(k, bpar, 2)<<"\n";
-		    LOG<<"sel_par_m(k, bpar, 1) = "<<sel_par_m(k, bpar, 1)<<"\n";
-		    LOG<<"sel_par_m(k, bpar, 2) = "<<sel_par_m(k, bpar, 2)<<"\n";
+	          if(verbose & (i == nyr)){
+	            LOG<<"sel_par_f(k, bpar, 1) = "<<sel_par_f(k, bpar, 1)<<"\n";
+	            LOG<<"sel_par_f(k, bpar, 2) = "<<sel_par_f(k, bpar, 2)<<"\n";
+	            LOG<<"sel_par_m(k, bpar, 1) = "<<sel_par_m(k, bpar, 1)<<"\n";
+	            LOG<<"sel_par_m(k, bpar, 2) = "<<sel_par_m(k, bpar, 2)<<"\n";
 	            LOG<<"k = "<<k<<", byr = "<<byr<<"\nsel_blocks(k, byr)\n"<<sel_blocks(k, byr)<<"\n";
 	            LOG<<"kgear = "<<kgear<<", ig == "<<ig<<", i = "<<i<<"\n";
 	            LOG<<"age = "<<age<<", p1 = "<<p1<<", p2 = "<<p2<<"\n";
@@ -1854,7 +1856,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        }
 	        break;
 	      case 6: // fixed logistic selectivity
-	        if(ig == 2){
+	        if(ig == 1){
 	          p1 = mfexp(sel_par_f(k, 1, 1));
 	          p2 = mfexp(sel_par_f(k, 1, 2));
 	        }else{
@@ -1874,15 +1876,15 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	            if(byr < n_sel_blocks(k))
 	              byr++;
 	          }
-	          for(j=sage;j<=nage-1;j++){
+	          for(j = sage; j <= nage - 1; j++){
 	            log_sel(kgear)(ig)(i)(j) = sel_par_f(k)(bpar)(j-sage+1);
 	          }
 	          log_sel(kgear)(ig)(i,nage) = log_sel(kgear)(ig)(i,nage-1);
 	        }
 	        break;
 	      case 3: // cubic spline
-	        for(i=syr; i<nyr; i++){
-	          if(i==sel_blocks(k,byr)){
+	        for(i = syr; i < nyr; i++){
+	          if(i == sel_blocks(k,byr)){
 	            bpar ++;
 	            log_sel(k)(ig)(i) = cubic_spline(sel_par_f(k)(bpar));
 	            if(byr < n_sel_blocks(k))
@@ -1892,7 +1894,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        }
 	        break;
 	      case 4: // time-varying cubic spline every year
-	        for(i=syr; i<=nyr; i++){
+	        for(i = syr; i <= nyr; i++){
 	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par_f(k)(i-syr+1));
 	        }
 	        break;
@@ -1909,7 +1911,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        // AUG 5, CHANGED so it no longer has the random walk component.
 	        p1 = mfexp(sel_par_f(k,1,1));
 	        p2 = mfexp(sel_par_f(k,1,2));
-	        for(i = syr; i<=nyr; i++){
+	        for(i = syr; i <= nyr; i++){
 	          dvar_vector tmpwt = log(d3_wt_avg(ig)(i) * 1000) / mean(log(d3_wt_avg(ig) * 1000.));
 	          log_sel(kgear)(ig)(i) = log( plogis(tmpwt,p1,p2)+tiny );
 	        }
@@ -2021,7 +2023,7 @@ FUNCTION calcTotalMortality
 	    ftmp = mfexp(log_ft_pars(ft_counter));
 	    ft(ii)(k, i) = ftmp;
 	    if(l != 3){
-	      F(ii)(i) += ftmp*mfexp(log_sel(k)(ii)(i));
+	      F(ii)(i) += ftmp * mfexp(log_sel(k)(ii)(i));
 	    }
 	  }else{
 	    for(h = 1; h <= nsex; h++){
@@ -2030,6 +2032,18 @@ FUNCTION calcTotalMortality
 	      ft(ii)(k, i) = ftmp;
 	      if(l != 3){
 	        F(ii)(i) += ftmp * mfexp(log_sel(k)(ii)(i));
+	      }
+	      //if(last_phase() & (i == 2020)){
+	      if(std::isnan(value(log_ft_pars(ft_counter)))){
+	        LOG<<"In CalcTotalMortality()\n";
+	        LOG<<"dCatchData("<<ig<<") = "<<dCatchData(ig)<<"\n";
+	        LOG<<"log_ft_pars("<<ft_counter<<") = "<<log_ft_pars(ft_counter)<<"\n";
+	        LOG<<"ftmp = "<<ftmp<<"\n";
+	        LOG<<"log_ft_pars = "<<log_ft_pars<<"\n";
+	        LOG<<"ft("<<ii<<")("<<k<<", "<<i<<") = "<<ft(ii)(k, i)<<"\n";
+	        LOG<<"F("<<ii<<")("<<i<<") = "<<F(ii)(i)<<"\n";
+	        LOG<<"mfexp(log_sel("<<k<<")("<<ii<<")("<<i<<")) = "<<mfexp(log_sel(k)(ii)(i))<<"\n";
+	        LOG<<"ft_counter = "<<ft_counter<<", l = "<<l<<"\n\n";
 	      }
 	    }
 	  }
@@ -2189,6 +2203,9 @@ FUNCTION calcComposition
 	        fa = ft(ig)(k)(i) * va;
 	      }
 	      ca = elem_prod(elem_prod(elem_div(fa,za),1.-sa),na);
+	      //LOG<<"XXX\nZ("<<ig<<")("<<i<<") = "<<Z(ig)(i)<<"\n";
+	      //LOG<<"S("<<ig<<")("<<i<<") = "<<S(ig)(i)<<"\n";
+	      //LOG<<"N("<<ig<<")("<<i<<") = "<<N(ig)(i)<<"\n\n";
 	      //  A_hat(kk)(ii) = ca(n_A_sage(kk),n_A_nage(kk));
 	      //    +group if n_A_nage(kk) < nage
 	      //
@@ -2285,6 +2302,14 @@ FUNCTION calcTotalCatch
 	          sa = S(ig)(i);
 	          ca = elem_prod(elem_prod(elem_div(fa, za), 1. - sa), N(ig)(i));
 	          ct(ii) += ca * d3_wt_avg(ig)(i);
+	          LOG<<"calcTotalCatch()\nft("<<ig<<")("<<k<<")("<<i<<") = "<<ft(ig)(k)(i)<<"\n";
+	          LOG<<"d3_wt_avg("<<ig<<")("<<i<<")\n"<<d3_wt_avg(ig)(i)<<"\n";
+	          LOG<<"ft("<<ig<<")("<<k<<")("<<i<<") = "<<ft(ig)(k)(i)<<"\n";
+	          LOG<<"fa\n"<<fa<<"\n";
+	          LOG<<"za\n"<<za<<"\n";
+	          LOG<<"sa\n"<<sa<<"\n";
+	          LOG<<"ca\n"<<ca<<"\n";
+	          LOG<<"ct("<<ii<<") = "<<ct(ii)<<"\n\n";
 	        }
 	      }
 	      break;
@@ -2466,7 +2491,6 @@ FUNCTION void calcStockRecruitment()
 	dvar_vector tmp_rt(syr+sage,nyr);
 	dvar_vector lx(sage,nage);
 	dvar_vector lw(sage,nage);
-	double propmale = 1.0 - propfemale;
 	for(g = 1; g <= ngroup; g++){
 	  lx.initialize();
 	  lw.initialize();
@@ -2493,9 +2517,9 @@ FUNCTION void calcStockRecruitment()
 	        phib += 1. / narea * lw * fa;
 	      }else if(nsex == 2){
 	        if(h == 1){
-	          phib += propmale / narea * lw * fa;
-	        }else{
 	          phib += propfemale / narea * lw * fa;
+	        }else{
+	          phib += (1.0 - propfemale) / narea * lw * fa;
 	        }
 	      }else{
 	        ad_exit(1);
@@ -2517,10 +2541,14 @@ FUNCTION void calcStockRecruitment()
 	  so(g) = kappa(g) / phib;
 	  sbo(g) = ro(g) * phib;
 	  // Step 7. calculate predicted recruitment.
-	  LOG<<"before g = "<<g<<", syr = "<<syr<<", sage = "<<sage<<", nyr = "<<nyr<<"\n";
-	  LOG<<"before sbt(g) = "<<sbt(g)<<"\n";
+	  if(verbose){
+	    LOG<<"before g = "<<g<<", syr = "<<syr<<", sage = "<<sage<<", nyr = "<<nyr<<"\n";
+	    LOG<<"before sbt(g) = "<<sbt(g)<<"\n";
+	  }
 	  dvar_vector tmp_st = sbt(g)(syr,nyr-sage).shift(syr+sage);
-	  LOG<<"after sbt(g) = "<<sbt(g)<<"\n\n";
+	  if(verbose){
+	    LOG<<"after sbt(g) = "<<sbt(g)<<"\n\n";
+	  }
 	  switch(int(d_iscamCntrl(2))){
 	    case 1: // Beverton Holt model
 	      beta(g) = (kappa(g)-1.) / sbo(g);
@@ -3262,7 +3290,9 @@ FUNCTION calcObjectiveFunction
 
 	if(!delaydiff){
 	  for(k = 1; k <= ngear; k++){
-	    LOG<<"ACTIVE: k = "<<k<<", active(sel_par_f(k)) = "<<active(sel_par_f(k))<<", active(sel_par_m(k)) = "<<active(sel_par_m(k))<<"\n";
+	    if(verbose){
+	      LOG<<"ACTIVE: k = "<<k<<", active(sel_par_f(k)) = "<<active(sel_par_f(k))<<", active(sel_par_m(k)) = "<<active(sel_par_m(k))<<"\n";
+	    }
 	    if(active(sel_par_f(k)) | active(sel_par_m(k))){
 	      //if not using logistic selectivity then
 	      if(isel_type(k) != 1 &&
@@ -3572,18 +3602,24 @@ FUNCTION void calcReferencePoints()
 	    for(k = 1;k <= nfleet;k++){
 	      kk = nFleetIndex(k);
 	      d_ak(k) = dAllocation(kk);
-	      LOG<<"kk = nFleetIndex(k) = "<<nFleetIndex(k)<<"\n";
-	      LOG<<"dAllocation(kk) = "<<dAllocation(kk)<<"\n\n";
+	      if(verbose){
+	        LOG<<"kk = nFleetIndex(k) = "<<nFleetIndex(k)<<"\n";
+	        LOG<<"dAllocation(kk) = "<<dAllocation(kk)<<"\n\n";
+	      }
 	      for(ig = 1;ig <= n_ags;ig++){
 	        d_V(ig)(k) = value(exp(log_sel(kk)(ig)(nyr)));
 	        dvar_V(ig)(k) = exp(log_sel(kk)(ig)(nyr));
 	      }
 	    }
-	    LOG<<"d_ak\n"<<d_ak<<"\n";
+	    if(verbose){
+	      LOG<<"d_ak\n"<<d_ak<<"\n";
+	    }
 	    d_ak /= sum(d_ak);
-	    LOG<<"d_ak After normalization\n"<<d_ak<<"\n";
-	    LOG<<"pf_cntrl(3) = "<<pf_cntrl(3)<<"\n";
-	    LOG<<"pf_cntrl(4) = "<<pf_cntrl(4)<<"\n";
+	    if(verbose){
+	      LOG<<"d_ak After normalization\n"<<d_ak<<"\n";
+	      LOG<<"pf_cntrl(3) = "<<pf_cntrl(3)<<"\n";
+	      LOG<<"pf_cntrl(4) = "<<pf_cntrl(4)<<"\n";
+	    }
 	    // Average weight and mature spawning biomass for reference years
 	    // dWt_bar(1,n_ags,sage,nage)
 	    dmatrix fa_bar(1,n_ags,sage,nage);
@@ -4281,9 +4317,13 @@ REPORT_SECTION
 	// | MSY-BASED REFERENCE POINTS
 	// |---------------------------------------------------------------------------------|
 	if(last_phase()){
-	  LOG<<"\n\nCalculating MSY-based reference points\n";
+	  if(verbose){
+	    LOG<<"\n\nCalculating MSY-based reference points\n";
+	  }
 	  calcReferencePoints();
-	  LOG<<"Finished calcReferencePoints\n\n";
+	  if(verbose){
+	    LOG<<"Finished calcReferencePoints\n\n";
+	  }
 	  REPORT(bo);
 	  REPORT(fmsy);
 	  REPORT(msy);

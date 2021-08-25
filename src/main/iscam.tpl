@@ -1638,7 +1638,6 @@ PROCEDURE_SECTION
 	  calcStockRecruitment();
 	  calcAnnualMeanWeight();
 	}
-
 	calcObjectiveFunction();
 	if(sd_phase()){
 	  calcSdreportVariables();
@@ -1647,9 +1646,8 @@ PROCEDURE_SECTION
 	  mcmcPhase = 1;
 	}
 	if(mceval_phase()){
-	  mcmcEvalPhase = 1;
-	  mcmc_output();
 	  LOG<<"Running mceval phase\n";
+	  mcmc_output();
 	}
 
 FUNCTION void calcSdreportVariables()
@@ -4331,21 +4329,21 @@ REPORT_SECTION
 	  // REPORT(Umsy);
 	  LOG<<"Running Projections\n";
 	  // PROJECTION_MODEL ONLY IMPLEMENTED FOR AGS=1 AND FOR GEAR 1 (FISHERY)
-	  if(n_ags == 1){
-	    int ii;
-	    for(ii = 1; ii <= n_tac; ii++){
-	      //LOG<<ii<<" "<<tac(ii)<<'\n';
-	      if(delaydiff){
-	        projection_model_dd(tac(ii));
-	      }else{
-	        projection_model(tac(ii));
-	      }
+	  //if(n_ags == 1){
+	  int ii;
+	  for(ii = 1; ii <= n_tac; ii++){
+	    //LOG<<ii<<" "<<tac(ii)<<'\n';
+	    if(delaydiff){
+	      projection_model_dd(tac(ii));
+	    }else{
+	      projection_model(tac(ii));
 	    }
 	  }
-	  if(n_ags > 1){
-	    if(nf == 1)
-	      LOG<<"************Projections not yet implemented for number of areas/groups > 1************\n\n";
-	  }
+	  //}
+	  //if(n_ags > 1){
+	  //if(nf == 1)
+	  //  LOG<<"************Projections not yet implemented for number of areas/groups > 1************\n\n";
+	  //}
 	  LOG<<" ______________________________ \n";
 	  LOG<<"|    END OF REPORT SECTION     |\n";
 	  LOG<<"|______________________________|\n";
@@ -4837,6 +4835,7 @@ FUNCTION mcmc_output
 	      - file control options "years for average fecundity/weight-at-age in projections"
 	*/
 FUNCTION void projection_model(const double& tac);
+	LOG<<"Running projection model...\n";
 	static int runNo = 0;
 	runNo ++;
 	int i, k;
@@ -4983,17 +4982,32 @@ FUNCTION void projection_model(const double& tac);
 	                    d_iscamCntrl(13) && d_iscamCntrl(20));
 	  ofsmcmc.flush();
 	}else{
-	/*
-	  if(runNo==1){
+	  if(runNo == 1){
 	    LOG<<"Running MPD projections"<<'\n';
 	    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
-	    write_proj_output(ofsmpd);
+	    write_proj_headers(ofsmpd, syr, nyr, !d_iscamCntrl(13), d_iscamCntrl(13) && d_iscamCntrl(20));
+	    ofsmpd.flush();
+	    write_proj_output(ofsmpd,
+	                      syr,
+	                      nyr,
+	                      nage,
+	                      tac,
+	                      pyr,
+	                      p_sbt,
+	                      p_rt,
+	                      p_ft,
+	                      p_N,
+	                      M,
+	                      ma,
+	                      dWt_bar,
+	                      ft(1),
+	                      value(sbo(1)),
+	                      fmsy,
+	                      bmsy,
+	                      !d_iscamCntrl(13),
+	                      d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmpd.flush();
 	  }
-	  ofstream ofsmpd("iscammpd_proj_Gear1.csv", ios::app);
-	  write_proj_output(ofsmpd, tac, pyr, p_sbt, p_ft);
-	  ofsmpd.flush();
-	*/
 	}
 	if(!mceval_phase()){
 	  LOG<<"Finished projection model for TAC = "<<tac<<'\n';
@@ -5193,7 +5207,6 @@ GLOBALS_SECTION
 	long hour,minute,second;
 	double elapsed_time;
 	bool mcmcPhase = 0;
-	bool mcmcEvalPhase = 0;
 	adstring BaseFileName;
 	adstring ReportFileName;
 	adstring NewFileName;

@@ -47,83 +47,36 @@ void write_proj_headers_dd(ofstream &ofsP,
                            int nyr,
                            int pyr){
   // Write the decision table headers for projection years for delay diff model (PCod 2018)
-  ofsP<<"TAC"                    <<",";
-  ofsP<<"B"<<nyr+1               <<",";
-  ofsP<<"B"<<pyr               <<",";
-  ofsP<<"B"<<pyr <<"B"<<nyr+1   <<",";  // this will be < 1 if true
-  ofsP<<"F"<<nyr                 <<",";
-  ofsP<<"F"<<pyr-1                <<",";
-  ofsP<<"F"<<pyr-1 <<"F"<<nyr     <<",";  // this will be > 1 if true
+  ofsP<<"TAC"<<",";
+  ofsP<<"B"<<nyr + 1<<",";
+  ofsP<<"B"<<pyr<<",";
+  ofsP<<"B"<<pyr<<"B"<<nyr + 1<<","; // this will be < 1 if true
+  ofsP<<"F"<<nyr<<",";
+  ofsP<<"F"<<pyr - 1<<",";
+  ofsP<<"F"<<pyr - 1<<"F"<<nyr <<","; // this will be > 1 if true
   // MSY based ref points
-  ofsP<<"BMSY"                   <<",";
-  ofsP<<"B0"                     <<",";
-  ofsP<<"B"<<pyr<<"0.4B0"       <<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"0.2B0"       <<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"BMSY"       <<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"0.8BMSY"    <<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"0.4BMSY"    <<",";  // this will be < 1 if true
-  ofsP<<"FMSY"                   <<",";
-  ofsP<<"F"<<pyr-1<<"FMSY"       <<",";  // this will be > 1 if true
+  ofsP<<"BMSY"<<",";
+  ofsP<<"B0"<<",";
+  ofsP<<"B"<<pyr<<"0.4B0"<<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"0.2B0"<<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"BMSY"<<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"0.8BMSY"<<",";  // this will be < 1 if true
+  ofsP<<"B"<<pyr<<"0.4BMSY"<<",";  // this will be < 1 if true
+  ofsP<<"FMSY"<<",";
+  ofsP<<"F"<<pyr - 1<<"FMSY"<<",";  // this will be > 1 if true
   // Historical ref points "short"
-  ofsP<<"Bmin"                   <<",";
-  ofsP<<"B"<<pyr<<"Bmin"       <<",";  // this will be < 1 if true
-  ofsP<<"BAvgS"                  <<",";
-  ofsP<<"B"<<pyr<<"BAvgS"      <<",";  // this will be < 1 if true
-  ofsP<<"FAvgS"                  <<",";
-  ofsP<<"F"<<pyr-1<<"FAvgS"      <<",";  // this will be > 1 if true
+  ofsP<<"Bmin"<<",";
+  ofsP<<"B"<<pyr<<"Bmin"<<",";  // this will be < 1 if true
+  ofsP<<"BAvgS"<<",";
+  ofsP<<"B"<<pyr<<"BAvgS"<<",";  // this will be < 1 if true
+  ofsP<<"FAvgS"<<",";
+  ofsP<<"F"<<pyr - 1<<"FAvgS"<<",";  // this will be > 1 if true
   // Historical ref points "long"
-  ofsP<<"BAvgL"                  <<",";
-  ofsP<<"B"<<pyr<<"BAvgL"      <<",";  // this will be < 1 if true
-  ofsP<<"FAvgL"                  <<",";
-  ofsP<<"F"<<pyr-1<<"FAvgL"      <<",";  // this will be > 1 if true
+  ofsP<<"BAvgL"<<",";
+  ofsP<<"B"<<pyr<<"BAvgL"<<",";  // this will be < 1 if true
+  ofsP<<"FAvgL"<<",";
+  ofsP<<"F"<<pyr - 1<<"FAvgL"<<",";  // this will be > 1 if true
 
-  ofsP<<"\n";
-}
-
-void write_proj_headers(ofstream &ofsP,
-                        int syr,
-                        int nyr,
-                        bool include_msy,
-                        bool include_sbo){
-  // Write the decision table headers for projection years
-  ofsP<<"TAC"                    <<",";
-  ofsP<<"B"<<nyr+1               <<",";
-  ofsP<<"B"<<nyr+2               <<",";
-  ofsP<<"R"<<nyr                 <<",";
-  ofsP<<"R"<<nyr+1               <<",";
-  if(include_sbo){
-    ofsP<<"B0"                   <<",";
-    ofsP<<"04B0"                 <<",";
-    ofsP<<"03B0"                 <<",";
-    ofsP<<"02B0"                 <<",";
-  }
-  ofsP<<"B"<<syr                 <<",";
-  ofsP<<"B"<<nyr+2<<"B"<<nyr+1   <<",";  // this will be < 1 if true
-  if(include_sbo){
-    ofsP<<"B"<<nyr+2<<"04B0"     <<",";  // this will be < 1 if true
-    ofsP<<"B"<<nyr+2<<"02B0"     <<",";  // this will be < 1 if true
-  }
-  ofsP<<"B"<<nyr+2<<"B"<<syr     <<",";
-  ofsP<<"F"<<nyr                 <<",";
-  ofsP<<"F"<<nyr+1               <<",";
-  ofsP<<"F"<<nyr+1<<"F"<<nyr     <<",";  // this will be > 1 if true
-  ofsP<<"U"<<nyr+1               <<",";
-  ofsP<<"U"<<nyr+1<<"U"<<nyr     <<",";
-  ofsP<<"PropAge3"               <<",";
-  ofsP<<"PropAge4to10"           <<",";
-  ofsP<<"UT"                     <<",";
-  ofsP<<"U20";
-  if(include_msy){
-    //MSY based ref points
-    ofsP<<","<<"BMSY"            <<",";
-    ofsP<<"B"<<nyr+2<<"BMSY"     <<",";  // this will be < 1 if true
-    ofsP<<"B"<<nyr+2<<"08BMSY"   <<",";  // this will be< 1 if true
-    ofsP<<"B"<<nyr+2<<"04BMSY"   <<",";  // this will be < 1 if true
-    ofsP<<"FMSY"                 <<",";
-    ofsP<<"F"<<nyr+1<<"FMSY"     <<",";
-    ofsP<<"UMSY"                 <<",";
-    ofsP<<"U"<<nyr+1<<"UMSY";            // this will be > 1 if true
-  }
   ofsP<<"\n";
 }
 
@@ -176,10 +129,66 @@ void write_proj_output_dd(ofstream &ofsP,
   ofsP<<"\n";
 }
 
+void write_proj_headers(ofstream &ofsP,
+                        int syr,
+                        int nyr,
+                        int nfleet,
+                        bool include_msy,
+                        bool include_sbo){
+  int i;
+  // Write the decision table headers for projection years
+  ofsP<<"TAC"<<",";
+  ofsP<<"B"<<nyr + 1<<",";
+  ofsP<<"B"<<nyr + 2<<",";
+  ofsP<<"R"<<nyr<<",";
+  ofsP<<"R"<<nyr + 1<<",";
+  if(include_sbo){
+    ofsP<<"B0"<<",";
+    ofsP<<"04B0"<<",";
+    ofsP<<"03B0"<<",";
+    ofsP<<"02B0"<<",";
+  }
+  ofsP<<"B"<<syr<<",";
+  ofsP<<"B"<<nyr + 2<<"B"<<nyr + 1<<",";
+  if(include_sbo){
+    ofsP<<"B"<<nyr + 2<<"04B0"<<",";
+    ofsP<<"B"<<nyr + 2<<"02B0"<<",";
+  }
+  ofsP<<"B"<<nyr + 2<<"B"<<syr;
+  for(i = 1; i <= nfleet; i++){
+    ofsP<<",";
+    ofsP<<"fleet_"<<i<<"_F"<<nyr<<",";
+    ofsP<<"fleet_"<<i<<"_F"<<nyr + 1<<",";
+    ofsP<<"fleet_"<<i<<"_F"<<nyr + 1<<"F"<<nyr<<",";
+    ofsP<<"fleet_"<<i<<"_U"<<nyr + 1<<",";
+    ofsP<<"fleet_"<<i<<"_U"<<nyr + 1<<"U"<<nyr<<",";
+  }
+  ofsP<<"PropAge3"<<",";
+  ofsP<<"PropAge4to10"<<",";
+  ofsP<<"UT"<<",";
+  ofsP<<"U20";
+  if(include_msy){
+    //MSY based ref points
+    ofsP<<","<<"BMSY"<<",";
+    ofsP<<"B"<<nyr + 2<<"BMSY"<<",";
+    ofsP<<"B"<<nyr + 2<<"08BMSY"<<",";
+    ofsP<<"B"<<nyr + 2<<"04BMSY";
+    for(i = 1; i <= nfleet; i++){
+      ofsP<<",";
+      ofsP<<"fleet_"<<i<<"_FMSY"<<",";
+      ofsP<<"fleet_"<<i<<"_F"<<nyr + 1<<"FMSY"<<",";
+      ofsP<<"fleet_"<<i<<"_UMSY"<<",";
+      ofsP<<"fleet_"<<i<<"_U"<<nyr + 1<<"UMSY";
+    }
+  }
+  ofsP<<"\n";
+}
+
 void write_proj_output(ofstream &ofsP,
                        int syr,
                        int nyr,
                        int nage,
+                       int nfleet,
                        double tac,
                        int pyr,
                        dvector p_sbt,
@@ -191,62 +200,67 @@ void write_proj_output(ofstream &ofsP,
                        dmatrix dWt_bar,
                        dvar_matrix ft,
                        double sbo,
-                       dmatrix fmsy,
+                       dvector fmsy,
                        dvector bmsy,
                        bool include_msy,
                        bool include_sbo){
 
-  double  ut  = tac / ( tac + p_sbt(pyr) );
-	double u20  = tac / ( (p_N(pyr)(3,nage)*exp(-value(M(1)(nyr,3))))* dWt_bar(1)(3,nage) );
+  int i;
+  double ut  = tac / (tac + p_sbt(pyr));
+  double u20 = tac / ((p_N(pyr)(3,nage) * exp(-value(M(1)(nyr,3)))) * dWt_bar(1)(3,nage));
 
   double NAge3 = (p_N(pyr)(3)*dWt_bar(1)(3)*ma(1)(3));
-	dvar_vector NallWt = elem_prod(p_N(pyr)(2,nage),dWt_bar(1)(2,nage));
-	dvar_vector NallWtMat= elem_prod(NallWt(2,nage),ma(1)(2,nage));
-
-	double sumAge2to10 = value(sum(NallWtMat(2,nage)));
-	double sumAge4to10 = value(sum(NallWtMat(4,nage)));
-	double propAge3 = NAge3/sumAge2to10;
-	double propAge4to10 = sumAge4to10/sumAge2to10;
+  dvar_vector NallWt = elem_prod(p_N(pyr)(2,nage),dWt_bar(1)(2,nage));
+  dvar_vector NallWtMat= elem_prod(NallWt(2,nage),ma(1)(2,nage));
+  double sumAge2to10 = value(sum(NallWtMat(2,nage)));
+  double sumAge4to10 = value(sum(NallWtMat(4,nage)));
+  double propAge3 = NAge3 / sumAge2to10;
+  double propAge4to10 = sumAge4to10 / sumAge2to10;
 
   // Write the projection output to the file
-  ofsP<<tac                        <<",";
-  ofsP<<p_sbt(pyr)                 <<",";
-  ofsP<<p_sbt(pyr+1)               <<",";
-  ofsP<<p_rt(pyr-1)                <<",";
-  ofsP<<p_rt(pyr)                  <<",";
+  ofsP<<tac<<",";
+  ofsP<<p_sbt(pyr)<<",";
+  ofsP<<p_sbt(pyr + 1)<<",";
+  ofsP<<p_rt(pyr - 1)<<",";
+  ofsP<<p_rt(pyr)<<",";
   if(include_sbo){
-    ofsP<<sbo                      <<",";
-    ofsP<<0.4*sbo                  <<",";
-    ofsP<<0.3*sbo                  <<",";
-    ofsP<<0.2*sbo                  <<",";
+    ofsP<<sbo<<",";
+    ofsP<<0.4 * sbo<<",";
+    ofsP<<0.3 * sbo<<",";
+    ofsP<<0.2 * sbo <<",";
   }
-  ofsP<<p_sbt(syr)                 <<",";
-  ofsP<<p_sbt(pyr+1)/p_sbt(pyr)    <<",";
+  ofsP<<p_sbt(syr)<<",";
+  ofsP<<p_sbt(pyr + 1) / p_sbt(pyr)<<",";
   if(include_sbo){
-    ofsP<<p_sbt(pyr+1)/(0.4*sbo)   <<",";
-    ofsP<<p_sbt(pyr+1)/(0.2*sbo)   <<",";
+    ofsP<<p_sbt(pyr + 1) / (0.4 * sbo)<<",";
+    ofsP<<p_sbt(pyr + 1) / (0.2 * sbo)<<",";
   }
-  ofsP<<p_sbt(pyr+1)/p_sbt(syr)    <<",";
-  //ofsP<<ft(1)(1,nyr)             <<",";
-  ofsP<<ft(1,nyr)                  <<",";
-  ofsP<<p_ft(pyr,1)                <<",";
-  ofsP<<p_ft(pyr,1)/ft(1,nyr)      <<",";
-  ofsP<<(1. - mfexp(-p_ft(pyr,1))) <<",";
-  ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-ft(1,nyr))) <<",";
-  ofsP<<propAge3                   <<",";
-  ofsP<<propAge4to10               <<",";
-  ofsP<<ut                         <<",";
+  ofsP<<p_sbt(pyr + 1) / p_sbt(syr);
+  for(i = 1; i <= nfleet; i++){
+    ofsP<<",";
+    ofsP<<ft(i,nyr)<<",";
+    ofsP<<p_ft(pyr,i)<<",";
+    ofsP<<p_ft(pyr,i) / ft(i,nyr)<<",";
+    ofsP<<1. - mfexp(-p_ft(pyr,i))<<",";
+    ofsP<<(1. - mfexp(-p_ft(pyr,i))) / (1. - mfexp(-ft(i,nyr)))<<",";
+  }
+  ofsP<<propAge3<<",";
+  ofsP<<propAge4to10<<",";
+  ofsP<<ut<<",";
   ofsP<<u20;
   if(include_msy){
     //MSY based ref points
-    ofsP<<","<<bmsy                <<",";
-    ofsP<<p_sbt(pyr+1)/bmsy        <<",";
-    ofsP<<p_sbt(pyr+1)/(0.8*bmsy)  <<",";
-    ofsP<<p_sbt(pyr+1)/(0.4*bmsy)  <<",";
-    ofsP<<fmsy                     <<",";
-    ofsP<<p_ft(pyr,1)/fmsy         <<",";
-    ofsP<<(1. - mfexp(-fmsy))      <<",";
-    ofsP<<(1. - mfexp(-p_ft(pyr,1)))/(1. - mfexp(-fmsy));
+    ofsP<<","<<bmsy<<",";
+    ofsP<<p_sbt(pyr + 1) / bmsy<<",";
+    ofsP<<p_sbt(pyr + 1) / (0.8 * bmsy)<<",";
+    ofsP<<p_sbt(pyr + 1) / (0.4 * bmsy);
+    for(i = 1; i <= nfleet; i++){
+      ofsP<<",";
+      ofsP<<fmsy(i)<<",";
+      ofsP<<p_ft(pyr,i) / fmsy(i)<<",";
+      ofsP<<1. - mfexp(-fmsy(i))<<",";
+      ofsP<<(1. - mfexp(-p_ft(pyr,i))) / (1. - mfexp(-fmsy(i)));
+    }
   }
   ofsP<<"\n";
 }

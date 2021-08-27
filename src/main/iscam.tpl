@@ -655,7 +655,7 @@ DATA_SECTION
 	      ig = pntr_ags(f,g,h);
 	      dvector tmp = xxinp_wt_avg(i)(sage,nage);
 	      ivector idx = getIndex(age,tmp);
-	      for(int ii = 1; ii <= size_count(idx); ii++){
+	      for(unsigned int ii = 1; ii <= size_count(idx); ii++){
 	        d3_wt_avg(ig)(iyr)(idx(ii)) = xxinp_wt_avg(i)(idx(ii));
 	        d3_len_age(ig)(iyr)(idx(ii))= pow(d3_wt_avg(ig)(iyr)(idx(ii)) / d_a(ig), 1. / d_b(ig));
 	      }
@@ -668,7 +668,7 @@ DATA_SECTION
 	        ivector idx = getIndex(age,tmp);
 	        // Problem, array indexed differ, must loop over idx;
 	        // d3_wt_avg(ig)(iyr)(idx) = inp_wt_avg(i)(idx);
-	        for(int ii = 1; ii <= size_count(idx); ii++){
+	        for(unsigned int ii = 1; ii <= size_count(idx); ii++){
 	          d3_wt_avg(ig)(iyr)(idx(ii)) = xxinp_wt_avg(i)(idx(ii));
 	          d3_len_age(ig)(iyr)(idx(ii)) = pow(d3_wt_avg(ig)(iyr)(idx(ii)) / d_a(ig), 1. / d_b(ig));
 	        }
@@ -1164,7 +1164,7 @@ DATA_SECTION
 	  LOG<<"| ------------------------------------- |\n";
 	  LOG<<"| Micellaneous controls                 |"<<'\n';
 	  LOG<<"| ------------------------------------- |\n";
-	  for(int i = 1; i <= d_iscamCntrl.size(); i++){
+	  for(unsigned int i = 1; i <= d_iscamCntrl.size(); i++){
 	    LOG<<"#"<<i<<" = "<<d_iscamCntrl(i)<<'\n';
 	  }
 	  LOG<<"| ------------------------------------- |\n";
@@ -4328,22 +4328,15 @@ REPORT_SECTION
 	  REPORT(bmsy);
 	  // REPORT(Umsy);
 	  LOG<<"Running Projections\n";
-	  // PROJECTION_MODEL ONLY IMPLEMENTED FOR AGS=1 AND FOR GEAR 1 (FISHERY)
-	  //if(n_ags == 1){
 	  int ii;
 	  for(ii = 1; ii <= n_tac; ii++){
-	    //LOG<<ii<<" "<<tac(ii)<<'\n';
+	    LOG<<"TAC "<<ii<<" = "<<tac(ii)<<'\n';
 	    if(delaydiff){
 	      projection_model_dd(tac(ii));
 	    }else{
 	      projection_model(tac(ii));
 	    }
 	  }
-	  //}
-	  //if(n_ags > 1){
-	  //if(nf == 1)
-	  //  LOG<<"************Projections not yet implemented for number of areas/groups > 1************\n\n";
-	  //}
 	  LOG<<" ______________________________ \n";
 	  LOG<<"|    END OF REPORT SECTION     |\n";
 	  LOG<<"|______________________________|\n";
@@ -4798,20 +4791,16 @@ FUNCTION mcmc_output
 	of5.flush();
 	of6.flush();
 	of7.flush();
-	if(n_ags == 1){
-	  int ii;
-	  for(ii=1;ii<=n_tac;ii++){
-	    LOG<<ii<<" "<<tac(ii)<<'\n';
-	    if(delaydiff)
-	       projection_model_dd(tac(ii)); // TODO: update with msy and b0-based reference points
-	    else
-	      projection_model(tac(ii)); // TODO: Add historical ref points
+	int ii;
+	for(ii = 1; ii <= n_tac; ii++){
+	  LOG<<ii<<" "<<tac(ii)<<'\n';
+	  if(delaydiff){
+	    projection_model_dd(tac(ii));
+	  }else{
+	    projection_model(tac(ii));
 	  }
 	}
-	if(n_ags>1){
-	  if(nf == 1)
-	    LOG<<"************Decision Table not yet implemented for number of areas/groups > 1************\n\n";
-	}
+
 
 	/*
 	  This routine conducts population projections based on
@@ -4839,10 +4828,12 @@ FUNCTION void projection_model(const double& tac);
 	static int runNo = 0;
 	runNo ++;
 	int i, k;
-	// Note that the historical model already projects a year. This code will replace that year and project one more
+	// Note that the historical model already projects a year.
+	// This code will replace that year and project one more
 	int pyr = nyr + 1;
 	BaranovCatchEquation cBaranov;
-	// Average weight and mature spawning biomass for reference years  (copied from calcReferencePoints() but only implemented for ig=1)
+	// Average weight and mature spawning biomass for reference years
+	// (copied from calcReferencePoints() but only implemented for ig=1)
 	// dWt_bar(1,n_ags,sage,nage)
 	dvector fa_bar(sage, nage);
 	dvector M_bar(sage, nage);
@@ -4896,7 +4887,7 @@ FUNCTION void projection_model(const double& tac);
 	  if(i >= syr + sage){
 	    p_rt(i) = value(rt(1)(i));
 	  }
-	  p_Z(i) =  value(Z(1)(i));
+	  p_Z(i) = value(Z(1)(i));
 	}
 	// Selectivity and dAllocation to gears
 	dmatrix va_bar(1, ngear, sage, nage);
@@ -4905,66 +4896,90 @@ FUNCTION void projection_model(const double& tac);
 	  va_bar(k) = exp(value(log_sel(k)(1)(nyr)));
 	}
 	// Simulate population into the future under constant tac policy
+	LOG<<" XXX nyr = "<<nyr<<", pyr = "<<pyr<<"\n";
 	for(i = nyr - 1; i <= pyr + 1; i++){
 	  // ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
 	  if(i > nyr){
 	    // average weight is calculated for all area/groups but projections are currently
 	    // only implemented for n_ags=1
+	    //LOG<<"p_ct"<<p_ct<<"\n";
+	    //LOG<<"p_N("<<i<<")\n"<<p_N(i)<<"\n";
+	    //LOG<<"dWt_bar(1)\n"<<dWt_bar(1)<<"\n";
 	    p_ft(i) = cBaranov.getFishingMortality(p_ct, M_bar, va_bar, p_N(i), dWt_bar(1));
 	    // calculate total mortality in future years
 	    p_Z(i) = M_bar;
-	    for(k = 1; k <= ngear; k++){
+	    for(k = 1; k <= nfleet; k++){
+	      //LOG<<"fleet (k) = "<<k<<", year (i) = "<<i<<"\n";
+	      //LOG<<"p_ft("<<i<<","<<k<<") = "<<p_ft(i,k)<<"\n";
+	      //LOG<<"va_bar("<<k<<") = "<<va_bar(k)<<"\n";
+	      //LOG<<"p_ft("<<i<<","<<k<<") * va_bar("<<k<<") = "<<p_ft(i,k) * va_bar(k)<<"\n";
 	      p_Z(i) += p_ft(i,k) * va_bar(k);
 	    }
+	    //LOG<<"p_Z:\n"<<p_Z<<"\n\n";
 	  }
 	  // sage recruits with random deviate xx
 	  // note the random number seed is repeated for each tac level.
 	  // NOTE that this treatment of rec devs is different from historical model
 	  double xx = randn(nf + i) * tau;
-	  if(i >= syr + sage - 1){
-	    double rt = 1;
-	    // lagged spawning biomass (+1 because we want recruits for year i+1)
-	    double et = p_sbt(i - sage + 1);
-	    // Beverton-Holt model
-	    if(d_iscamCntrl(2) == 1){
-	      rt = so * et / (1. + beta * et);
-	    }
-	    // Ricker model
-	    if(d_iscamCntrl(2)==2){
-	      rt = so * et * exp(-beta * et);
-	    }
-	    if(i <= pyr){
-	      p_rt(i) = rt;
-	    }
-	    // Next year recruits
-	    p_N(i+1,sage) = rt * exp(xx - 0.5 * tau * tau);
+	  double rt = 1;
+	  // lagged spawning biomass (+1 because we want recruits for year i+1)
+	  double et = p_sbt(i - sage + 1);
+	  // Beverton-Holt model
+	  if(d_iscamCntrl(2) == 1){
+	    rt = so * et / (1. + beta * et);
 	  }
-	  // Update numbers at age in future years
-	  // Next year numbers
+	  // Ricker model
+	  if(d_iscamCntrl(2) == 2){
+	    rt = so * et * exp(-beta * et);
+	  }
+	  if(i <= pyr){
+	    p_rt(i) = rt;
+	  }
+	  // Update numbers at age in future years. The ++ in the second statement increments the index size by one
+	  p_N(i + 1, sage) = rt * exp(xx - 0.5 * tau * tau);
 	  p_N(i + 1)(sage + 1, nage) = ++elem_prod(p_N(i)(sage, nage - 1), exp(-p_Z(i)(sage, nage - 1)));
 	  p_N(i + 1, nage) += p_N(i, nage) * exp(-p_Z(i, nage));
 	  // Overwrite sbt(pyr and pyr + 1) so that they do not include estimated recruitment from the
-	  // historical model, which is highly uncertain due to inclusion of estimated recruitment
-	  // deviations.
+	  // historical model, which is highly uncertain due to inclusion of estimated recruitment deviations.
 	  // d_iscamCntrl(13) is the fraction of total mortality that takes place prior to spawning
 	  if(i >= nyr && i <= pyr){
+	    LOG<<"before p_sbt:\n"<<p_sbt<<"\n";
 	    p_sbt(i + 1) = elem_prod(p_N(i), exp(-p_Z(i) * d_iscamCntrl(13))) * fa_bar;
+	    LOG<<"i = "<<i<<"\np_sbt("<<i + 1<<") = "<<p_sbt(i + 1)<<", d_iscamCntrl(13) = "<<d_iscamCntrl(13)<<"\nfa_bar:\n"<<fa_bar<<"\n";;
+	    LOG<<"p_N(i):\n"<<p_N(i)<<"\n";
+	    LOG<<"p_Z(i):\n"<<p_Z(i)<<"\n";
+	    LOG<<"after p_sbt:\n"<<p_sbt<<"\n\n";
 	  }
+	  // Predicted catch for checking calculations (RF tested this March 17, 2015)
+	  //if(i > nyr){
+	  //  LOG<<"p_ft:\n"<<p_ft<<"\n";
+	  //  for(k=1;k<=ngear;k++){
+	  //    dvector ba = elem_prod(p_N(i),dWt_bar(1));
+	  //    double ctest;
+	  //    ctest = sum(elem_div(elem_prod(elem_prod(ba,p_ft(i,k)*va_bar(k)),1.-exp(-p_Z(i))),p_Z(i)));
+	  //    LOG<<"gear = "<<k<<" tac = "<<tac<<"\t ct = "<<ctest<<'\n';
+	  //  }
+	  //}
 	}
-	// write_proj_headers and write_proj_output are in include/utilities.h
-	// ofsmcmc object is in libs/utilities.cpp
+	// write_proj_headers() and write_proj_output() are in include/utilities.h
+	// and libs/utilities.cpp
 	if(mceval_phase()){
+	  ofstream ofsmcmc("iscam_mcmc_proj.csv", ios::app);
+	  LOG<<"Running MCMC projections, runNo = "<<runNo<<"\n";
 	  if(nf == 1 && runNo == 1){
-	    LOG<<"Running MCMC projections\n";
-	    ofstream ofsmcmc("iscammcmc_proj_Gear1.csv");
-	    write_proj_headers(ofsmcmc, syr, nyr, !d_iscamCntrl(13), d_iscamCntrl(13) && d_iscamCntrl(20));
+	    write_proj_headers(ofsmcmc,
+	                       syr,
+	                       nyr,
+	                       nfleet,
+	                       !d_iscamCntrl(13),
+	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmcmc.flush();
 	  }
-	  ofstream ofsmcmc("iscammcmc_proj_Gear1.csv", ios::app);
 	  write_proj_output(ofsmcmc,
 	                    syr,
 	                    nyr,
 	                    nage,
+	                    nfleet,
 	                    tac,
 	                    pyr,
 	                    p_sbt,
@@ -4976,38 +4991,48 @@ FUNCTION void projection_model(const double& tac);
 	                    dWt_bar,
 	                    ft(1),
 	                    value(sbo(1)),
-	                    fmsy,
+	                    fmsy(1),
 	                    bmsy,
 	                    !d_iscamCntrl(13),
 	                    d_iscamCntrl(13) && d_iscamCntrl(20));
 	  ofsmcmc.flush();
 	}else{
+	  ofstream ofsmpd("iscam_mpd_proj.csv", ios::app);
+	  LOG<<"Running MPD projections, runNo = "<<runNo<<"\n";
 	  if(runNo == 1){
-	    LOG<<"Running MPD projections"<<'\n';
-	    ofstream ofsmpd("iscammpd_proj_Gear1.csv");
-	    write_proj_headers(ofsmpd, syr, nyr, !d_iscamCntrl(13), d_iscamCntrl(13) && d_iscamCntrl(20));
-	    ofsmpd.flush();
-	    write_proj_output(ofsmpd,
-	                      syr,
-	                      nyr,
-	                      nage,
-	                      tac,
-	                      pyr,
-	                      p_sbt,
-	                      p_rt,
-	                      p_ft,
-	                      p_N,
-	                      M,
-	                      ma,
-	                      dWt_bar,
-	                      ft(1),
-	                      value(sbo(1)),
-	                      fmsy,
-	                      bmsy,
-	                      !d_iscamCntrl(13),
-	                      d_iscamCntrl(13) && d_iscamCntrl(20));
+	    write_proj_headers(ofsmpd,
+	                       syr,
+	                       nyr,
+	                       nfleet,
+	                       !d_iscamCntrl(13),
+	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmpd.flush();
 	  }
+	  LOG<<"ft:"<<ft<<"\n";
+	  LOG<<"p_sbt:\n"<<p_sbt<<"\n";
+	  LOG<<"p_rt:\n"<<p_rt<<"\n";
+	  LOG<<"p_ft:\n"<<p_ft<<"\n\n";
+	  write_proj_output(ofsmpd,
+	                    syr,
+	                    nyr,
+	                    nage,
+	                    nfleet,
+	                    tac,
+	                    pyr,
+	                    p_sbt,
+	                    p_rt,
+	                    p_ft,
+	                    p_N,
+	                    M,
+	                    ma,
+	                    dWt_bar,
+	                    ft(1),
+	                    value(sbo(1)),
+	                    fmsy(1),
+	                    bmsy,
+	                    !d_iscamCntrl(13),
+	                    d_iscamCntrl(13) && d_iscamCntrl(20));
+	  ofsmpd.flush();
 	}
 	if(!mceval_phase()){
 	  LOG<<"Finished projection model for TAC = "<<tac<<'\n';

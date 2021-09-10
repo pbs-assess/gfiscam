@@ -1,6 +1,7 @@
 // iSCAM = integrated Statistical Catch Age Model
 
 DATA_SECTION
+	!! LOG<<"DATA_SECTION\n";
 	// |---------------------------------------------------------------------------------|
 	// | STRINGS FOR INPUT FILES                                                         |
 	// |---------------------------------------------------------------------------------|
@@ -1603,6 +1604,7 @@ PRELIMINARY_CALCS_SECTION
 	// | - nf is a function evaluation counter.
 	// | - SimFlag comes from the -sim command line argument to simulate fake data.
 	// |
+	LOG<<"PRELIMINARY_CALCS_SECTION\n";
 	nf = 0;
 	if(testMSY){
 	  testMSYxls();
@@ -1617,6 +1619,7 @@ RUNTIME_SECTION
   convergence_criteria 0.01, 0.01, 1.e-3, 1.e-4, 1.e-5
 
 PROCEDURE_SECTION
+	LOG<<"PROCEDURE_SECTION\n";
 	if(delaydiff){
 	  initParameters();
 	  calcTotalMortality_deldiff();
@@ -1653,8 +1656,8 @@ PROCEDURE_SECTION
 FUNCTION void calcSdreportVariables()
 	sd_depletion.initialize();
 	sd_log_sbt.initialize();
-	for(g=1;g<=ngroup;g++){
-	  sd_depletion(g) = sbt(g)(nyr)/sbo(g);
+	for(g = 1 ; g <= ngroup; g++){
+	  sd_depletion(g) = sbt(g)(nyr) / sbo(g);
 	  sd_log_sbt(g) = log(sbt(g));
 	}
 
@@ -1664,7 +1667,7 @@ FUNCTION void calcSdreportVariables()
 	  NOTES:
 	    You must call this routine before running the simulation model to generate
 	    fake data, otherwise you\'ll have goofy initial values for your leading parameters.
-	  - Variance partitioning:
+	    Variance partitioning:
 	    Estimating total variance as = 1/precision
 	    and partition variance by rho = sig^2/(sig^2+tau^2).
 	    E.g. if sig = 0.2 and tau =1.12 then
@@ -1804,7 +1807,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	// Selex cSelex(age);
 	// logistic_selectivity cLogisticSelex(age);
 	log_sel.initialize();
-	for(kgear=1; kgear<=ngear; kgear++){
+	for(kgear = 1; kgear <= ngear; kgear++){
 	  // The following is used to mirror another gear-type
 	  // based on the absolute value of sel_phz.
 	  k = kgear;
@@ -1816,7 +1819,8 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	    }
 	  }
 	  for(ig = 1; ig <= n_ags; ig++){
-	    tmp.initialize(); tmp2.initialize();
+	    tmp.initialize();
+	    tmp2.initialize();
 	    dvector iy(1,yr_nodes(k));
 	    dvector ia(1,age_nodes(k));
 	    byr = 1;
@@ -2372,7 +2376,7 @@ FUNCTION calcTotalCatch
 	    [?] - add capability to accomodate priors for survey q\'s.
 	    [ ] - verify q_prior=2 option for random walk in q.
 	    [ ] - For sel_type==3, may need to reduce abundance by F on spawning biomass (herring)
-	    [ ] - add capability to accompodate priors for survey catchabiliyt coefficients.
+	    [ ] - add capability to accommodate priors for survey catchability coefficients.
 	*/
 FUNCTION calcSurveyObservations
 	int ii, kk, ig, nz;
@@ -3291,8 +3295,8 @@ FUNCTION calcObjectiveFunction
 	    if(verbose){
 	      LOG<<"ACTIVE: k = "<<k<<", active(sel_par_f(k)) = "<<active(sel_par_f(k))<<", active(sel_par_m(k)) = "<<active(sel_par_m(k))<<"\n";
 	    }
-	    if(active(sel_par_f(k)) | active(sel_par_m(k))){
-	      //if not using logistic selectivity then
+	    if(active(sel_par_f(k)) || active(sel_par_m(k))){
+	      // If not using logistic selectivity then
 	      if(isel_type(k) != 1 &&
 	         isel_type(k) != 7 &&
 	         isel_type(k) != 8 &&
@@ -3303,12 +3307,14 @@ FUNCTION calcObjectiveFunction
 	            dvar_vector df2 = first_difference(first_difference(log_sel(k)(ig)(i)));
 	            nlvec(5,k) += lambda_1(k) / (nage-sage+1) * df2 * df2;
 	            //penalty for dome-shapeness
-	            for(j = sage; j <= nage - 1; j++)
-	              if(log_sel(k,ig,i,j) > log_sel(k,ig,i,j+1))
+	            for(j = sage; j <= nage - 1; j++){
+	              if(log_sel(k,ig,i,j) > log_sel(k,ig,i,j+1)){
 	                nlvec(6,k) += lambda_2(k) * square(log_sel(k,ig,i,j) - log_sel(k,ig,i,j+1));
+	              }
 	            }
 	          }
-	          if(isel_type(k) == 4 || isel_type(k) == 5 || n_sel_blocks(k) > 1){
+	        }
+	        if(isel_type(k) == 4 || isel_type(k) == 5 || n_sel_blocks(k) > 1){
 	          for(ig = 1; ig <= n_ags; ig++){
 	            dvar_matrix trans_log_sel = trans(log_sel(k)(ig));
 	            for(j = sage; j <= nage; j++){
@@ -4115,8 +4121,16 @@ REPORT_SECTION
 	REPORT(objfun);
 	if(delaydiff)
 	  REPORT(nlvec_dd);
-	if(!delaydiff)
-	  REPORT(nlvec);
+	if(!delaydiff){
+	  report<<"like_catch\n"<<nlvec(1)<<"\n";
+	  report<<"like_survey_index\n"<<nlvec(2)<<"\n";
+	  report<<"like_age_comps\n"<<nlvec(3)<<"\n";
+	  report<<"like_stock_recruit\n"<<nlvec(4)<<"\n";
+	  report<<"like_fishery_sel_curvature\n"<<nlvec(5)<<"\n";
+	  report<<"like_fishery_sel_dome_shapedness\n"<<nlvec(6)<<"\n";
+	  report<<"like_fishery_sel_first_differences\n"<<nlvec(7)<<"\n";
+	  report<<"like_annual_mean_weights\n"<<nlvec(8)<<"\n";	  
+	}
 	REPORT(ro);
 	dvector rbar = value(exp(log_avgrec));
 	REPORT(rbar);
@@ -4434,6 +4448,8 @@ FUNCTION decision_table
 FUNCTION mcmc_output
 	int iter;
 	if(nf == 1){
+	  LOG<<"In mcmc_output()\n";
+
 	  // Open the files and write the headers
 	  ofstream ofs("iscam_mcmc.csv");
 	  // The structure for these objects can be found at roughly lines 924 and 1409.
@@ -4443,6 +4459,11 @@ FUNCTION mcmc_output
 	  // parametername_gr[0-9]+  - for unique group only
 	  // parametername_gs[0-9]+  - for unique group and sex
 	  // paramatername_ag[0-9]+  - for unique area and gear
+
+	  //LOG<<"In mcmc_output()\n";
+	  //ofs.flush();
+	  //ofs.close();
+	  //exit(1);
 	  for(int group = 1; group <= ngroup; group++){
 	    ofs<<"ro_gr"<<group;
 	  }
@@ -4464,6 +4485,7 @@ FUNCTION mcmc_output
 	  for(int group = 1; group <= ngroup; group++){
 	    ofs<<","<<"vartheta_gr"<<group;
 	  }
+
 	  ofs<<","<<"bo";
 	  ofs<<","<<"sbo";
 	  if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
@@ -4478,6 +4500,7 @@ FUNCTION mcmc_output
 	      ofs<<","<<"umsy"<<fleet;
 	    }
 	  }
+	  LOG<<"nItNobs = "<<nItNobs<<"\n";
 	  for(int i = 1; i <= nItNobs; i++){
 	    ofs<<","<<"q"<<i;
 	  }
@@ -4492,6 +4515,7 @@ FUNCTION mcmc_output
 	  }
 	  ofs<<","<<"f";
 	  ofs<<'\n';
+
 	  ofstream of1("iscam_sbt_mcmc.csv");
 	  for(int group = 1; group <= ngroup; group++){
 	    for(int yr = syr; yr <= nyr + 1; yr++){
@@ -4950,7 +4974,7 @@ FUNCTION void projection_model(const double& tac);
 
 	  //  Predicted catch for checking calculations
 	  // if(i > nyr){
-	  //   LOG<<p_ft<<'\n';
+	  //   LOG<<p_ft<<"\n";
 	  //   for(k = 1; k <= ngear; k++){
 	  //     dvector ba = elem_prod(p_N(i), dWt_bar(1));
 	  //     double ctest;
@@ -5218,6 +5242,7 @@ GLOBALS_SECTION
 	#include <unistd.h>
 	#include <fcntl.h>
 	#include "/home/cgrandin/admb/contrib/statslib/statsLib.h"
+	#include "/home/cgrandin/admb/contrib/qfclib/qfclib.h"
 	#include "../../include/baranov.h"
 	#include "../../include/LogisticNormal.h"
 	#include "../../include/LogisticStudentT.h"

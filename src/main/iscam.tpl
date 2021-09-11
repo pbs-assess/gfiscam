@@ -5244,6 +5244,7 @@ GLOBALS_SECTION
 	#include "/home/cgrandin/admb/contrib/statslib/statsLib.h"
 	#include "/home/cgrandin/admb/contrib/qfclib/qfclib.h"
 	#include "../../include/baranov.h"
+	#include "../../include/ddirmultinom.h"
 	#include "../../include/LogisticNormal.h"
 	#include "../../include/LogisticStudentT.h"
 	#include "../../include/msy.h"

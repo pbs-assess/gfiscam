@@ -861,14 +861,14 @@ DATA_SECTION
 	  LOG<<"| ------------------------------------- |\n\n";
 	  // Apply effective sample size if multinomial likelihood
 	  if(n_A_nobs(nAgears) > 0){
-	    for(k=1;k<=nAgears;k++){
-	      dmatrix tmp = trans(trans(d3_A(k)).sub(n_A_sage(k),n_A_nage(k)));
+	    for(k = 1; k <= nAgears; k++){
+	      dmatrix tmp = trans(trans(d3_A(k)).sub(n_A_sage(k), n_A_nage(k)));
 	      if(inp_nscaler(k) > 0){
-	        for(i = 1; i <= n_A_nobs(k); i++ ){
+	        for(i = 1; i <= n_A_nobs(k); i++){
 	          if(nCompLikelihood(k) == 2){
-	            tmp(i) = tmp(i)/sum(tmp(i)) * inp_nscaler(k);
+	            tmp(i) = tmp(i) / sum(tmp(i)) * inp_nscaler(k);
 	          }else{
-	            tmp(i) = tmp(i)/sum(tmp(i));
+	            tmp(i) = tmp(i) / sum(tmp(i));
 	          }
 	          d3_A_obs(k) = tmp;
 	        }
@@ -1199,30 +1199,15 @@ DATA_SECTION
 	END_CALCS
 
 	int nf;
-	// |---------------------------------------------------------------------------------|
-	// | VECTOR DIMENSIONS FOR NEGATIVE LOG LIKELIHOODS   --original declaration of ilvec
-	// |---------------------------------------------------------------------------------|
-	// | ilvec[1,5,6,7] -> number of fishing gears (ngear)
-	// | ilvec[2]       -> number of surveys       (nItNobs)
-	// | ilvec[3]       -> number of age-compisition data sets (nAgears)
-	// | ilvec[4]       -> container for recruitment deviations.
-	//uncomment 6 lines below to revert to original and delete RF copy below
-	//ivector ilvec(1,7);
-	//!! ilvec = ngear;
-	//!! ilvec(1) = 1;
-	//!! ilvec(2) = nItNobs;
-	//!! ilvec(3) = nAgears;
-	//!! ilvec(4) = ngroup;
 
-	//RF Added extra likelihood component for annual mean weight data
 	// |---------------------------------------------------------------------------------|
 	// | VECTOR DIMENSIONS FOR NEGATIVE LOG LIKELIHOODS
 	// |---------------------------------------------------------------------------------|
-	// | ilvec[1,6,7,8] -> number of fishing gears (ngear)
-	// | ilvec[2]       -> number of surveys       (nItNobs)
-	// | ilvec[3]       -> number of age-compisition data sets (nAgears)
-	// | ilvec[4]       -> container for recruitment deviations.
-	// | ilvec[5]       -> number of annual mean weight datasets.
+	// | ilvec[1,6,7,8]      -> number of fishing gears (ngear)
+	// | ilvec[2]            -> number of surveys       (nItNobs)
+	// | ilvec[3]            -> number of age-compisition data sets (nAgears)
+	// | ilvec[4]            -> container for recruitment deviations.
+	// | ilvec[5]            -> number of annual mean weight datasets.
 	ivector ilvec(1,8);
 	!! ilvec = ngear;
 	!! ilvec(1) = 1;
@@ -1341,6 +1326,23 @@ PARAMETER_SECTION
 	// | theta[6] -> rho
 	// | theta[7] -> vartheta
 	init_bounded_vector_vector theta(1,npar,1,ipar_vector,theta_lb,theta_ub,theta_phz);
+
+	// |---------------------------------------------------------------------------------|
+	// | DIRICHLET MULTINOMIAL PARAMETERS
+	// |---------------------------------------------------------------------------------|
+	// Set up Dirichlet Multinomial parameters
+	init_bounded_vector_vector log_phi(1,nAgears,1,n_A_nobs,0,10);
+	init_bounded_matrix_vector dm_p(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage,-10,10)
+	vector temp_n(1,nage)
+	LOC_CALCS
+	  for(k = 1; k <= nAgears; k++){
+	    for(i = 1; i <= n_A_nobs(k); i++){
+	      for(j = n_A_sage(k); j <= n_A_nage(k); j++){
+	        dm_p(k,i,j) = d3_A(k,i,j);
+	      }
+	    }
+	  }
+	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
 	// | SELECTIVITY PARAMETERS
@@ -1524,8 +1526,8 @@ PARAMETER_SECTION
 	// | annual_mean_weight  -> ragged matrix of estimated annual mean weights for each gear with empirical annual mean weight observations
 
 	matrix log_rt(1,n_ag,syr-nage+sage,nyr);
-	matrix nlvec(1,8,1,ilvec); //added extra component to objective function to incorporate annual mean weight data (also modified ilvec)
-	matrix nlvec_dd(1,4,1,ilvec_dd); //added extra component to objective function to incorporate annual mean weight data (also modified ilvec)
+	matrix nlvec(1,8,1,ilvec);
+	matrix nlvec_dd(1,4,1,ilvec_dd);
 	matrix epsilon(1,nItNobs,1,n_it_nobs);
 	matrix it_hat(1,nItNobs,1,n_it_nobs);
 	matrix qt(1,nItNobs,1,n_it_nobs);
@@ -1635,11 +1637,17 @@ PROCEDURE_SECTION
 	  calcSelectivities(isel_type);
 	  calcTotalMortality();
 	  calcNumbersAtAge();
+	  LOG<<"After NumbersAtAge()\n";
 	  calcTotalCatch();
+	  LOG<<"After calcTotalCatch()\n";
 	  calcComposition();
+	  LOG<<"After calcComposition()\n";
 	  calcSurveyObservations();
+	  LOG<<"After calcSurveyObservations()\n";
 	  calcStockRecruitment();
+	  LOG<<"After calcStockRecruitment()\n";
 	  calcAnnualMeanWeight();
+	  LOG<<"After calcAnnualMeanWeight()\n";
 	}
 	calcObjectiveFunction();
 	if(sd_phase()){
@@ -3239,8 +3247,15 @@ FUNCTION calcObjectiveFunction
 	          nlvec(3,k) = multivariate_t_likelihood(O,P,log_age_tau2(k), log_degrees_of_freedom(k), phi1(k),nu);
 	          age_tau2(k) = exp(value(log_age_tau2(k)));
 	          break;
+	        case 8: // Dirichlet Multinomial
+	          // Use Dirichlet Multinomial to estimate the predicted age matrices
+	          A_hat(k) = mfexp(dm_p(k)) / sum(mfexp(dm_p(k)));
+	          for(int i = d3_A_obs(k).indexmin(); i <= d3_A_obs(k).indexmax(); i++){
+	            temp_n = 200 * d3_A_obs(k,i);
+	            nlvec(3,k) -= ddirmultinom(temp_n, A_hat(k,i), log_phi(k,i));
+	          }
+	          break;
 	      }
-
 	      // Extract residuals.
 	      for(i = n_saa(k); i <= n_naa(k); i++){
 	        A_nu(k)(i)(n_A_sage(k),n_A_nage(k)) = nu(i);
@@ -3399,8 +3414,12 @@ FUNCTION calcObjectiveFunction
 	    }
 	  }
 	}
-	//LOG<<"nlvec "<<nlvec<<'\n';
-	//LOG<<"end of nlvec "<<'\n';
+	LOG<<"nlvec\n";
+	for(i = 1; i <= nlvec.indexmax(); i++){
+	  LOG<<"nlvec("<<i<<"):\n";
+	  LOG<<nlvec(i)<<"\n";
+	}
+	LOG<<"End of nlvec "<<'\n';
 
 	// |---------------------------------------------------------------------------------|
 	// | PRIORS FOR LEADING PARAMETERS p(theta)
@@ -4129,7 +4148,7 @@ REPORT_SECTION
 	  report<<"like_fishery_sel_curvature\n"<<nlvec(5)<<"\n";
 	  report<<"like_fishery_sel_dome_shapedness\n"<<nlvec(6)<<"\n";
 	  report<<"like_fishery_sel_first_differences\n"<<nlvec(7)<<"\n";
-	  report<<"like_annual_mean_weights\n"<<nlvec(8)<<"\n";	  
+	  report<<"like_annual_mean_weights\n"<<nlvec(8)<<"\n";
 	}
 	REPORT(ro);
 	dvector rbar = value(exp(log_avgrec));
@@ -4146,6 +4165,10 @@ REPORT_SECTION
 	report<<"rho\n"<<theta(6)<<'\n';
 	report<<"vartheta\n"<<theta(7)<<'\n';
 	REPORT(varphi);
+	report<<"log_phi\n";
+	for(k = 1; k <= nAgears; k++){
+	  report<<log_phi(k)<<"\n";
+	}
 	REPORT(tau);
 	REPORT(sig);
 	REPORT(age_tau2);
@@ -5242,7 +5265,6 @@ GLOBALS_SECTION
 	#include <unistd.h>
 	#include <fcntl.h>
 	#include "/home/cgrandin/admb/contrib/statslib/statsLib.h"
-	#include "/home/cgrandin/admb/contrib/qfclib/qfclib.h"
 	#include "../../include/baranov.h"
 	#include "../../include/ddirmultinom.h"
 	#include "../../include/LogisticNormal.h"

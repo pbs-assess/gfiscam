@@ -3249,7 +3249,6 @@ FUNCTION calcObjectiveFunction
 	          break;
 	        case 8: // Dirichlet Multinomial
 	          // Use Dirichlet Multinomial to estimate the predicted age matrices
-	          A_hat(k) = mfexp(dm_p(k)) / sum(mfexp(dm_p(k)));
 	          for(int i = d3_A_obs(k).indexmin(); i <= d3_A_obs(k).indexmax(); i++){
 	            temp_n = 200 * d3_A_obs(k,i);
 	            nlvec(3,k) -= ddirmultinom(temp_n, A_hat(k,i), log_phi(k,i));

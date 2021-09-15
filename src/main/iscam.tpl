@@ -497,16 +497,15 @@ DATA_SECTION
 	LOC_CALCS
 	  if(n_A_nobs(nAgears) > 0){
 	    if(verbose){
-	      LOG<<"| Age compositions ------ |\n";
-	      LOG<<"| ----------------------- |\n";
-	      LOG<<"| HEAD(d3_A)              |"<<'\n';
-	      LOG<<"| ----------------------- |\n";
+	      LOG<<"| Age compositions ------  |\n";
+	      LOG<<"| -----------------------  |\n";
+	      LOG<<"| HEAD(d3_A) first 3 lines |"<<'\n';
+	      LOG<<"| -----------------------  |\n";
 	      LOG<<d3_A(1).sub(1,3)<<'\n';
-	      LOG<<"| ----------------------- |\n\n";
-	      LOG<<"| ----------------------- |\n";
-	      LOG<<"| TAIL(d3_A)              |"<<'\n';
-	      LOG<<"| ----------------------- |\n";
-	      LOG<<d3_A(nAgears).sub(n_A_nobs(nAgears)-2,n_A_nobs(nAgears))<<'\n';
+	      LOG<<"| -----------------------  |\n";
+	      LOG<<"| TAIL(d3_A) last line     |"<<'\n';
+	      LOG<<"| -----------------------  |\n";
+	      LOG<<d3_A(nAgears).sub(n_A_nobs(nAgears),n_A_nobs(nAgears))<<'\n';
 	      LOG<<"| ----------------------- |\n";
 	    }
 	  }else if(verbose){

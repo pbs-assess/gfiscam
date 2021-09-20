@@ -813,6 +813,7 @@ DATA_SECTION
 	init_ivector nCompLikelihood(1,nAgears);
 	init_vector dMinP(1,nAgears);
 	init_vector dEps(1,nAgears);
+	init_ivector nPhz_dm(1,nAgears);
 	init_ivector nPhz_age_tau2(1,nAgears);
 	init_ivector nPhz_phi1(1,nAgears);
 	init_ivector nPhz_phi2(1,nAgears);
@@ -839,10 +840,14 @@ DATA_SECTION
 	  LOG<<dEps<<'\n';
 	  LOG<<"| ------------------------------------- |\n\n";
 	  LOG<<"| ------------------------------------- |\n";
+	  LOG<<"| Phases for agecomp DM estimation      |"<<'\n';
+	  LOG<<"| ------------------------------------- |\n";
+	  LOG<<nPhz_dm<<'\n';
+	  LOG<<"| ------------------------------------- |\n\n";
+	  LOG<<"| ------------------------------------- |\n";
 	  LOG<<"| Phases for log_age_tau2 estimation    |"<<'\n';
 	  LOG<<"| ------------------------------------- |\n";
 	  LOG<<nPhz_age_tau2<<'\n';
-	  LOG<<"| ------------------------------------- |\n\n";
 	  LOG<<"| ------------------------------------- |\n";
 	  LOG<<"| Phases for phi1 estimation            |"<<'\n';
 	  LOG<<"| ------------------------------------- |\n";
@@ -1330,8 +1335,8 @@ PARAMETER_SECTION
 	// | DIRICHLET MULTINOMIAL PARAMETERS
 	// |---------------------------------------------------------------------------------|
 	// Set up Dirichlet Multinomial parameters
-	init_bounded_vector_vector log_phi(1,nAgears,1,n_A_nobs,0,10);
-	init_bounded_matrix_vector dm_p(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage,-10,10)
+	init_bounded_vector_vector log_phi(1,nAgears,1,n_A_nobs,0,10,nPhz_dm);
+	init_bounded_matrix_vector dm_p(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage,-10,10,nPhz_dm)
 	vector temp_n(1,nage)
 	LOC_CALCS
 	  for(k = 1; k <= nAgears; k++){

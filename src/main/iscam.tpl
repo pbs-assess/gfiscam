@@ -489,6 +489,7 @@ DATA_SECTION
 	init_ivector n_A_nage(1,nAgears);
 	init_vector inp_nscaler(1,nAgears);
 	init_ivector n_ageFlag(1,nAgears);
+	init_number dm_neff;
 	// The 5 in the next command is to remove the first 5 columns
 	// from the age comp data because they are not the actual ages,
 	// but the header data.
@@ -3251,7 +3252,7 @@ FUNCTION calcObjectiveFunction
 	        case 8: // Dirichlet Multinomial
 	          // Use Dirichlet Multinomial to estimate the predicted age matrices
 	          for(int i = d3_A_obs(k).indexmin(); i <= d3_A_obs(k).indexmax(); i++){
-	            temp_n = 200 * d3_A_obs(k,i);
+	            temp_n = dm_neff * d3_A_obs(k,i);
 	            nlvec(3,k) -= ddirmultinom(temp_n, A_hat(k,i), log_phi(k,i));
 	          }
 	          break;

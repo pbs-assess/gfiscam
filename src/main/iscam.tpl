@@ -867,16 +867,13 @@ DATA_SECTION
 	  if(n_A_nobs(nAgears) > 0){
 	    for(k = 1; k <= nAgears; k++){
 	      dmatrix tmp = trans(trans(d3_A(k)).sub(n_A_sage(k), n_A_nage(k)));
-	      if(inp_nscaler(k) > 0){
-	        for(i = 1; i <= n_A_nobs(k); i++){
-	          if(nCompLikelihood(k) == 2){
-	            tmp(i) = tmp(i) / sum(tmp(i)) * inp_nscaler(k);
-	          }else{
-	            tmp(i) = tmp(i) / sum(tmp(i));
-	          }
-	          d3_A_obs(k) = tmp;
+	      for(i = 1; i <= n_A_nobs(k); i++){
+	        tmp(i) = tmp(i) / sum(tmp(i));
+	        if(inp_nscaler(k) > 0 && nCompLikelihood(k) == 2){
+	          tmp(i) = tmp(i) * inp_nscaler(k);
 	        }
 	      }
+	      d3_A_obs(k) = tmp;
 	    }
 	  }
 	END_CALCS

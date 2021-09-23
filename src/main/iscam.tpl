@@ -1009,7 +1009,7 @@ DATA_SECTION
 	  LOG<<sel_blocks<<'\n';
 	  LOG<<"| ------------------------------------- |\n\n";
 	  isel_npar.initialize();
-	  for(i=1;i<=ngear;i++){
+	  for(i = 1; i <= ngear; i++){
 	    jsel_npar(i) = 1;
 	    switch(isel_type(i)){
 	      case 1:
@@ -4478,195 +4478,132 @@ FUNCTION mcmc_output
 	  ofstream ofs("iscam_mcmc.csv");
 	  // The structure for these objects can be found at roughly lines 924 and 1409.
 	  // they are set up as vector_vectors to increase dimensionality
-	  // for the split sex case and also for areas and groups
-	  // The format for the mcmc output headers will be one of:
-	  // parametername_gr[0-9]+  - for unique group only
-	  // parametername_gs[0-9]+  - for unique group and sex
-	  // paramatername_ag[0-9]+  - for unique area and gear
+	  // Assume only one group and area for simplicity
 
-	  //LOG<<"In mcmc_output()\n";
-	  //ofs.flush();
-	  //ofs.close();
-	  //exit(1);
-	  for(int group = 1; group <= ngroup; group++){
-	    ofs<<"ro_gr"<<group;
+	  ofs<<"ro_gr";
+	  ofs<<","<<"h_gr";
+	  for(int sex = 1; sex <= n_gs; sex++){
+	    ofs<<","<<"m_sex"<<sex;
 	  }
-	  for(int group = 1; group <= ngroup; group++){
-	    ofs<<","<<"h_gr"<<group;
-	  }
-	  for(int gs = 1; gs <= n_gs; gs++){
-	    ofs<<","<<"m_gs"<<gs;
-	  }
-	  for(int ag = 1; ag <= n_ag; ag++){
-	    ofs<<","<<"rbar_ag"<<ag;
-	  }
-	  for(int ag = 1; ag <= n_ag; ag++){
-	    ofs<<","<<"rinit_ag"<<ag;
-	  }
-	  for(int group = 1; group <= ngroup; group++){
-	    ofs<<","<<"rho_gr"<<group;
-	  }
-	  for(int group = 1; group <= ngroup; group++){
-	    ofs<<","<<"vartheta_gr"<<group;
-	  }
-
+	  ofs<<","<<"rbar";
+	  ofs<<","<<"rinit";
+	  ofs<<","<<"rho";
+	  ofs<<","<<"vartheta";
 	  ofs<<","<<"bo";
 	  ofs<<","<<"sbo";
 	  if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
 	    ofs<<","<<"bmsy";
 	    for(int fleet = 1; fleet <= nfleet; fleet++){
-	      ofs<<","<<"msy"<<fleet;
+	      ofs<<","<<"msy_fleet"<<fleet;
+	      ofs<<","<<"fmsy_fleet"<<fleet;
+	      ofs<<","<<"umsy_fleet"<<fleet;
 	    }
-	    for(int fleet = 1; fleet <= nfleet; fleet++){
-	      ofs<<","<<"fmsy"<<fleet;
+	    for(int gear = 1; gear <= nItNobs; gear++){
+	      ofs<<","<<"q_gear"<<gear;
 	    }
-	    for(int fleet = 1; fleet <= nfleet; fleet++){
-	      ofs<<","<<"umsy"<<fleet;
+	    ofs<<","<<"SSB";
+	    for(k = 1; k <= ngear; k++){
+	      ofs<<","<<"sel_age50_female_gear"<<k;
+	      ofs<<","<<"sel_sd50_female_gear"<<k;
+	      ofs<<","<<"sel_age50_male_gear"<<k;
+	      ofs<<","<<"sel_sd50_male_gear"<<k;
 	    }
-	  }
-	  LOG<<"nItNobs = "<<nItNobs<<"\n";
-	  for(int i = 1; i <= nItNobs; i++){
-	    ofs<<","<<"q"<<i;
-	  }
-	  for(int group = 1; group <= ngroup; group++){
-	    ofs<<","<<"SSB"<<group;
-	  }
-	  for(k = 1; k <= ngear; k++){
-	    for (j = 1; j <= jsel_npar(k); j++){
-	      ofs<<","<<"sel_g"<<k;
-	      ofs<<","<<"sel_sd"<<k;
-	    }
-	  }
-	  ofs<<","<<"f";
-	  ofs<<'\n';
-
-	  ofstream of1("iscam_sbt_mcmc.csv");
-	  for(int group = 1; group <= ngroup; group++){
+	    ofs<<","<<"f";
+	    ofs<<'\n';
+	    ofstream of1("iscam_sbt_mcmc.csv");
 	    for(int yr = syr; yr <= nyr + 1; yr++){
 	      if(yr == syr){
-	        of1<<"sbt"<<group<<"_"<<yr;
+	        of1<<"sbt"<<"_"<<yr;
 	      }else{
-	        of1<<",sbt"<<group<<"_"<<yr;
+	        of1<<",sbt"<<"_"<<yr;
 	      }
 	    }
-	  }
-	  of1<<'\n';
-	  ofstream of2("iscam_rt_mcmc.csv");
-	  for(int group = 1; group <= ngroup; group++){
+	    of1<<'\n';
+	    ofstream of2("iscam_rt_mcmc.csv");
 	    for(int yr = syr + sage; yr <= nyr; yr++){
 	      if(yr == syr + sage){
-	        of2<<"rt"<<group<<"_"<<yr;
+	        of2<<"rt"<<"_"<<yr;
 	      }else{
-	        of2<<",rt"<<group<<"_"<<yr;
+	        of2<<",rt"<<"_"<<yr;
 	      }
 	    }
-	  }
-	  of2<<'\n';
-	  ofstream of3("iscam_ft_mcmc.csv");
-	  iter = 1;
-	  for(int ag = 1; ag <= n_ags; ag++){
-	    for(int gear = 1; gear <= ngear; gear++){
+	    of2<<'\n';
+	    ofstream of3("iscam_ft_mcmc.csv");
+	    iter = 1;
+	    for(int fleet = 1; fleet <= nfleet; fleet++){
 	      for(int yr = syr; yr <= nyr; yr++){
 	        if(iter == 1){
-	          of3<<"ft"<<ag<<"_gear"<<gear<<"_"<<yr;
+	          of3<<"ft_fleet"<<fleet<<"_"<<yr;
 	        }else{
-	          of3<<",ft"<<ag<<"_gear"<<gear<<"_"<<yr;
+	          of3<<",ft_fleet"<<fleet<<"_"<<yr;
 	        }
 	        iter++;
 	      }
 	    }
-	  }
-	  of3<<'\n';
-	  ofstream of4("iscam_rdev_mcmc.csv");
-	  iter = 1;
-	  for(int ag = 1; ag <= n_ag; ag++){
+	    of3<<'\n';
+	    ofstream of4("iscam_rdev_mcmc.csv");
+	    iter = 1;
 	    for(int yr = syr + sage; yr <= nyr; yr++){
 	      if(iter == 1){
-	        of4<<"rdev"<<ag<<"_"<<yr;
+	        of4<<"rdev_"<<yr;
 	      }else{
-	        of4<<",rdev"<<ag<<"_"<<yr;
+	        of4<<",rdev_"<<yr;
 	      }
 	      iter++;
 	    }
-	  }
-	  of4<<'\n';
-	  ofstream of5("iscam_vbt_mcmc.csv");
-	  iter = 1;
-	  for(int ag = 1; ag <= ngroup; ag++){
-	    for(int gear = 1; gear <= ngear; gear++){
+	    of4<<'\n';
+	    ofstream of5("iscam_vbt_mcmc.csv");
+	    iter = 1;
+	    for(int fleet = 1; fleet <= nfleet; fleet++){
 	      for(int yr = syr; yr <= nyr + 1; yr++){
 	        if(iter == 1){
-	          of5<<"vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
+	          of5<<"vbt_fleet"<<fleet<<"_"<<yr;
 	        }else{
-	          of5<<",vbt"<<ag<<"_gear"<<gear<<"_"<<yr;
+	          of5<<",vbt_fleet"<<fleet<<"_"<<yr;
 	        }
 	        iter++;
 	      }
 	    }
-	  }
-	  of5<<'\n';
-	  ofstream of6("iscam_ut_mcmc.csv");
-	  iter = 1;
-	  for(int ag = 1; ag <= n_ags; ag++){
-	    for(int gear = 1; gear <= ngear; gear++){
-	      for(int yr = syr; yr <= nyr; yr++){
+	    of5<<'\n';
+	    ofstream of6("iscam_ut_mcmc.csv");
+	    iter = 1;
+	    iter = 1;
+	    for(int fleet = 1; fleet <= nfleet; fleet++){
+	      for(int yr = syr; yr <= nyr + 1; yr++){
 	        if(iter == 1){
-	          of6<<"ut"<<ag<<"_gear"<<gear<<"_"<<yr;
+	          of6<<"ut_fleet"<<fleet<<"_"<<yr;
 	        }else{
-	          of6<<",ut"<<ag<<"_gear"<<gear<<"_"<<yr;
+	          of6<<",ut_fleet"<<fleet<<"_"<<yr;
 	        }
 	        iter++;
 	      }
 	    }
-	  }
-	  of6<<'\n';
-	  ofstream of7("iscam_m_mcmc.csv");
-	  iter = 1;
-	  for(int yr = syr ; yr <= nyr; yr++){
-	    if(iter == 1){
-	      of7<<"m_age2_"<<yr;
-	    }else{
-	      of7<<",m_age2_"<<yr;
-	    }
-	    iter++;
-	  }
-	  of7<<'\n';
-	  ofstream of8("iscam_Na1951_mcmc.csv");
-	  iter = 1;
-	  for(int ag = 1; ag <= n_ags; ag++){
-	    for(int age = sage; age <= nage; age++){
-	      if(iter == 1){
-	        of8<<"N_ag"<<ag<<"_age"<<age<<"_1951";
-	      }else{
-	        of8<<",N_ag"<<ag<<"_age"<<age<<"_1951";
+	    of6<<'\n';
+	    ofstream of7("iscam_m_mcmc.csv");
+	    iter = 1;
+	    for(int sex = 1; sex <= n_gs; sex++){
+	      for(int yr = syr ; yr <= nyr; yr++){
+	        if(iter == 1){
+	          of7<<"m_sex"<<sex<<"_"<<yr;
+	        }else{
+	          of7<<",m_sex"<<sex<<"_"<<yr;
+	        }
+	        iter++;
 	      }
-	      iter++;
 	    }
+	    of7<<'\n';
 	  }
-	  of8<<"\n";
-	  ofstream of9("iscam_Nage2t_mcmc.csv");
-	  iter = 1;
-	  for(int ag = 1; ag <= n_ags; ag++){
-	    for( int t = syr; t <= nyr + 1; t++){
-	      if(iter == 1){
-	        of9<<"N_ag"<<ag<<"_age2_t"<<t;
-	      }else{
-	        of9<<",N_ag"<<ag<<"_age2_t"<<t;
-	      }
-	     iter++;
-	    }
-	  }
-	  of9<<"\n";
 	}
+	// ---------------------------------------------------------------------
+	// Headers done, output values
+	// ---------------------------------------------------------------------
 	// Leading parameters & reference points
 	// Delay difference/Age-structured switch is in calcReferencePoints
 	if(d_iscamCntrl(13)){
 	  if(d_iscamCntrl(20)){
 	    // Only report B0 - calc_bo() is in slowmsy.cpp
 	    double B0;
-	    calc_bo(B0, sage, nage, M,
-	            dWt_bar, ma, ro,
-	            d_iscamCntrl, pf_cntrl);
+	    calc_bo(B0, sage, nage, M, dWt_bar, ma, ro, d_iscamCntrl, pf_cntrl);
 	    bo = B0;
 	  }else{
 	    calcReferencePoints();
@@ -4678,157 +4615,127 @@ FUNCTION mcmc_output
 	// Append the values to the files
 	//these should be named parameters
 	ofstream ofs("iscam_mcmc.csv",ios::app);
-	for(int group=1;group<=ngroup;group++){
-	  ofs<<exp(theta(1)(group));
+	ofs<<exp(theta(1)(1));
+	ofs<<","<<theta(2)(1);
+	for(int sex = 1 ; sex <= n_gs; sex++){
+	  ofs<<","<<exp(theta(3)(sex));
 	}
-	for(int group=1;group<=ngroup;group++){
-	  ofs<<","<<theta(2)(group);
-	}
-	for(int gs=1;gs<=n_gs;gs++){
-	  ofs<<","<<exp(theta(3)(gs));
-	}
-	for(int ag=1;ag<=n_ag;ag++){
-	  //ofs<<","<<exp(theta(4)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
-	  ofs<<","<<exp(log_avgrec(ag));
-	}
-	for(int ag=1;ag<=n_ag;ag++){
-	  //ofs<<","<<exp(theta(5)(ag)); //RF Aug 24, 2018. Report these out as named parameters as they are fixed to be same as ro in delay-difference model
-	  ofs<<","<<exp(log_recinit(ag));
-	}
-	for(int group=1;group<=ngroup;group++){
-	  ofs<<","<<theta(6)(group);
-	}
-	for(int group=1;group<=ngroup;group++){
-	  ofs<<","<<theta(7)(group);
-	}
+	ofs<<","<<exp(log_avgrec(1));
+	ofs<<","<<exp(theta(5)(1));
+	ofs<<","<<theta(6)(1);
+	ofs<<","<<theta(7)(1);
 	ofs<<","<<bo;
 	ofs<<","<<sbo;
 	if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
 	  ofs<<","<<bmsy;
-	  for(int fleet=1;fleet<=nfleet;fleet++){
-	    ofs<<","<<msy(fleet);
-	  }
-	  for(int fleet=1;fleet<=nfleet;fleet++){
-	    ofs<<","<<fmsy(fleet);
-	  }
-	  for(int fleet=1;fleet<=nfleet;fleet++){
-	    ofs<<","<<1.0-exp(-fmsy(fleet));
+	  for(int fleet = 1; fleet <= nfleet; fleet++){
+	    ofs<<","<<msy(1,fleet);
+	    ofs<<","<<fmsy(1,fleet);
+	    ofs<<","<<1.0 - exp(-fmsy(1,fleet));
 	  }
 	}
-	for(int it=1;it<=nItNobs;it++){
-	  ofs<<","<<q(it);
+	for(int gear = 1; gear <= nItNobs; gear++){
+	  ofs<<","<<q(gear);
 	}
-	for(int group=1;group<=ngroup;group++){
-	  ofs<<","<<sbt(group)(nyr);
-	}
+	ofs<<","<<sbt(1)(nyr);
 	for(k = 1; k <= ngear; k++){
-	  for(j = 1; j <= jsel_npar(k); j++){
-	    ofs<<","<<exp(sel_par_f(k)(j)(1));
-	    ofs<<","<<exp(sel_par_f(k)(j)(2));
-	    ofs<<","<<exp(sel_par_m(k)(j)(1));
-	    ofs<<","<<exp(sel_par_m(k)(j)(2));
-	  }
+	  ofs<<","<<exp(sel_par_f(k)(1)(1));
+	  ofs<<","<<exp(sel_par_f(k)(1)(2));
+	  ofs<<","<<exp(sel_par_m(k)(1)(1));
+	  ofs<<","<<exp(sel_par_m(k)(1)(2));
 	}
 	ofs<<","<<objfun;
 	ofs<<'\n';
+
 	// output spawning stock biomass
-	ofstream of1("iscam_sbt_mcmc.csv",ios::app);
-	for(int group=1;group<=ngroup;group++){
-	  for(int yr=syr;yr<=nyr+1;yr++){
-	    if(yr == syr){
-	      of1<<sbt(group)(yr);
-	    }else{
-	      of1<<","<<sbt(group)(yr);
-	    }
+	ofstream of1("iscam_sbt_mcmc.csv", ios::app);
+	for(int yr = syr; yr <= nyr + 1; yr++){
+	  if(yr == syr){
+	    of1<<sbt(1)(yr);
+	  }else{
+	    of1<<","<<sbt(1)(yr);
 	  }
 	}
 	of1<<'\n';
 	// output age-1 recruits
-	ofstream of2("iscam_rt_mcmc.csv",ios::app);
-	for(int group=1;group<=ngroup;group++){
-	  for(int yr=syr+sage;yr<=nyr;yr++){
-	    if(yr == syr + sage){
-	      of2<<rt(group)(yr);
-	    }else{
-	      of2<<","<<rt(group)(yr);
-	    }
+	ofstream of2("iscam_rt_mcmc.csv", ios::app);
+	for(int yr = syr + sage; yr <= nyr; yr++){
+	  if(yr == syr + sage){
+	    of2<<rt(1)(yr);
+	  }else{
+	    of2<<","<<rt(1)(yr);
 	  }
 	}
 	of2<<'\n';
 	// output fishing mortality
-	ofstream of3("iscam_ft_mcmc.csv",ios::app);
+	ofstream of3("iscam_ft_mcmc.csv", ios::app);
 	iter = 1;
-	for(int ag=1;ag<=n_ags;ag++){
-	  for(int gear=1;gear<=ngear;gear++){
-	    for(int yr=syr;yr<=nyr;yr++){
-	      if(iter == 1){
-	        of3<<ft(ag)(gear)(yr);
-	      }else{
-	        of3<<","<<ft(ag)(gear)(yr);
-	      }
-	      iter++;
+	for(int fleet = 1; fleet < nfleet; fleet++){
+	  for(int yr = syr; yr <= nyr; yr++){
+	    if(iter == 1){
+	      of3<<ft(1)(fleet)(yr);
+	    }else{
+	      of3<<","<<ft(1)(fleet)(yr);
 	    }
+	    iter++;
 	  }
 	}
 	of3<<'\n';
 	// output recruitment deviations
 	// This is what the declaration of log_dev_recs looks like:
 	// init_bounded_matrix log_rec_devs(1,n_ag,syr,nyr,-15.,15.,2);
-	ofstream of4("iscam_rdev_mcmc.csv",ios::app);
+	ofstream of4("iscam_rdev_mcmc.csv", ios::app);
 	iter = 1;
-	for(int ag=1;ag<=n_ag;ag++){
-	  for(int yr=syr+sage;yr<=nyr;yr++){
+	for(int yr = syr + sage; yr <= nyr; yr++){
+	  if(iter == 1){
+	    of4<<log_rec_devs(1)(yr);
+	  }else{
+	    of4<<","<<log_rec_devs(1)(yr);
+	  }
+	  iter++;
+	}
+	of4<<'\n';
+	// output vulnerable biomass to all gears //Added by RF March 19 2015
+	ofstream of5("iscam_vbt_mcmc.csv", ios::app);
+	iter = 1;
+	for(int fleet = 1; fleet <= nfleet; fleet++){
+	  for(int yr = syr; yr <= nyr; yr++){
 	    if(iter == 1){
-	      of4<<log_rec_devs(ag)(yr);
+	      of5<<vbt(1)(fleet)(yr);
 	    }else{
-	      of4<<","<<log_rec_devs(ag)(yr);
+	      of5<<","<<vbt(1)(fleet)(yr);
 	    }
 	    iter++;
 	  }
 	}
-	of4<<'\n';
-	// output vulnerable biomass to all gears //Added by RF March 19 2015
-	ofstream of5("iscam_vbt_mcmc.csv",ios::app);
-	iter = 1;
-	for(int ag=1;ag<=ngroup;ag++){
-	  for(int gear=1;gear<=ngear;gear++){
-	    for(int yr=syr;yr<=nyr;yr++){
-	      if(iter == 1){
-	        of5<<vbt(ag)(gear)(yr);
-	      }else{
-	        of5<<","<<vbt(ag)(gear)(yr);
-	      }
-	      iter++;
-	    }
-	  }
-	}
 	of5<<'\n';
 	// output fishing mortality as U (1-e^-F)
-	ofstream of6("iscam_ut_mcmc.csv",ios::app);
+	ofstream of6("iscam_ut_mcmc.csv", ios::app);
 	iter = 1;
-	for(int ag=1;ag<=n_ags;ag++){
-	  for(int gear=1;gear<=ngear;gear++){
-	    for(int yr=syr;yr<=nyr;yr++){
-	      if(iter == 1){
-	        of6<<1.0-exp(-ft(ag)(gear)(yr));
-	      }else{
-	        of6<<","<<1.0-exp(-ft(ag)(gear)(yr));
-	      }
-	      iter++;
+	for(int fleet = 1; fleet <= nfleet; fleet++){
+	  for(int yr = syr; yr <= nyr; yr++){
+	    if(iter == 1){
+	      of6<<1.0 - exp(-ft(1)(fleet)(yr));
+	    }else{
+	      of6<<","<<1.0 - exp(-ft(1)(fleet)(yr));
 	    }
+	    iter++;
 	  }
 	}
 	of6<<'\n';
 	// output natural mortality - (added for herring)
-	ofstream of7("iscam_m_mcmc.csv",ios::app);
+	// Assumes age-invariant M
+	ofstream of7("iscam_m_mcmc.csv", ios::app);
 	iter = 1;
-	for(int yr=syr;yr<=nyr;yr++){
-	  if(iter == 1){
-	    of7<<M(1)(yr)(sage);
-	  }else{
-	    of7<<","<<M(1)(yr)(sage);
+	for(int sex = 1; sex <= n_gs; sex++){
+	  for(int yr = syr; yr <= nyr; yr++){
+	    if(iter == 1){
+	      of7<<M(sex)(yr)(sage);
+	    }else{
+	      of7<<","<<M(sex)(yr)(sage);
+	    }
+	    iter++;
 	  }
-	  iter++;
 	}
 	of7<<'\n';
 	ofs.flush();
@@ -4848,7 +4755,6 @@ FUNCTION mcmc_output
 	    projection_model(tac(ii));
 	  }
 	}
-
 
 	/*
 	  This routine conducts population projections based on

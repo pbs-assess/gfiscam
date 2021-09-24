@@ -591,12 +591,11 @@ DATA_SECTION
 	    }
 	  }
 	  int iyr;
-	  for(i=1;i<=sum_tmp_nWtNobs;i++){
+	  for(i = 1; i <= sum_tmp_nWtNobs; i++){
 	    iyr = xxinp_wt_avg(i,sage-5);
 	    f = xxinp_wt_avg(i,sage-3);
 	    g = xxinp_wt_avg(i,sage-2);
 	    h = xxinp_wt_avg(i,sage-1);
-	    // | SM Changed Sept 9, to accomodate NA\'s (-99) in empirical data.
 	    if(h){
 	      ig = pntr_ags(f,g,h);
 	      dvector tmp = xxinp_wt_avg(i)(sage,nage);
@@ -608,7 +607,7 @@ DATA_SECTION
 	      //d3_wt_avg(ig)(iyr)(idx) = inp_wt_avg(i)(idx);
 	      d3_wt_mat(ig)(iyr) = elem_prod(ma(ig),d3_wt_avg(ig)(iyr));
 	    }else{
-	      for(int h=1;h<=nsex;h++){
+	      for(int h = 1; h <= nsex; h++){
 	        ig = pntr_ags(f,g,h);
 	        dvector tmp = xxinp_wt_avg(i)(sage,nage);
 	        ivector idx = getIndex(age,tmp);
@@ -622,7 +621,7 @@ DATA_SECTION
 	      }
 	    }
 	  }
-	  for(ig=1;ig<=n_ags;ig++){
+	  for(ig = 1; ig <= n_ags; ig++){
 	    dWt_bar(ig) = colsum(d3_wt_avg(ig).sub(pf_cntrl(3), pf_cntrl(4)));
 	    dWt_bar(ig) /= pf_cntrl(4) - pf_cntrl(3) + 1;
 	    d3_wt_avg(ig)(nyr+1) = dWt_bar(ig);
@@ -630,9 +629,9 @@ DATA_SECTION
 	    d3_len_age(ig)(nyr+1) = pow(dWt_bar(ig)/d_a(ig),1./d_b(ig));
 	  }
 	  // deviations in mean weight-at-age
-	  for(ig=1;ig<=n_ags;ig++){
+	  for(ig = 1; ig <= n_ags; ig++){
 	    dmatrix mtmp = trans( d3_wt_avg(ig) );
-	    for(j=sage;j<=nage;j++){
+	    for(j = sage; j <= nage; j++){
 	      //LOG<<sum(first_difference(mtmp(j)(syr,nyr)));
 	      if(sum(first_difference(mtmp(j)(syr,nyr)))){
 	        mtmp(j) = (mtmp(j)-mean(mtmp(j)(syr,nyr))) / sqrt(var(mtmp(j)(syr,nyr)));
@@ -1186,11 +1185,11 @@ DATA_SECTION
 	!! nyr = nyr - retro_yrs;
 	LOC_CALCS
 	  if(retro_yrs){
-	    if(pf_cntrl(2)>nyr)
+	    if(pf_cntrl(2) > nyr)
 	      pf_cntrl(2) = nyr;
-	    if(pf_cntrl(4)>nyr)
+	    if(pf_cntrl(4) > nyr)
 	      pf_cntrl(4) = nyr;
-	    if(pf_cntrl(6)>nyr)
+	    if(pf_cntrl(6) > nyr)
 	      pf_cntrl(6) = nyr;
 	  }
 	  for( i = 1; i <= nCtNobs; i++ ){
@@ -1223,11 +1222,11 @@ DATA_SECTION
 	  for(int k = 1; k <= ngear; k++ ){
 	    sel_blocks(k)(1) = syr;
 	  }
-	  if(pf_cntrl(1)<syr)
+	  if(pf_cntrl(1) < syr)
 	    pf_cntrl(1) = syr;
-	  if(pf_cntrl(3)<syr)
+	  if(pf_cntrl(3) < syr)
 	    pf_cntrl(3) = syr;
-	  if(pf_cntrl(5)<syr)
+	  if(pf_cntrl(5) < syr)
 	    pf_cntrl(5) = syr;
 	  for(i = 1; i <= nCtNobs; i++){
 	    if(dCatchData(i)(1) < syr )
@@ -1405,8 +1404,8 @@ PARAMETER_SECTION
 	// |---------------------------------------------------------------------------------|
 	// | POPULATION VARIABLES
 	// |---------------------------------------------------------------------------------|
-	// | m_bar       -> Average natural mortality rate from syr to nyr.
-	number m_bar;	///< Average natural mortality rate.
+	// | m_bar : Average natural mortality rate from syr to nyr.
+	number m_bar;
 
 	// |---------------------------------------------------------------------------------|
 	// | POPULATION VECTORS
@@ -1774,9 +1773,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	          p2 = mfexp(sel_par_m(k, 1, 2));
 		}
 	        for(i = syr; i <= nyr; i++){
-	          //log_sel(kgear)(ig)(i) = log(plogis<dvar_vector>(age, p1, p2) );
 	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2));
-	          // log_sel(k)(ig)(i) = log(cLogisticSelex(sel_par(k)(1)));
 	        }
 	        break;
 	      case 2: // age-specific selectivity coefficients
@@ -1981,8 +1978,6 @@ FUNCTION calcTotalMortality
 	  for(i = syr + 1; i <= nyr; i++){
 	    M(ig)(i) = M(ig)(i - 1) * mfexp(log_m_devs(i));
 	  }
-	  // TODO fix for reference point calculations
-	  // m_bar = mean( M_tot.sub(pf_cntrl(1), pf_cntrl(2)) );
 	}
 
 	// |---------------------------------------------------------------------------------|
@@ -2822,7 +2817,7 @@ FUNCTION calcObjectiveFunction
 	if(fitMeanWt){
 	  for(k = 1; k <= nMeanWt; k++){
 	    dvar_vector epsilon_wt = log(annual_mean_weight(k)) - log(obs_annual_mean_weight(k));
-	    nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k)); //fit to annual mean weight if fitMeanWt is switched on in the control file
+	    nlvec(8,k) = dnorm(epsilon_wt,weight_sig(k));
 	  }
 	}
 	/* LOG<<"nlvec\n";
@@ -2983,19 +2978,14 @@ FUNCTION void calcReferencePoints()
 	    //LOG<<"d_ak\n"<<d_ak<<"\n";
 	  }
 	  d_ak /= sum(d_ak);
-	  if(verbose){
-	    //LOG<<"d_ak After normalization\n"<<d_ak<<"\n";
-	    //LOG<<"pf_cntrl(3) = "<<pf_cntrl(3)<<"\n";
-	    //LOG<<"pf_cntrl(4) = "<<pf_cntrl(4)<<"\n";
-	  }
 	  // Average weight and mature spawning biomass for reference years
 	  // dWt_bar(1,n_ags,sage,nage)
 	  dmatrix fa_bar(1,n_ags,sage,nage);
 	  dmatrix M_bar(1,n_ags,sage,nage);
-	  for(ig = 1;ig <= n_ags;ig++){
+	  for(ig = 1; ig <= n_ags; ig++){
 	    fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
-	    M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(3),pf_cntrl(4))));
-	    M_bar(ig) /= pf_cntrl(4) - pf_cntrl(3) + 1;
+	    M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(1),pf_cntrl(2))));
+	    M_bar(ig) /= pf_cntrl(2) - pf_cntrl(1) + 1;
 	  }
 	  // Initial guess for fmsy for each fleet
 	  // set fmsy = 2/3 of M divided by the number of fleets
@@ -3033,13 +3023,13 @@ FUNCTION void calcReferencePoints()
 	      //LOG<<"d_rho = "<<d_rho<<"\n\n";
 	    }
 	  }
-	  // Data-type version of MSY-based reference points.
-	  for(ig = 1;ig <= n_ags;ig++){
+	  for(ig = 1; ig <= n_ags; ig++){
 	    fa_bar(ig) = elem_prod(dWt_bar(ig), ma(ig));
-	    M_bar(ig) = colsum(value(M(ig).sub(pf_cntrl(3), pf_cntrl(4))));
-	    M_bar(ig) /= pf_cntrl(4) - pf_cntrl(3) + 1;
+	    M_bar(ig) = colsum(value(M(ig).sub(pf_cntrl(1), pf_cntrl(2))));
+	    M_bar(ig) /= pf_cntrl(2) - pf_cntrl(1) + 1;
 	  }
-	  for(g = 1;g <= ngroup;g++){
+	  LOG<<"M_bar\n"<<M_bar<<"\n\n";exit(1);
+	  for(g = 1; g <= ngroup; g++){
 	    double d_ro = value(ro(g));
 	    double d_h = value(steepness(g));
 	    double d_rho = d_iscamCntrl(13);
@@ -3771,8 +3761,9 @@ FUNCTION void projection_model(const double& tac);
 	dvector fa_bar(sage, nage);
 	dvector M_bar(sage, nage);
 	fa_bar = elem_prod(dWt_bar(1), ma(1));
-	M_bar = colsum(value(M(1).sub(pf_cntrl(3), pf_cntrl(4))));
-	M_bar /= pf_cntrl(4) - pf_cntrl(3) + 1;
+	// TODO M_bar should be both sexes
+	M_bar = colsum(value(M(1).sub(pf_cntrl(1), pf_cntrl(2))));
+	M_bar /= pf_cntrl(2) - pf_cntrl(1) + 1;
 	// derive stock re4cruitment parameters
 	// survivorship of spawning biomass
 	dvector lx(sage, nage);

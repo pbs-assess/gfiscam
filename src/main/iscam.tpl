@@ -6,18 +6,18 @@ DATA_SECTION
 	// | STRINGS FOR INPUT FILES                                                         |
 	// |---------------------------------------------------------------------------------|
 	// | DataFile.dat           : data to condition the assessment model on
-	init_adstring DataFile;      ///< String for the input datafile name.
 	// | ControlFile.ctl        : controls for phases, selectivity options
-	init_adstring ControlFile;   ///< String for the control file.
 	// | ProjectFileControl.pfc : used for stock projections under TAC
-	init_adstring ProjectFileControl;  ///< String for the projection file.
+	// | BaseFileName           : file prefix used for all iSCAM model output
+	// | ReportFileName         : file name to copy report file to.
+	// |
+	init_adstring DataFile;
+	init_adstring ControlFile;
+	init_adstring ProjectFileControl;
 	init_adstring ProcedureControlFile;
 	init_adstring ScenarioControlFile;
-	// | BaseFileName           : file prefix used for all iSCAM model output
-	!! BaseFileName = stripExtension(ControlFile);  ///< BaseName given by the control file
-	// | ReportFileName         : file name to copy report file to.
+	!! BaseFileName = stripExtension(ControlFile);
 	!! ReportFileName = BaseFileName + adstring(".rep");
-	!! LOG<<"Base part of file names:\n"<<BaseFileName<<'\n';
 
 	// |---------------------------------------------------------------------------------|
 	// | READ IN PROJECTION FILE CONTROLS
@@ -34,17 +34,13 @@ DATA_SECTION
 	// | 6)   end year for recruitment period (not implemented yet)
 	// |
 	!! ad_comm::change_datafile_name(ProjectFileControl);
-	// | Number of catch options to explore in the decision table.
-	init_int n_tac; ///< Number of catch options to explore in the decision table.
-	!! LOG<<"Number of TAC options to explore in decision table:\n";
-	!! LOG<<n_tac<<'\n';
-	/// | Vector of catch options.
+	init_int n_tac; // Number of catch options to explore in the decision table
 	init_vector tac(1,n_tac);
 	init_int n_pfcntrl;
 	init_vector pf_cntrl(1,n_pfcntrl);
 	init_int eof_pf;
 	LOC_CALCS
-	  if(eof_pf!=-999){
+	  if(eof_pf != -999){
 	    LOG<<"Error reading projection file.\n";
 	    LOG<<"Last integer read is "<<eof_pf<<'\n';
 	    LOG<<"The file should end with -999.\n Aborting!\n";
@@ -56,7 +52,6 @@ DATA_SECTION
 	// | COMMAND LINE ARGUMENTS
 	// |---------------------------------------------------------------------------------|
 	// | retro_yrs  : number of terminal years to remove.
-
 	int retro_yrs;
 	int testMSY;
 	LOC_CALCS
@@ -71,21 +66,19 @@ DATA_SECTION
 	    LOG<<"| Number of retrospective years = "<<retro_yrs<<'\n';
 	  }
 	END_CALCS
-	// Set up the datafile to be the name found on the first line in
+	// Change datafile name to be the name found on the first line in
 	//  the original datafile (iscam.dat)
 	!! ad_comm::change_datafile_name(DataFile);
 
 	// |---------------------------------------------------------------------------------|
 	// | MODEL DIMENSIONS
 	// |---------------------------------------------------------------------------------|
-	// |
-	// | area   f
-	// | group  g
-	// | sex    h
-	// | year   i
-	// | age    j
-	// | gear   k  - number of gears with unique selectivity
-	// They all have to be on seperate lines due to limitations of the tpl2cpp scanner.
+	// | area  : f
+	// | group : g
+	// | sex   : h
+	// | year  : i
+	// | age   : j
+	// | gear  : k
 	int f;
 	int g;
 	int h;
@@ -102,18 +95,19 @@ DATA_SECTION
 	init_int ngear;
 	init_number propfemale;
 	vector age(sage,nage);
+
 	// |---------------------------------------------------------------------------------|
 	// | LINKS TO MANAGE ARRAY INDEXING
 	// |---------------------------------------------------------------------------------|
-	// | - n_ags: total number of areas * groups * sex
-	// | - n_ag:  total number of areas * groups
-	// | - n_gs:  total number of groups * sex
-	// | - n_area:  vector of indexes for area for each sex & group combination.
-	// | - n_group: vector of indexes for stock for each sex & area combination.
-	// | - n_sex:   vector of indexes for sex foe each area & group combination.
-	// | - pntr_ag: matrix of indices for area and group.
-	// | - pntr_gs: matrix of indices for group and sex.
-	// | - pntr_ags: d3_array of indices for area group sex.
+	// | n_ags    : total number of areas * groups * sex
+	// | n_ag     : total number of areas * groups
+	// | n_gs     : total number of groups * sex
+	// | n_area   : vector of indexes for area for each sex & group combination.
+	// | n_group  : vector of indexes for stock for each sex & area combination.
+	// | n_sex    : vector of indexes for sex foe each area & group combination.
+	// | pntr_ag  : matrix of indices for area and group.
+	// | pntr_gs  : matrix of indices for group and sex.
+	// | pntr_ags : d3_array of indices for area group sex.
 	int n_ags;
 	!! n_ags = narea * ngroup * nsex;
 	int n_ag;
@@ -381,16 +375,15 @@ DATA_SECTION
 	// |---------------------------------------------------------------------------------|
 	// | RELATIVE ABUNDANCE INDICIES (ragged array)
 	// |---------------------------------------------------------------------------------|
-	// | nItNobs     = number of independent surveys
-	// | n_it_nobs   = number of survey observations
-	// | n_survey_type = 1: survey is proportional to vulnerable numbers
-	// | n_survey_type = 2: survey is proportional to vulnerable biomass
-	// | n_survey_type = 3: survey is proportional to vulnerable spawning biomass
-	// | d3_survey_data: (iyr index(it) gear area group sex wt timing)
-	// | it_wt       = relative weights for each relative abundance normalized to have a
-	// |               mean = 1 so rho = sig^2/(sig^2+tau^2) holds true in variance pars.
+	// | nItNobs        : number of independent surveys
+	// | n_it_nobs      : number of survey observations
+	// | n_survey_type  : 1 survey is proportional to vulnerable numbers
+	// | n_survey_type  : 2 survey is proportional to vulnerable biomass
+	// | n_survey_type  : 3 survey is proportional to vulnerable spawning biomass
+	// | d3_survey_data : (iyr index(it) gear area group sex wt timing)
+	// | it_wt          : relative weights for each relative abundance normalized to have a
+	// |                  mean = 1 so rho = sig ^ 2 / (sig ^ 2 + tau ^ 2) holds true in variance pars.
 	// |
-
 	init_int nItNobs;
 	ivector nSurveyIndex(1,nItNobs);
 	init_ivector n_it_nobs(1,nItNobs);
@@ -3147,8 +3140,8 @@ REPORT_SECTION
 	REPORT(m);
 	// double tau = value(sqrt(1.-rho)*varphi);
 	// double sig = value(sqrt(rho)*varphi);
-	report<<"rho\n"<<theta(6)<<'\n';
-	report<<"vartheta\n"<<theta(7)<<'\n';
+	report<<"rho\n"<<theta(6 + nsex - 1)<<'\n';
+	report<<"vartheta\n"<<theta(7 + nsex - 1)<<'\n';
 	REPORT(varphi);
 	report<<"log_phi\n";
 	for(k = 1; k <= nAgears; k++){
@@ -3591,9 +3584,9 @@ FUNCTION mcmc_output
 	  ofs<<","<<exp(theta(3)(sex));
 	}
 	ofs<<","<<exp(log_avgrec(1));
-	ofs<<","<<exp(theta(5)(1));
-	ofs<<","<<theta(6)(1);
-	ofs<<","<<theta(7)(1);
+	ofs<<","<<exp(theta(5 + nsex - 1)(1));
+	ofs<<","<<theta(6 + nsex - 1)(1);
+	ofs<<","<<theta(7 + nsex - 1)(1);
 	ofs<<","<<bo;
 	ofs<<","<<sbo;
 	if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
@@ -3731,11 +3724,18 @@ FUNCTION mcmc_output
 	      to each gear type based on dAllocation(k)
 	      theta(1) = log_ro
 	      theta(2) = h
-	      theta(3) = log_m
+	      theta(3) = log_m_female
+	      if nsex == 1:
 	      theta(4) = log_avgrec
 	      theta(5) = log_recinit
 	      theta(6) = rho
 	      theta(7) = vartheta
+	      if nsex == 2:
+	      theta(4) = log_m_male
+	      theta(5) = log_avgrec
+	      theta(6) = log_recinit
+	      theta(7) = rho
+	      theta(8) = vartheta
 	    NOTES:
 	      - Projections are based on average natural mortality and fecundity.
 	      - Selectivity is based on selectivity in terminal year.

@@ -309,10 +309,10 @@ DATA_SECTION
 	    }
 	  }
 	  if(verbose){
-	    LOG<<"d_a = "<<d_a<<"\n\n";
-	    LOG<<"d_b = "<<d_b<<"\n\n";
-	    LOG<<"la = "<<la<<"\n\n";
-	    LOG<<"wa = "<<wa<<"\n\n";
+	    //LOG<<"d_a = "<<d_a<<"\n\n";
+	    //LOG<<"d_b = "<<d_b<<"\n\n";
+	    //LOG<<"la = "<<la<<"\n\n";
+	    //LOG<<"wa = "<<wa<<"\n\n";
 	  }
 	END_CALCS
 
@@ -357,7 +357,7 @@ DATA_SECTION
 	  d3_Ct.initialize();
 	  int k;
 	  if(verbose){
-	    LOG<<"Debug reading of catch data\n";
+	    //LOG<<"Debug reading of catch data\n";
 	  }
 	  for(int ii = 1; ii <= nCtNobs; ii++){
 	    i = dCatchData(ii)(1); // year
@@ -366,19 +366,19 @@ DATA_SECTION
 	    g = dCatchData(ii)(4); // group
 	    h = dCatchData(ii)(5); // sex
 	    if(verbose){
-	      LOG<<"Year = "<<i<<"\n";
-	      LOG<<"ii = row number = "<<ii<<"\n";
-	      LOG<<"i = year = "<<i<<"\n";
-	      LOG<<"k = gear = "<<k<<"\n";
-	      LOG<<"f = area = "<<f<<"\n";
-	      LOG<<"g = group = "<<g<<"\n";
+	      //LOG<<"Year = "<<i<<"\n";
+	      //LOG<<"ii = row number = "<<ii<<"\n";
+	      //LOG<<"i = year = "<<i<<"\n";
+	      //LOG<<"k = gear = "<<k<<"\n";
+	      //LOG<<"f = area = "<<f<<"\n";
+	      //LOG<<"g = group = "<<g<<"\n";
 	    }
 	    if(h){
 	      ig = pntr_ags(f,g,h);
 	      if(verbose){
-	        LOG<<"h = sex = "<<h<<"\n";
-	        LOG<<"ig = area,group,sex = "<<ig<<"\n";
-	        LOG<<"Data row = dCatchData(ii) =  "<<dCatchData(ii)<<"\n";
+	        //LOG<<"h = sex = "<<h<<"\n";
+	        //LOG<<"ig = area,group,sex = "<<ig<<"\n";
+	        //LOG<<"Data row = dCatchData(ii) =  "<<dCatchData(ii)<<"\n";
 	      }
 	      d3_Ct(ig)(i)(k) = dCatchData(ii)(7);
 	      if(verbose){
@@ -388,18 +388,18 @@ DATA_SECTION
 	      for(h = 1; h <= nsex; h++){
 	        ig = pntr_ags(f,g,h);
 	        if(verbose){
-	          LOG<<"h = sex = "<<h<<"\n";
-	          LOG<<"ig = area,group,sex = "<<ig<<"\n";
-	          LOG<<"Data row = dCatchData(ii) = "<<dCatchData(ii)<<"\n";
+	          //LOG<<"h = sex = "<<h<<"\n";
+	          //LOG<<"ig = area,group,sex = "<<ig<<"\n";
+	          //LOG<<"Data row = dCatchData(ii) = "<<dCatchData(ii)<<"\n";
 	        }
 	        if(ig == 1){
 	          if(verbose){
-	            LOG<<"Multiplying catch by proportion female ("<<propfemale<<")\n";
+	            //LOG<<"Multiplying catch by proportion female ("<<propfemale<<")\n";
 	          }
 	          d3_Ct(ig)(i)(k) = propfemale * dCatchData(ii)(7);
 	        }else{
 	          if(verbose){
-	            LOG<<"Multiplying catch by proportion male ("<<(1.0 - propfemale)<<")\n";
+	            //LOG<<"Multiplying catch by proportion male ("<<(1.0 - propfemale)<<")\n";
 	          }
 	          d3_Ct(ig)(i)(k) = (1.0 - propfemale) * dCatchData(ii)(7);
 	        }
@@ -408,23 +408,23 @@ DATA_SECTION
 	        }
 	      }
 	      if(verbose){
-	        LOG<<"\n";
+	        //LOG<<"\n";
 	      }
 	    }
 	  }
 	  for(ig = 1; ig<= 2; ig++){
 	    for(i = 1996; i <= 2021; i++){
-	      LOG<<"ig = "<<ig<<"\n";
-	      LOG<<"i (year) = "<<i<<"\n";
+	      //LOG<<"ig = "<<ig<<"\n";
+	      //LOG<<"i (year) = "<<i<<"\n";
 	      for(k = 1; k<=ngear; k++){
-	        LOG<<"k = gear = "<<k<<"\n";
+	        //LOG<<"k = gear = "<<k<<"\n";
 	        //LOG<<"d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
 	      }
-	      LOG<<"\n";
+	      //LOG<<"\n";
 	    }
-	    LOG<<"\n";
+	    //LOG<<"\n";
 	  }
-	  LOG<<"\n\n";
+	  //LOG<<"\n\n";
 	END_CALCS
 	// |---------------------------------------------------------------------------------|
 	// | RELATIVE ABUNDANCE INDICIES (ragged array)
@@ -767,7 +767,7 @@ DATA_SECTION
 	ivector theta_phz(1,npar);
 	ivector theta_prior(1,npar);
 	ivector ipar_vector(1,npar);
-	init_number m_female;
+	//init_number m_male;
 	LOC_CALCS
 	  theta_ival = column(theta_control,1);
 	  theta_lb = column(theta_control,2);
@@ -1360,7 +1360,7 @@ PARAMETER_SECTION
 	init_bounded_matrix_vector sel_par_m(1,ngear,1,jsel_npar,1,isel_npar,-25.,25.,sel_phz);
 
 	LOC_CALCS
-	  LOG<<"global_parfile = "<<global_parfile<<"\n\n";
+	  //LOG<<"global_parfile = "<<global_parfile<<"\n\n";
 	  if(!global_parfile){
 	    for(int k=1; k<=ngear; k++){
 	      if(isel_type(k) == 1 ||
@@ -1368,7 +1368,7 @@ PARAMETER_SECTION
 	        (isel_type(k) >= 7 &&
 	         isel_type(k) <= 12)){
 	        if(verbose){
-	          LOG<<"SEL_PARS: gear = "<<k<<", n_sel_blocks(k) = "<<n_sel_blocks(k)<<"\n";
+	          //LOG<<"SEL_PARS: gear = "<<k<<", n_sel_blocks(k) = "<<n_sel_blocks(k)<<"\n";
 	        }
 	        for(int j = 1; j <= n_sel_blocks(k); j++ ){
 	          double uu = 0;
@@ -1408,7 +1408,7 @@ PARAMETER_SECTION
 	LOC_CALCS
 	  if(!SimFlag)
 	    log_ft_pars = log(0.10);
-	  LOG<<"ft_count = "<<ft_count<<"\n";
+	  //LOG<<"ft_count = "<<ft_count<<"\n";
 	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
@@ -1546,7 +1546,7 @@ PARAMETER_SECTION
 	// | ft         -> Mean fishing mortality rates for (area-sex, gear, year)
 	// | F          -> Instantaneous fishing mortality rate for (group,year,age)
 	// | M          -> Instantaneous natural mortality rate for (group,year,age)
-	// | Z          -> Instantaneous total  mortalityr rate Z=M+F for (group,year,age)
+	// | Z          -> Instantaneous total mortality rate Z = M + F for (group,year,age)
 	// | S          -> Annual survival rate exp(-Z) for (group,year,age)
 	// | N          -> Numbers-at-age for (group,year+1,age)
 	// | A_hat      -> ragged matrix for predicted age-composition data.
@@ -1608,7 +1608,7 @@ PRELIMINARY_CALCS_SECTION
 	// | - nf is a function evaluation counter.
 	// | - SimFlag comes from the -sim command line argument to simulate fake data.
 	// |
-	LOG<<"PRELIMINARY_CALCS_SECTION\n";
+	//LOG<<"PRELIMINARY_CALCS_SECTION\n";
 	nf = 0;
 	if(testMSY){
 	  testMSYxls();
@@ -1623,7 +1623,7 @@ RUNTIME_SECTION
   convergence_criteria 0.01, 0.01, 1.e-3, 1.e-4, 1.e-5
 
 PROCEDURE_SECTION
-	LOG<<"PROCEDURE_SECTION\n";
+	//LOG<<"PROCEDURE_SECTION\n";
 	if(delaydiff){
 	  initParameters();
 	  calcTotalMortality_deldiff();
@@ -1639,17 +1639,17 @@ PROCEDURE_SECTION
 	  calcSelectivities(isel_type);
 	  calcTotalMortality();
 	  calcNumbersAtAge();
-	  LOG<<"After NumbersAtAge()\n";
+	  //LOG<<"After NumbersAtAge()\n";
 	  calcTotalCatch();
-	  LOG<<"After calcTotalCatch()\n";
+	  //LOG<<"After calcTotalCatch()\n";
 	  calcComposition();
-	  LOG<<"After calcComposition()\n";
+	  //LOG<<"After calcComposition()\n";
 	  calcSurveyObservations();
-	  LOG<<"After calcSurveyObservations()\n";
+	  //LOG<<"After calcSurveyObservations()\n";
 	  calcStockRecruitment();
-	  LOG<<"After calcStockRecruitment()\n";
+	  //LOG<<"After calcStockRecruitment()\n";
 	  calcAnnualMeanWeight();
-	  LOG<<"After calcAnnualMeanWeight()\n";
+	  //LOG<<"After calcAnnualMeanWeight()\n";
 	}
 	calcObjectiveFunction();
 	if(sd_phase()){
@@ -1691,21 +1691,21 @@ FUNCTION void initParameters()
 	int ih;
 	ro = mfexp(theta(1));
 	steepness = theta(2);
-	m = mfexp(theta(3));
+	m(1) = exp(theta(3,1));
 	if(nsex == 2){
-	  m(2) = mfexp(m_female);
+	  m(2) = exp(theta(4,1));
 	}
 	rho = theta(6);
-	varphi = sqrt(1.0/theta(7));
+	varphi = sqrt(1.0 / theta(7));
 	sig = elem_prod(sqrt(rho) , varphi);
 	tau = elem_prod(sqrt(1.0-rho) , varphi);
 	if(delaydiff){
-	  for(ih=1;ih<=n_ag;ih++){
+	  for(ih = 1; ih <= n_ag; ih++){
 	    log_avgrec(ih)  = theta(1,ih);
 	    log_recinit(ih) = theta(1,ih);
 	  }
 	}else{
-	  for(ih=1;ih<=n_ag;ih++){
+	  for(ih = 1; ih <= n_ag; ih++){
 	    log_avgrec(ih)  = theta(4,ih);
 	    log_recinit(ih) = theta(5,ih);
 	  }
@@ -1856,14 +1856,14 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	          }
 	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2) + tiny);
 	          if(verbose & (i == nyr)){
-	            LOG<<"sel_par_f(k, bpar, 1) = "<<sel_par_f(k, bpar, 1)<<"\n";
-	            LOG<<"sel_par_f(k, bpar, 2) = "<<sel_par_f(k, bpar, 2)<<"\n";
-	            LOG<<"sel_par_m(k, bpar, 1) = "<<sel_par_m(k, bpar, 1)<<"\n";
-	            LOG<<"sel_par_m(k, bpar, 2) = "<<sel_par_m(k, bpar, 2)<<"\n";
-	            LOG<<"k = "<<k<<", byr = "<<byr<<"\nsel_blocks(k, byr)\n"<<sel_blocks(k, byr)<<"\n";
-	            LOG<<"kgear = "<<kgear<<", ig == "<<ig<<", i = "<<i<<"\n";
-	            LOG<<"age = "<<age<<", p1 = "<<p1<<", p2 = "<<p2<<"\n";
-	            LOG<<"log_sel(kgear)(ig)(i) = "<<log_sel(kgear)(ig)(i)<<"\n\n";
+	            //LOG<<"sel_par_f(k, bpar, 1) = "<<sel_par_f(k, bpar, 1)<<"\n";
+	            //LOG<<"sel_par_f(k, bpar, 2) = "<<sel_par_f(k, bpar, 2)<<"\n";
+	            //LOG<<"sel_par_m(k, bpar, 1) = "<<sel_par_m(k, bpar, 1)<<"\n";
+	            //LOG<<"sel_par_m(k, bpar, 2) = "<<sel_par_m(k, bpar, 2)<<"\n";
+	            //LOG<<"k = "<<k<<", byr = "<<byr<<"\nsel_blocks(k, byr)\n"<<sel_blocks(k, byr)<<"\n";
+	            //LOG<<"kgear = "<<kgear<<", ig == "<<ig<<", i = "<<i<<"\n";
+	            //LOG<<"age = "<<age<<", p1 = "<<p1<<", p2 = "<<p2<<"\n";
+	            //LOG<<"log_sel(kgear)(ig)(i) = "<<log_sel(kgear)(ig)(i)<<"\n\n";
 	          }
 	        }
 	        break;
@@ -2047,15 +2047,15 @@ FUNCTION calcTotalMortality
 	      }
 	      //if(last_phase() & (i == 2020)){
 	      if(std::isnan(value(log_ft_pars(ft_counter)))){
-	        LOG<<"In CalcTotalMortality()\n";
-	        LOG<<"dCatchData("<<ig<<") = "<<dCatchData(ig)<<"\n";
-	        LOG<<"log_ft_pars("<<ft_counter<<") = "<<log_ft_pars(ft_counter)<<"\n";
-	        LOG<<"ftmp = "<<ftmp<<"\n";
-	        LOG<<"log_ft_pars = "<<log_ft_pars<<"\n";
-	        LOG<<"ft("<<ii<<")("<<k<<", "<<i<<") = "<<ft(ii)(k, i)<<"\n";
-	        LOG<<"F("<<ii<<")("<<i<<") = "<<F(ii)(i)<<"\n";
-	        LOG<<"mfexp(log_sel("<<k<<")("<<ii<<")("<<i<<")) = "<<mfexp(log_sel(k)(ii)(i))<<"\n";
-	        LOG<<"ft_counter = "<<ft_counter<<", l = "<<l<<"\n\n";
+	        //LOG<<"In CalcTotalMortality()\n";
+	        //LOG<<"dCatchData("<<ig<<") = "<<dCatchData(ig)<<"\n";
+	        //LOG<<"log_ft_pars("<<ft_counter<<") = "<<log_ft_pars(ft_counter)<<"\n";
+	        //LOG<<"ftmp = "<<ftmp<<"\n";
+	        //LOG<<"log_ft_pars = "<<log_ft_pars<<"\n";
+	        //LOG<<"ft("<<ii<<")("<<k<<", "<<i<<") = "<<ft(ii)(k, i)<<"\n";
+	        //LOG<<"F("<<ii<<")("<<i<<") = "<<F(ii)(i)<<"\n";
+	        //LOG<<"mfexp(log_sel("<<k<<")("<<ii<<")("<<i<<")) = "<<mfexp(log_sel(k)(ii)(i))<<"\n";
+	        //LOG<<"ft_counter = "<<ft_counter<<", l = "<<l<<"\n\n";
 	      }
 	    }
 	  }
@@ -2314,14 +2314,14 @@ FUNCTION calcTotalCatch
 	          sa = S(ig)(i);
 	          ca = elem_prod(elem_prod(elem_div(fa, za), 1. - sa), N(ig)(i));
 	          ct(ii) += ca * d3_wt_avg(ig)(i);
-	          LOG<<"calcTotalCatch()\nft("<<ig<<")("<<k<<")("<<i<<") = "<<ft(ig)(k)(i)<<"\n";
-	          LOG<<"d3_wt_avg("<<ig<<")("<<i<<")\n"<<d3_wt_avg(ig)(i)<<"\n";
-	          LOG<<"ft("<<ig<<")("<<k<<")("<<i<<") = "<<ft(ig)(k)(i)<<"\n";
-	          LOG<<"fa\n"<<fa<<"\n";
-	          LOG<<"za\n"<<za<<"\n";
-	          LOG<<"sa\n"<<sa<<"\n";
-	          LOG<<"ca\n"<<ca<<"\n";
-	          LOG<<"ct("<<ii<<") = "<<ct(ii)<<"\n\n";
+	          //LOG<<"calcTotalCatch()\nft("<<ig<<")("<<k<<")("<<i<<") = "<<ft(ig)(k)(i)<<"\n";
+	          //LOG<<"d3_wt_avg("<<ig<<")("<<i<<")\n"<<d3_wt_avg(ig)(i)<<"\n";
+	          //LOG<<"ft("<<ig<<")("<<k<<")("<<i<<") = "<<ft(ig)(k)(i)<<"\n";
+	          //LOG<<"fa\n"<<fa<<"\n";
+	          //LOG<<"za\n"<<za<<"\n";
+	          //LOG<<"sa\n"<<sa<<"\n";
+	          //LOG<<"ca\n"<<ca<<"\n";
+	          //LOG<<"ct("<<ii<<") = "<<ct(ii)<<"\n\n";
 	        }
 	      }
 	      break;
@@ -2554,12 +2554,12 @@ FUNCTION void calcStockRecruitment()
 	  sbo(g) = ro(g) * phib;
 	  // Step 7. calculate predicted recruitment.
 	  if(verbose){
-	    LOG<<"before g = "<<g<<", syr = "<<syr<<", sage = "<<sage<<", nyr = "<<nyr<<"\n";
-	    LOG<<"before sbt(g) = "<<sbt(g)<<"\n";
+	    //LOG<<"before g = "<<g<<", syr = "<<syr<<", sage = "<<sage<<", nyr = "<<nyr<<"\n";
+	    //LOG<<"before sbt(g) = "<<sbt(g)<<"\n";
 	  }
 	  dvar_vector tmp_st = sbt(g)(syr,nyr-sage).shift(syr+sage);
 	  if(verbose){
-	    LOG<<"after sbt(g) = "<<sbt(g)<<"\n\n";
+	    //LOG<<"after sbt(g) = "<<sbt(g)<<"\n\n";
 	  }
 	  switch(int(d_iscamCntrl(2))){
 	    case 1: // Beverton Holt model
@@ -3309,7 +3309,7 @@ FUNCTION calcObjectiveFunction
 	if(!delaydiff){
 	  for(k = 1; k <= ngear; k++){
 	    if(verbose){
-	      LOG<<"ACTIVE: k = "<<k<<", active(sel_par_f(k)) = "<<active(sel_par_f(k))<<", active(sel_par_m(k)) = "<<active(sel_par_m(k))<<"\n";
+	      //LOG<<"ACTIVE: k = "<<k<<", active(sel_par_f(k)) = "<<active(sel_par_f(k))<<", active(sel_par_m(k)) = "<<active(sel_par_m(k))<<"\n";
 	    }
 	    if(active(sel_par_f(k)) || active(sel_par_m(k))){
 	      // If not using logistic selectivity then
@@ -3415,13 +3415,13 @@ FUNCTION calcObjectiveFunction
 	    }
 	  }
 	}
-	LOG<<"nlvec\n";
+	/* LOG<<"nlvec\n";
 	for(i = 1; i <= nlvec.indexmax(); i++){
 	  LOG<<"nlvec("<<i<<"):\n";
 	  LOG<<nlvec(i)<<"\n";
 	}
 	LOG<<"End of nlvec "<<'\n';
-
+	*/
 	// |---------------------------------------------------------------------------------|
 	// | PRIORS FOR LEADING PARAMETERS p(theta)
 	// |---------------------------------------------------------------------------------|
@@ -3430,6 +3430,8 @@ FUNCTION calcObjectiveFunction
 	dvariable ptmp;
 	dvar_vector priors(1,npar);
 	priors.initialize();
+	//LOG<<"theta_control\n"<<theta_control<<"\n";
+	//exit(1);
 	for(i = 1; i <= npar; i++){
 	  ptmp = 0;
 	  for(j = 1; j <= ipar_vector(i); j++){
@@ -3438,7 +3440,7 @@ FUNCTION calcObjectiveFunction
 	        case 1: //normal
 	          ptmp += dnorm(theta(i,j), theta_control(i,6), theta_control(i,7));
 	          break;
-	        case 2: //lognormal CHANGED RF found an error in dlnorm prior. rev 116
+	        case 2:
 	          ptmp += dlnorm(theta(i,j), theta_control(i,6), theta_control(i,7));
 	          break;
 	        case 3: //beta distribution (0-1 scale)
@@ -3627,8 +3629,8 @@ FUNCTION void calcReferencePoints()
 	      kk = nFleetIndex(k);
 	      d_ak(k) = dAllocation(kk);
 	      if(verbose){
-	        LOG<<"kk = nFleetIndex(k) = "<<nFleetIndex(k)<<"\n";
-	        LOG<<"dAllocation(kk) = "<<dAllocation(kk)<<"\n\n";
+	        //LOG<<"kk = nFleetIndex(k) = "<<nFleetIndex(k)<<"\n";
+	        //LOG<<"dAllocation(kk) = "<<dAllocation(kk)<<"\n\n";
 	      }
 	      for(ig = 1;ig <= n_ags;ig++){
 	        d_V(ig)(k) = value(exp(log_sel(kk)(ig)(nyr)));
@@ -3636,13 +3638,13 @@ FUNCTION void calcReferencePoints()
 	      }
 	    }
 	    if(verbose){
-	      LOG<<"d_ak\n"<<d_ak<<"\n";
+	      //LOG<<"d_ak\n"<<d_ak<<"\n";
 	    }
 	    d_ak /= sum(d_ak);
 	    if(verbose){
-	      LOG<<"d_ak After normalization\n"<<d_ak<<"\n";
-	      LOG<<"pf_cntrl(3) = "<<pf_cntrl(3)<<"\n";
-	      LOG<<"pf_cntrl(4) = "<<pf_cntrl(4)<<"\n";
+	      //LOG<<"d_ak After normalization\n"<<d_ak<<"\n";
+	      //LOG<<"pf_cntrl(3) = "<<pf_cntrl(3)<<"\n";
+	      //LOG<<"pf_cntrl(4) = "<<pf_cntrl(4)<<"\n";
 	    }
 	    // Average weight and mature spawning biomass for reference years
 	    // dWt_bar(1,n_ags,sage,nage)
@@ -3669,24 +3671,24 @@ FUNCTION void calcReferencePoints()
 	        dvector d_mbar = M_bar(g);
 	        dvector d_wa = dWt_bar(g);
 	        dvector d_fa = fa_bar(g);
-	        LOG<<"g = "<<g<<"\n";
-	        LOG<<"Weight-at-age - dWt_bar(g)\n"<<dWt_bar(g)<<"\n";
-	        LOG<<"Fecundity-at-age - fa_bar(g)\n"<<fa_bar(g)<<"\n";
-	        LOG<<"One sex or Male Natural mortality - M(1)\n"<<M(1)<<"\n";
+	        //LOG<<"g = "<<g<<"\n";
+	        //LOG<<"Weight-at-age - dWt_bar(g)\n"<<dWt_bar(g)<<"\n";
+	        //LOG<<"Fecundity-at-age - fa_bar(g)\n"<<fa_bar(g)<<"\n";
+	        //LOG<<"One sex or Male Natural mortality - M(1)\n"<<M(1)<<"\n";
 	        if(nsex == 2){
-	          LOG<<"Female Natural mortality - M(2)\n"<<M(2)<<"\n";
+	          //LOG<<"Female Natural mortality - M(2)\n"<<M(2)<<"\n";
 	        }
-	        LOG<<"One sex or Male Mean Natural mortality - M_bar(1)\n"<<M_bar(1)<<"\n";
+	        //LOG<<"One sex or Male Mean Natural mortality - M_bar(1)\n"<<M_bar(1)<<"\n";
 	        if(nsex == 2){
-	          LOG<<"Female Mean Natural mortality - M_bar(2)\n"<<M_bar(2)<<"\n";
+	          //LOG<<"Female Mean Natural mortality - M_bar(2)\n"<<M_bar(2)<<"\n";
 	        }
-	        LOG<<"nfleet = "<<nfleet<<"\n";
-	        LOG<<"mean(M_bar) = "<<mean(M_bar)<<"\n";
-	        LOG<<"dftry = 0.6/nfleet * mean(M_bar) = "<<dftry<<"\n";
-	        LOG<<"Selectivity - dvar_V:\n"<<dvar_V<<"\n";
-	        LOG<<"ro(g) = "<<ro(g)<<"\n";
-	        LOG<<"steepness(g) = "<<steepness(g)<<"\n";
-	        LOG<<"d_rho = "<<d_rho<<"\n\n";
+	        //LOG<<"nfleet = "<<nfleet<<"\n";
+	        //LOG<<"mean(M_bar) = "<<mean(M_bar)<<"\n";
+	        //LOG<<"dftry = 0.6/nfleet * mean(M_bar) = "<<dftry<<"\n";
+	        //LOG<<"Selectivity - dvar_V:\n"<<dvar_V<<"\n";
+	        //LOG<<"ro(g) = "<<ro(g)<<"\n";
+	        //LOG<<"steepness(g) = "<<steepness(g)<<"\n";
+	        //LOG<<"d_rho = "<<d_rho<<"\n\n";
 	      }
 	    }
 	    // Data-type version of MSY-based reference points.
@@ -3730,18 +3732,18 @@ FUNCTION void testMSYxls()
 	//dvar_V(1)(2).fill("{0.000189406,0.000789866,0.003287661,0.013576917,0.054313266,0.19332137,0.5,0.80667863,0.945686734,0.986423083,0.996712339,0.999210134,0.999810594,0.999954602,0.99998912,0.999997393,0.999999375,0.99999985,0.999999964,0.999999991}");
 	dvector dftry(1,2);
 	dftry = 0.1 ;
-	LOG<<"Initial Fe "<<dftry<<'\n';
+	//LOG<<"Initial Fe "<<dftry<<'\n';
 	rfp::msy<double,dvector,dmatrix,d3_array>
 	c_MSY(ro,steepness,d_rho,m_bar,dWt_bar,fa_bar,dvar_V);
 	dvector dfmsy = c_MSY.getFmsy(dftry);
-	LOG<<"Fmsy = "<<dfmsy<<'\n';
+	//LOG<<"Fmsy = "<<dfmsy<<'\n';
 	dvector ak(1,2);
 	ak = 0.3;
 	ak(2) = 1-ak(1);
 	rfp::msy<double,dvector,dmatrix,d3_array>
 	c_MSYk(ro,steepness,d_rho,m_bar,dWt_bar,fa_bar,dvar_V);
 	dvector dkmsy = c_MSYk.getFmsy(dftry,ak);
-	LOG<<"Fmsy_k ="<<dkmsy<<'\n';
+	//LOG<<"Fmsy_k ="<<dkmsy<<'\n';
 	c_MSYk.print();
 	dvector akmsy = c_MSYk.getFmsy(dftry);
 	c_MSYk.print();
@@ -4044,7 +4046,7 @@ FUNCTION void simulationModel(const long& seed)
 	    d3_inp_wt_avg(ii,1,sage-5) = d3_inp_wt_avg(ii,1,sage-5) * projwt(ii);
 	  }
 	}
-	LOG<<d3_inp_wt_avg(1)(1)(sage-5,nage)<<'\n';
+	//LOG<<d3_inp_wt_avg(1)(1)(sage-5,nage)<<'\n';
 	// |---------------------------------------------------------------------------------|
 	// | 11) WRITE SIMULATED DATA TO FILE
 	// |---------------------------------------------------------------------------------|
@@ -4354,21 +4356,21 @@ REPORT_SECTION
 	// |---------------------------------------------------------------------------------|
 	if(last_phase()){
 	  if(verbose){
-	    LOG<<"\n\nCalculating MSY-based reference points\n";
+	    //LOG<<"\n\nCalculating MSY-based reference points\n";
 	  }
 	  calcReferencePoints();
 	  if(verbose){
-	    LOG<<"Finished calcReferencePoints\n\n";
+	    //LOG<<"Finished calcReferencePoints\n\n";
 	  }
 	  REPORT(bo);
 	  REPORT(fmsy);
 	  REPORT(msy);
 	  REPORT(bmsy);
 	  // REPORT(Umsy);
-	  LOG<<"Running Projections\n";
+	  //LOG<<"Running Projections\n";
 	  int ii;
 	  for(ii = 1; ii <= n_tac; ii++){
-	    LOG<<"TAC "<<ii<<" = "<<tac(ii)<<'\n';
+	    //LOG<<"TAC "<<ii<<" = "<<tac(ii)<<'\n';
 	    if(delaydiff){
 	      projection_model_dd(tac(ii));
 	    }else{
@@ -4480,8 +4482,8 @@ FUNCTION mcmc_output
 	  // they are set up as vector_vectors to increase dimensionality
 	  // Assume only one group and area for simplicity
 
-	  ofs<<"ro_gr";
-	  ofs<<","<<"h_gr";
+	  ofs<<"ro";
+	  ofs<<","<<"h";
 	  for(int sex = 1; sex <= n_gs; sex++){
 	    ofs<<","<<"m_sex"<<sex;
 	  }
@@ -4778,7 +4780,7 @@ FUNCTION mcmc_output
 	      - file control options "years for average fecundity/weight-at-age in projections"
 	*/
 FUNCTION void projection_model(const double& tac);
-	LOG<<"Running projection model...\n";
+	//LOG<<"Running projection model...\n";
 
 	static int runNo = 0;
 	runNo++;
@@ -4951,7 +4953,7 @@ FUNCTION void projection_model(const double& tac);
 	  ofsmcmc.flush();
 	}else{
 	  ofstream ofsmpd("iscam_mpd_proj.csv", ios::app);
-	  LOG<<"Running MPD projections, runNo = "<<runNo<<"\n";
+	  //LOG<<"Running MPD projections, runNo = "<<runNo<<"\n";
 	  if(runNo == 1){
 	    write_proj_headers(ofsmpd,
 	                       syr,
@@ -4961,10 +4963,10 @@ FUNCTION void projection_model(const double& tac);
 	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmpd.flush();
 	  }
-	  LOG<<"ft:"<<ft<<"\n";
-	  LOG<<"p_sbt:\n"<<p_sbt<<"\n";
+	  //LOG<<"ft:"<<ft<<"\n";
+	  //LOG<<"p_sbt:\n"<<p_sbt<<"\n";
 	  //LOG<<"p_rt:\n"<<p_rt<<"\n";
-	  LOG<<"p_ft:\n"<<p_ft<<"\n\n";
+	  //LOG<<"p_ft:\n"<<p_ft<<"\n\n";
 	  write_proj_output(ofsmpd,
 	                    syr,
 	                    nyr,
@@ -4988,7 +4990,7 @@ FUNCTION void projection_model(const double& tac);
 	  ofsmpd.flush();
 	}
 	if(!mceval_phase()){
-	  LOG<<"Finished projection model for TAC = "<<tac<<"\n";
+	  //LOG<<"Finished projection model for TAC = "<<tac<<"\n";
 	}
 
 	/*

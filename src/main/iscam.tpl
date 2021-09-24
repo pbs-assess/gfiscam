@@ -724,7 +724,6 @@ DATA_SECTION
 	ivector theta_phz(1,npar);
 	ivector theta_prior(1,npar);
 	ivector ipar_vector(1,npar);
-	//init_number m_male;
 	LOC_CALCS
 	  theta_ival = column(theta_control,1);
 	  theta_lb = column(theta_control,2);
@@ -732,9 +731,15 @@ DATA_SECTION
 	  theta_phz = ivector(column(theta_control,4));
 	  theta_prior = ivector(column(theta_control,5));
 	  ipar_vector(1,2) = ngroup;
-	  ipar_vector(6,7) = ngroup;
 	  ipar_vector(3) = n_gs;
-	  ipar_vector(4,5) = n_ag;
+	  if(nsex == 2){
+	    ipar_vector(4) = n_gs;
+	    ipar_vector(5,6) = n_ag;
+	    ipar_vector(7,8) = ngroup;
+	  }else{
+	    ipar_vector(4,5) = n_ag;
+	    ipar_vector(6,7) = ngroup;
+	  }
 	  LOG<<"| ----------------------- |\n";
 	  LOG<<"| Initial values          |"<<'\n';
 	  LOG<<"| ----------------------- |\n";
@@ -1262,11 +1267,18 @@ PARAMETER_SECTION
 	// | Change to init_bounded_vector_vector.
 	// | theta[1] -> log_ro, or log_msy
 	// | theta[2] -> steepness(h), or log_fmsy
-	// | theta[3] -> log_m
+	// | theta[3] -> log_m_female
+	// | if nsex == 1:
 	// | theta[4] -> log_avgrec
 	// | theta[5] -> log_recinit
 	// | theta[6] -> rho
 	// | theta[7] -> vartheta
+	// | if nsex == 2:
+	// | theta[4] -> log_m_male
+	// | theta[5] -> log_avgrec
+	// | theta[6] -> log_recinit
+	// | theta[7] -> rho
+	// | theta[8] -> vartheta
 	init_bounded_vector_vector theta(1,npar,1,ipar_vector,theta_lb,theta_ub,theta_phz);
 
 	// |---------------------------------------------------------------------------------|
@@ -1578,11 +1590,11 @@ FUNCTION void calcSdreportVariables()
 	    to initialize the leading parameters in the model.
 	  NOTES:
 	    Variance partitioning:
-	    Estimating total variance as = 1/precision
-	    and partition variance by rho = sig^2/(sig^2+tau^2).
-	    E.g. if sig = 0.2 and tau =1.12 then
-	    rho = 0.2^2/(0.2^2+1.12^2) = 0.03090235
-	    the total variance is kappa^2 = sig^2 + tau^2 = 1.2944
+	    Estimating total variance as = 1 / precision
+	    and partition variance by rho = sig ^ 2 / (sig ^ 2 + tau ^ 2).
+	    E.g. if sig = 0.2 and tau = 1.12 then
+	    rho = 0.2 ^ 2 / (0.2 ^ 2 + 1.12 ^ 2) = 0.03090235
+	    the total variance is kappa^2 = sig ^ 2 + tau ^ 2 = 1.2944
 	  TODO list:
 	    [ ] - Alternative parameterization using MSY and FMSY as leading parameters (Martell).
 	    [*] - avg recruitment limited to area, may consider ragged object for area & stock.
@@ -1595,13 +1607,13 @@ FUNCTION void initParameters()
 	if(nsex == 2){
 	  m(2) = exp(theta(4,1));
 	}
-	rho = theta(6);
-	varphi = sqrt(1.0 / theta(7));
+	rho = theta(6 + nsex - 1);
+	varphi = sqrt(1.0 / theta(7 + nsex - 1));
 	sig = elem_prod(sqrt(rho) , varphi);
-	tau = elem_prod(sqrt(1.0-rho) , varphi);
+	tau = elem_prod(sqrt(1.0 - rho) , varphi);
 	for(ih = 1; ih <= n_ag; ih++){
-	  log_avgrec(ih)  = theta(4,ih);
-	  log_recinit(ih) = theta(5,ih);
+	  log_avgrec(ih)  = theta(4 + nsex - 1, ih);
+	  log_recinit(ih) = theta(5 + nsex - 1, ih);
 	}
 	switch(int(d_iscamCntrl(2))){
 	  case 1:
@@ -2680,7 +2692,7 @@ FUNCTION calcObjectiveFunction
 	          nlvec(3,k) -= ddirmultinom(temp_n, A_hat(k,i), log_phi(k,i));
 	        }
 	        break;
-	    } 
+	    }
 	    // Extract residuals.
 	    for(i = n_saa(k); i <= n_naa(k); i++){
 	      A_nu(k)(i)(n_A_sage(k),n_A_nage(k)) = nu(i);
@@ -2940,60 +2952,6 @@ FUNCTION calcObjectiveFunction
 	    over values of F and F-multipliers and calculates the equilibrium yield
 	    for each fishing gear.
 	  NOTES:
-	    - This function is based on the msyReferencePoint class object written by
-	      Steve Martell on the Island of Maui while on Sabbatical leave from UBC.
-	      - The msyReferencePoint class uses Newton-Raphson method to iteratively solve
-	        for the Fmsy values that maximize catch for each fleet. You can compare
-	        MSY-reference points with the numerical values calculated at the end of this
-	        function.
-	      - Code check: appears to find the correct value of MSY
-	        in terms of maximizing ye.  Check to ensure rec-devs
-	        need a bias correction term to get this right.
-	      - Modification for multiple fleets:
-	        Need to pass a weighted average vector of selectivities
-	        to the equilibrium routine, where the weights for each
-	        selectivity is based on the dAllocation to each fleet.
-	        Perhaps as a default, assign an equal dAllocation to each
-	        fleet. Eventually,user must specify dAllocation in
-	        control file.  DONE
-	      - Use selectivity in the terminal year to calculate reference
-	        points. See todo, this is something that should be specified by the user.
-	      - June 8, 2012.  SJDM.  Made the following changes to this routine.
-	        1) changed reference points calculations to use the average
-	           weight-at-age and fecundity-at-age.
-	        2) change equilibrium calculations to use the catch dAllocation
-	           for multiple gear types. Not the average vulnerablity... this was wrong.
-	      - July 29, 2012.  SJDM Issue1.  New routine for calculating reference points
-	        for multiple fleets. In this case, finds a vector of Fmsy's that simultaneously
-	        maximizes the total catch for each of the fleets respectively.  See
-	        iSCAMequil_soln.R for an example.
-	      - August 1, 2012.  SJDM, In response to Issue1. A major overhaul of this routine.
-	        Now using the new Msy class to calculate reference points. This greatly simplifies
-	        the code in this routine and makes other routines (equilibrium) redundant.  Also
-	        the new Msy class does a much better job in the case of multiple fleets.
-	      - Aug 11, 2012.
-	        For the Pacific herring branch omit the get_fmsy calculations and use only the
-	        Bo calculuation for the reference points.  As there are no MSY based reference
-	        points required for the descision table.
-	      - May 8, 2013.
-	        Starting to modify this code to allow for multiple areas, sex and stock-specific
-	        reference points.  Key to this modification is the definition of a stock. For
-	        the purposes of reference points, a stock is assumed to be distributed over all
-	        areas, can be unisex or two sex, and can be fished by all fleets given the stock
-	        exists in an area where the fishing gear operates.
-	      - Aug, 3-6, 2013.
-	        Major effort went into revising this routine as well as the Msy class to
-	        calculate MSY-based reference points for multiple fleets and multiple sexes.
-	        I had found a significant bug in the dye calculation where I need to use the
-	        proper linear algebra to calculate the vector of dye values. This appears to
-	        be working properly and I've commented out the lines of code where I numerically
-	        checked the derivatives of the catch equation.  This is a major acomplishment.
-	      - Mar, 2013.
-	        A major new development here with the use of msy.hpp and a template class for
-	        calculating MSY-based reference points.  The user can now calculate reference
-	        points for each gear based on fixed allocation, and optimum allocations based
-	        on relative differences in selectivities among the gears landing fish. Uses the
-	        name space "rfp".
 	  PSEUDOCODE:
 	    (1) : Construct array of selectivities (potentially sex based log_sel)
 	    (2) : Construct arrays of d3_wt_avg and d3_wt_mat for reference years.

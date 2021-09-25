@@ -2675,9 +2675,51 @@ FUNCTION calcObjectiveFunction
 	        break;
 	      case 8: // Dirichlet Multinomial
 	        // Use Dirichlet Multinomial to estimate the predicted age matrices
-	        for(int i = d3_A_obs(k).indexmin(); i <= d3_A_obs(k).indexmax(); i++){
-	          temp_n = dm_neff * d3_A_obs(k,i);
-	          nlvec(3,k) -= ddirmultinom(temp_n, A_hat(k,i), log_phi(k,i));
+	        for(int i = O.rowmin(); i <= O.rowmax(); i++){
+	          temp_n = dm_neff * O(i);
+	          nlvec(3,k) -= ddirmultinom(temp_n, P(i), log_phi(k,i));
+	        }
+	        if(last_phase()){
+	          // Extract residuals.
+	          int a = O.colmin();
+	          int A = O.colmax();
+	          int t = O.rowmin();
+	          int T = O.rowmax();
+	          dvariable Nsamp;
+	          dvariable proc_err = 0.009;
+	          for(i = t; i<= T; i++){
+	            Nsamp = sum(O(i)) / (1.0 + proc_err * sum(O(i)));
+	            int n = 0;
+	            dvector oo = O(i) / sum(O(i));
+	            dvar_vector pp = P(i) / sum(P(i));
+	            // count number of observations greater than minp from control file (2% is a reasonable number)
+	            for(int j = a; j <= A; j++)
+	              if(oo(j) > dMinP(k))
+	                n++;
+	            ivector iiage(1,n);
+	            dvector o1(1,n);
+	            o1.initialize();
+	            dvar_vector p1(1,n);
+	            p1.initialize();
+	            int kk = 1;
+	            for(int j = a; j <= A; j++){
+	              if(oo(j) <= dMinP(k)){
+	                o1(kk) += oo(j);
+	                p1(kk) += pp(j);
+	              }else{
+	                o1(kk) += oo(j);
+	                p1(kk) += pp(j);
+	                if(kk <= n)
+	                  iiage(kk) = j; //ivector for the grouped residuals
+	                if(kk < n)
+	                  kk++;
+	              }
+	            }
+	            dvar_vector t1 = elem_div(o1 - p1, sqrt(elem_prod(p1, 1.0 - p1) / Nsamp));
+	            for(int j = 1; j <= n; j++){
+	              nu(i)(iiage(j)) = t1(j);
+	            }
+	          }
 	        }
 	        break;
 	    }

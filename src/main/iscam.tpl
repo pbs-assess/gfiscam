@@ -3070,7 +3070,6 @@ FUNCTION void calcReferencePoints()
 	    M_bar(ig) = colsum(value(M(ig).sub(pf_cntrl(1), pf_cntrl(2))));
 	    M_bar(ig) /= pf_cntrl(2) - pf_cntrl(1) + 1;
 	  }
-	  LOG<<"M_bar\n"<<M_bar<<"\n\n";exit(1);
 	  for(g = 1; g <= ngroup; g++){
 	    double d_ro = value(ro(g));
 	    double d_h = value(steepness(g));
@@ -3222,13 +3221,34 @@ REPORT_SECTION
 	if(n_A_nobs(1) > 0){
 	  REPORT(n_A_sage);
 	  REPORT(n_A_nage);
-	  REPORT(d3_A);
-	  REPORT(A_hat);
-	  REPORT(A_nu);
-	  // The following is a total hack job to get the effective sample size
-	  // for the multinomial distributions.
-	  // FIXED the retrospective bug here near line 4507 (if iyr<=nyr)
-	  report<<"Neff"<<'\n';
+	  for(k = 1; k <= nAgears; k++){
+	    report<<"d3_A_gear_"<<column(d3_A(k), -3)(1)<<"\n";
+	    report<<d3_A(k)<<"\n";
+	  }
+	  // A_hat and A_nu have the same structure as the observed age comps, d3_A
+	  // so prepend the headers from d3_A to each row of output for them.
+	  int year, sex, gear, type;
+	  for(k = 1; k <= nAgears; k++){
+	    report<<"A_hat_gear_"<<column(d3_A(k), -3)(1)<<"\n";
+	    for(int row = A_hat(k).rowmin(); row <= A_hat(k).rowmax(); row++){
+	      year = d3_A(k, row)(-4);
+	      gear = d3_A(k, row)(-3);
+	      sex = d3_A(k, row)(-2);
+	      type = d3_A(k, row)(-1);
+	      report<<" "<<year<<" "<<gear<<" "<<sex<<" "<<type<<A_hat(k, row)<<"\n";
+	    }
+	  }
+	  for(k = 1; k <= nAgears; k++){
+	    report<<"A_nu_gear_"<<column(d3_A(k), -3)(1)<<"\n";
+	    for(int row = A_nu(k).rowmin(); row <= A_nu(k).rowmax(); row++){
+	      year = d3_A(k, row)(-4);
+	      gear = d3_A(k, row)(-3);
+	      sex = d3_A(k, row)(-2);
+	      type = d3_A(k, row)(-1);
+	      report<<" "<<year<<" "<<gear<<" "<<sex<<" "<<type<<A_nu(k, row)<<"\n";
+	    }
+	  }
+	  report<<"Neff_multinomial\n";
 	  dvector nscaler(1,nAgears);
 	  nscaler.initialize();
 	  int naa;

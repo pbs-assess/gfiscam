@@ -2999,7 +2999,7 @@ FUNCTION void calcReferencePoints()
 	  if(verbose & last_phase()){
 	    for(g = 1; g <= ngroup; g++){
 	      // Check that average weights are the same in calcReferencePoints as in the slow_MSY code
-	      double d_rho = d_iscamCntrl(13);
+	      //double d_rho = d_iscamCntrl(13);
 	      dvector d_mbar = M_bar(g);
 	      dvector d_wa = dWt_bar(g);
 	      dvector d_fa = fa_bar(g);

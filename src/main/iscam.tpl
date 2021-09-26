@@ -3227,15 +3227,16 @@ REPORT_SECTION
 	  }
 	  // A_hat and A_nu have the same structure as the observed age comps, d3_A
 	  // so prepend the headers from d3_A to each row of output for them.
-	  int year, sex, gear, type;
+	  int year, gear, area, group, sex;
 	  for(k = 1; k <= nAgears; k++){
 	    report<<"A_hat_gear_"<<column(d3_A(k), -3)(1)<<"\n";
 	    for(int row = A_hat(k).rowmin(); row <= A_hat(k).rowmax(); row++){
 	      year = d3_A(k, row)(-4);
 	      gear = d3_A(k, row)(-3);
-	      sex = d3_A(k, row)(-2);
-	      type = d3_A(k, row)(-1);
-	      report<<" "<<year<<" "<<gear<<" "<<sex<<" "<<type<<A_hat(k, row)<<"\n";
+	      area = d3_A(k, row)(-2);
+	      group = d3_A(k, row)(-1);
+	      sex = d3_A(k, row)(0);
+	      report<<" "<<year<<" "<<gear<<" "<<area<<" "<<group<<" "<<sex<<A_hat(k, row)<<"\n";
 	    }
 	  }
 	  for(k = 1; k <= nAgears; k++){
@@ -3243,9 +3244,10 @@ REPORT_SECTION
 	    for(int row = A_nu(k).rowmin(); row <= A_nu(k).rowmax(); row++){
 	      year = d3_A(k, row)(-4);
 	      gear = d3_A(k, row)(-3);
-	      sex = d3_A(k, row)(-2);
-	      type = d3_A(k, row)(-1);
-	      report<<" "<<year<<" "<<gear<<" "<<sex<<" "<<type<<A_nu(k, row)<<"\n";
+	      area = d3_A(k, row)(-2);
+	      group = d3_A(k, row)(-1);
+	      sex = d3_A(k, row)(0);
+	      report<<" "<<year<<" "<<gear<<" "<<area<<" "<<group<<" "<<sex<<A_nu(k, row)<<"\n";
 	    }
 	  }
 	  report<<"Neff_multinomial\n";

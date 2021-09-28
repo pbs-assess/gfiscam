@@ -2686,9 +2686,7 @@ FUNCTION calcObjectiveFunction
 	          int t = O.rowmin();
 	          int T = O.rowmax();
 	          dvariable Nsamp;
-	          dvariable proc_err = 0.009;
 	          for(i = t; i<= T; i++){
-	            Nsamp = sum(O(i)) / (1.0 + proc_err * sum(O(i)));
 	            int n = 0;
 	            dvector oo = O(i) / sum(O(i));
 	            dvar_vector pp = P(i) / sum(P(i));
@@ -2715,9 +2713,15 @@ FUNCTION calcObjectiveFunction
 	                  kk++;
 	              }
 	            }
-	            dvar_vector t1 = elem_div(o1 - p1, sqrt(elem_prod(p1, 1.0 - p1) / Nsamp));
+
+	            // Variance for DM: Thorsen et. al 2017, Equation 8
+	            // Beta = phi - 1, substitute into Equation 8
+	            dvar_vector dm_variance = (elem_prod(p1, (1.0 - p1)) / dm_neff) *
+	              ((dm_neff + exp(log_phi(k,i)) - 1.0) / (1.0 + exp(log_phi(k,i)) - 1.0));
+
+	            dvar_vector pearson = elem_div(o1 - p1, sqrt(dm_variance));
 	            for(int j = 1; j <= n; j++){
-	              nu(i)(iiage(j)) = t1(j);
+	              nu(i)(iiage(j)) = pearson(j);
 	            }
 	          }
 	        }

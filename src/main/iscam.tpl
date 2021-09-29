@@ -2715,10 +2715,9 @@ FUNCTION calcObjectiveFunction
 	            }
 
 	            // Variance for DM: Thorsen et. al 2017, Equation 8
-	            // Beta = phi - 1, substitute into Equation 8
 		    // o1 is observed age comps data, p1 is estimated age comps
 	            dvar_vector dm_variance = (elem_prod(o1, (1.0 - o1)) / dm_neff) *
-	              ((dm_neff + exp(log_phi(k,i)) - 1.0) / (1.0 + exp(log_phi(k,i)) - 1.0));
+	              ((dm_neff + exp(log_phi(k,i))) / (1.0 + exp(log_phi(k,i))));
 
 	            dvar_vector pearson = elem_div(o1 - p1, sqrt(dm_variance));
 	            for(int j = 1; j <= n; j++){

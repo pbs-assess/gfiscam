@@ -410,9 +410,8 @@ DATA_SECTION
 	    it_grp(k)= column(d3_survey_data(k),5);
 	    nSurveyIndex(k) = d3_survey_data(k)(1,3);
 	  }
-	  double tmp_mu = mean(it_wt);
 	  for(int k = 1; k <= nItNobs; k++){
-	    it_wt(k) = it_wt(k) / tmp_mu;
+	    it_wt(k) = it_wt(k) / mean(it_wt(k));
 	  }
 	END_CALCS
 

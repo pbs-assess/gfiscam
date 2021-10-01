@@ -43,99 +43,15 @@ ivector getIndex(const dvector& a, const dvector& b){
   return(tmp);
 }
 
-void write_proj_headers_dd(ofstream &ofsP,
-                           int nyr,
-                           int pyr){
-  // Write the decision table headers for projection years for delay diff model (PCod 2018)
-  ofsP<<"TAC"<<",";
-  ofsP<<"B"<<nyr + 1<<",";
-  ofsP<<"B"<<pyr<<",";
-  ofsP<<"B"<<pyr<<"B"<<nyr + 1<<","; // this will be < 1 if true
-  ofsP<<"F"<<nyr<<",";
-  ofsP<<"F"<<pyr - 1<<",";
-  ofsP<<"F"<<pyr - 1<<"F"<<nyr <<","; // this will be > 1 if true
-  // MSY based ref points
-  ofsP<<"BMSY"<<",";
-  ofsP<<"B0"<<",";
-  ofsP<<"B"<<pyr<<"0.4B0"<<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"0.2B0"<<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"BMSY"<<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"0.8BMSY"<<",";  // this will be < 1 if true
-  ofsP<<"B"<<pyr<<"0.4BMSY"<<",";  // this will be < 1 if true
-  ofsP<<"FMSY"<<",";
-  ofsP<<"F"<<pyr - 1<<"FMSY"<<",";  // this will be > 1 if true
-  // Historical ref points "short"
-  ofsP<<"Bmin"<<",";
-  ofsP<<"B"<<pyr<<"Bmin"<<",";  // this will be < 1 if true
-  ofsP<<"BAvgS"<<",";
-  ofsP<<"B"<<pyr<<"BAvgS"<<",";  // this will be < 1 if true
-  ofsP<<"FAvgS"<<",";
-  ofsP<<"F"<<pyr - 1<<"FAvgS"<<",";  // this will be > 1 if true
-  // Historical ref points "long"
-  ofsP<<"BAvgL"<<",";
-  ofsP<<"B"<<pyr<<"BAvgL"<<",";  // this will be < 1 if true
-  ofsP<<"FAvgL"<<",";
-  ofsP<<"F"<<pyr - 1<<"FAvgL"<<",";  // this will be > 1 if true
-
-  ofsP<<"\n";
-}
-
-void write_proj_output_dd(ofstream &ofsP,
-                          double tac,
-                          int nyr,
-                          int pyr,
-                          dvector p_bt,
-                          dvector p_ft,
-                          dmatrix fmsy,
-                          dvector bmsy,
-                          named_dvar_vector bo,
-                          double bmin,
-                          double meanbshort,
-                          double meanblong,
-                          double meanfshort,
-                          double meanflong){
-  // Write the projection output to the file for delay difference model (PCod 2018)
-  ofsP<<tac                        <<",";
-  ofsP<<p_bt(nyr+1)               <<",";
-  ofsP<<p_bt(pyr)                  <<",";
-  ofsP<<p_bt(pyr)/p_bt(nyr+1 )      <<",";
-  ofsP<<p_ft(nyr)                <<",";
-  ofsP<<p_ft(pyr-1)                <<",";
-  ofsP<<p_ft(pyr-1)/p_ft(nyr)    <<",";
-
-	// MSY based ref points
-  ofsP<<bmsy                       <<",";
-  ofsP<<bo                         <<",";
-  ofsP<<p_bt(pyr)/(0.4*bo)         <<",";
-  ofsP<<p_bt(pyr)/(0.2*bo)         <<",";
-  ofsP<<p_bt(pyr)/bmsy             <<",";
-  ofsP<<p_bt(pyr)/(0.8*bmsy)       <<",";
-  ofsP<<p_bt(pyr)/(0.4*bmsy)       <<",";
-  ofsP<<fmsy                       <<",";
-  ofsP<<p_ft(pyr-1)/fmsy           <<",";
-
-  //Historical ref points "short"
-  ofsP<<bmin                       <<",";
-  ofsP<<p_bt(pyr)/bmin             <<",";
-  ofsP<<meanbshort                 <<",";
-  ofsP<<p_bt(pyr)/meanbshort       <<",";
-  ofsP<<meanfshort                 <<",";
-  ofsP<<p_ft(pyr-1)/meanfshort     <<",";
-  //Historical ref points "long"
-  ofsP<<meanblong                  <<",";
-  ofsP<<p_bt(pyr)/meanblong        <<",";
-  ofsP<<meanflong                  <<",";
-  ofsP<<p_ft(pyr-1)/meanflong      <<",";
-  ofsP<<"\n";
-}
-
 void write_proj_headers(ofstream &ofsP,
                         int syr,
                         int nyr,
                         int nfleet,
+                        int n_ags,
+                        int ngroup,
                         bool include_msy,
                         bool include_sbo){
-  int i;
+  int i, ig;
   // Write the decision table headers for projection years
   ofsP<<"TAC"<<",";
   ofsP<<"B"<<nyr + 1<<",";
@@ -149,36 +65,44 @@ void write_proj_headers(ofstream &ofsP,
     ofsP<<"02B0"<<",";
   }
   ofsP<<"B"<<syr<<",";
-  ofsP<<"B"<<nyr + 2<<"B"<<nyr + 1<<",";
+  ofsP<<"B"<<nyr + 2<<"_B"<<nyr + 1<<",";
   if(include_sbo){
-    ofsP<<"B"<<nyr + 2<<"04B0"<<",";
-    ofsP<<"B"<<nyr + 2<<"02B0"<<",";
+    ofsP<<"B"<<nyr + 2<<"_04B0"<<",";
+    ofsP<<"B"<<nyr + 2<<"_02B0"<<",";
   }
-  ofsP<<"B"<<nyr + 2<<"B"<<syr;
-  for(i = 1; i <= nfleet; i++){
-    ofsP<<",";
-    ofsP<<"fleet_"<<i<<"_F"<<nyr<<",";
-    ofsP<<"fleet_"<<i<<"_F"<<nyr + 1<<",";
-    ofsP<<"fleet_"<<i<<"_F"<<nyr + 1<<"F"<<nyr<<",";
-    ofsP<<"fleet_"<<i<<"_U"<<nyr + 1<<",";
-    ofsP<<"fleet_"<<i<<"_U"<<nyr + 1<<"U"<<nyr<<",";
+  ofsP<<"B"<<nyr + 2<<"_B"<<syr<<",";
+  for(ig = 1; ig <= n_ags; ig++){
+    for(i = 1; i <= nfleet; i++){
+      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_F"<<nyr<<",";
+      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_F"<<nyr + 1<<",";
+      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_U"<<nyr<<",";
+      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_U"<<nyr + 1<<",";
+    }
   }
-  ofsP<<"PropAge3"<<",";
-  ofsP<<"PropAge4to10"<<",";
   ofsP<<"UT"<<",";
-  ofsP<<"U20";
+  for(ig = 1; ig <= n_ags; ig++){
+    // u20
+    ofsP<<"U20_sex_"<<ig;
+    if(ig < n_ags){
+	ofsP<<",";
+    }
+  }
   if(include_msy){
     //MSY based ref points
     ofsP<<","<<"BMSY"<<",";
-    ofsP<<"B"<<nyr + 2<<"BMSY"<<",";
-    ofsP<<"B"<<nyr + 2<<"08BMSY"<<",";
-    ofsP<<"B"<<nyr + 2<<"04BMSY";
+    ofsP<<"B"<<nyr + 2<<"_BMSY"<<",";
+    ofsP<<"B"<<nyr + 2<<"_08BMSY"<<",";
+    ofsP<<"B"<<nyr + 2<<"_04BMSY"<<",";
     for(i = 1; i <= nfleet; i++){
-      ofsP<<",";
       ofsP<<"fleet_"<<i<<"_FMSY"<<",";
-      ofsP<<"fleet_"<<i<<"_F"<<nyr + 1<<"FMSY"<<",";
       ofsP<<"fleet_"<<i<<"_UMSY"<<",";
-      ofsP<<"fleet_"<<i<<"_U"<<nyr + 1<<"UMSY";
+      for(ig = 1; ig <= n_ags; ig++){
+        ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_F"<<nyr + 1<<"_FMSY"<<",";
+        ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_U"<<nyr + 1<<"_UMSY";
+        if(!(ig == n_ags && i == nfleet)){
+          ofsP<<",";
+        }
+      }
     }
   }
   ofsP<<"\n";
@@ -189,77 +113,78 @@ void write_proj_output(ofstream &ofsP,
                        int nyr,
                        int nage,
                        int nfleet,
+                       int n_ags,
+                       int ngroup,
                        double tac,
                        int pyr,
                        dvector p_sbt,
                        dvector p_rt,
-                       dmatrix p_ft,
-                       dmatrix p_N,
+                       d3_array p_ft,
+                       d3_array p_N,
                        dvar3_array M,
                        dmatrix ma,
                        dmatrix dWt_bar,
-                       dvar_matrix ft,
+                       dvar3_array ft,
                        double sbo,
-                       dvector fmsy,
+                       dmatrix fmsy,
                        dvector bmsy,
                        bool include_msy,
                        bool include_sbo){
 
-  int i;
-  double ut  = tac / (tac + p_sbt(pyr));
-  double u20 = tac / ((p_N(pyr)(3,nage) * exp(-value(M(1)(nyr,3)))) * dWt_bar(1)(3,nage));
-
-  double NAge3 = (p_N(pyr)(3)*dWt_bar(1)(3)*ma(1)(3));
-  dvar_vector NallWt = elem_prod(p_N(pyr)(2,nage),dWt_bar(1)(2,nage));
-  dvar_vector NallWtMat= elem_prod(NallWt(2,nage),ma(1)(2,nage));
-  double sumAge2to10 = value(sum(NallWtMat(2,nage)));
-  double sumAge4to10 = value(sum(NallWtMat(4,nage)));
-  double propAge3 = NAge3 / sumAge2to10;
-  double propAge4to10 = sumAge4to10 / sumAge2to10;
+  int i, ig;
+  double ut = tac / (tac + p_sbt(pyr));
 
   // Write the projection output to the file
   ofsP<<tac<<",";
-  ofsP<<p_sbt(pyr)<<",";
-  ofsP<<p_sbt(pyr + 1)<<",";
-  ofsP<<p_rt(pyr - 1)<<",";
-  ofsP<<p_rt(pyr)<<",";
+  ofsP<<p_sbt(nyr + 1)<<",";
+  ofsP<<p_sbt(nyr + 2)<<",";
+  ofsP<<p_rt(nyr)<<",";
+  ofsP<<p_rt(nyr + 1)<<",";
   if(include_sbo){
     ofsP<<sbo<<",";
     ofsP<<0.4 * sbo<<",";
-    ofsP<<0.3 * sbo<<",";
+    ofsP<<0.3 * sbo <<",";
     ofsP<<0.2 * sbo <<",";
   }
   ofsP<<p_sbt(syr)<<",";
-  ofsP<<p_sbt(pyr + 1) / p_sbt(pyr)<<",";
+  ofsP<<p_sbt(nyr + 2) / p_sbt(nyr + 1)<<",";
   if(include_sbo){
-    ofsP<<p_sbt(pyr + 1) / (0.4 * sbo)<<",";
-    ofsP<<p_sbt(pyr + 1) / (0.2 * sbo)<<",";
+    ofsP<<p_sbt(nyr + 2) / (0.4 * sbo)<<",";
+    ofsP<<p_sbt(nyr + 2) / (0.2 * sbo)<<",";
   }
-  ofsP<<p_sbt(pyr + 1) / p_sbt(syr);
-  for(i = 1; i <= nfleet; i++){
-    ofsP<<",";
-    ofsP<<ft(i,nyr)<<",";
-    ofsP<<p_ft(pyr,i)<<",";
-    ofsP<<p_ft(pyr,i) / ft(i,nyr)<<",";
-    ofsP<<1. - mfexp(-p_ft(pyr,i))<<",";
-    ofsP<<(1. - mfexp(-p_ft(pyr,i))) / (1. - mfexp(-ft(i,nyr)))<<",";
+  ofsP<<p_sbt(nyr + 2) / p_sbt(syr);
+  for(ig = 1; ig <= n_ags; ig++){
+    for(i = 1; i <= nfleet; i++){
+      ofsP<<",";
+      ofsP<<p_ft(ig,nyr,i)<<",";
+      ofsP<<p_ft(ig,nyr + 1,i)<<",";
+      ofsP<<1.0 - mfexp(-p_ft(ig,nyr,i))<<",";
+      ofsP<<1.0 - mfexp(-p_ft(ig,nyr + 1,i))<<",";
+    }
   }
-  ofsP<<propAge3<<",";
-  ofsP<<propAge4to10<<",";
   ofsP<<ut<<",";
-  ofsP<<u20;
+  for(ig = 1; ig <= n_ags; ig++){
+    // u20
+    ofsP<<tac / ((p_N(ig,pyr)(3,nage) * exp(-value(M(1)(nyr,3)))) * dWt_bar(1)(3,nage))<<",";
+  }
   if(include_msy){
     //MSY based ref points
     ofsP<<","<<bmsy<<",";
-    ofsP<<p_sbt(pyr + 1) / bmsy<<",";
-    ofsP<<p_sbt(pyr + 1) / (0.8 * bmsy)<<",";
-    ofsP<<p_sbt(pyr + 1) / (0.4 * bmsy);
+    ofsP<<p_sbt(nyr + 2) / bmsy<<",";
+    ofsP<<p_sbt(nyr + 2) / (0.8 * bmsy)<<",";
+    ofsP<<p_sbt(nyr + 2) / (0.4 * bmsy);
+    // The following loop assumed only one group,
+    // Which is the '1' in the fmsy(1,i) indexing
     for(i = 1; i <= nfleet; i++){
       ofsP<<",";
-      ofsP<<fmsy(i)<<",";
-      ofsP<<p_ft(pyr,i) / fmsy(i)<<",";
-      ofsP<<1. - mfexp(-fmsy(i))<<",";
-      ofsP<<(1. - mfexp(-p_ft(pyr,i))) / (1. - mfexp(-fmsy(i)));
+      ofsP<<fmsy(1, i)<<",";
+      ofsP<<1. - mfexp(-fmsy(1, i));
+      for(ig = 1; ig <= n_ags; ig++){
+        ofsP<<",";
+        ofsP<<p_ft(ig, nyr + 1,i) / fmsy(1,i)<<",";
+        ofsP<<(1.0 - mfexp(-p_ft(ig, nyr + 1,i))) /
+              (1.0 - mfexp(-fmsy(1, i)));
+      }
     }
   }
   ofsP<<"\n";

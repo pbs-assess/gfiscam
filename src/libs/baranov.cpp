@@ -10,8 +10,6 @@ BaranovCatchEquation::~BaranovCatchEquation()
 	// Destructor
 }
 
-
-
 /** \brief Baranov catch equation solution for 1 or more fleets.
 	
 		The following function solves the Baranov catch equation for multiple fleets using
@@ -32,8 +30,11 @@ BaranovCatchEquation::~BaranovCatchEquation()
 	\return Returns a vector of instantaneous fishing mortality rates.
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const double &m, const dmatrix &V, const dvector &na)
-{
+dvector BaranovCatchEquation::getFishingMortality(
+    const dvector &ct,
+    const double &m,
+    const dmatrix &V,
+    const dvector &na){
 	
 	int i,j,its;
 	int ngear = V.rowmax()-V.rowmin()+1;
@@ -121,7 +122,12 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const doubl
 	\return Returns a vector of instantaneous fishing mortality rates.
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const double &m, const dmatrix &V, const dvector &na, const dvector &wa)
+dvector BaranovCatchEquation::getFishingMortality(
+    const dvector &ct,
+    const double &m,
+    const dmatrix &V,
+    const dvector &na,
+    const dvector &wa)
 {
 	
 	int i,j,its;
@@ -210,8 +216,11 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const doubl
 	\sa
 **/
 
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dvector &ma, const dmatrix &V, const dvector &na)
-{
+dvector BaranovCatchEquation::getFishingMortality(
+    const dvector &ct,
+    const dvector &ma,
+    const dmatrix &V,
+    const dvector &na){
 	
 	int i,j,its;
 	int ngear = V.rowmax()-V.rowmin()+1;
@@ -299,76 +308,68 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dvect
 	\return Returns a vector of instantaneous fishing mortality rates.
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dvector &ma, const dmatrix &V, const dvector &na, const dvector &wa)
-{
-	
-	int i,j,its;
-	int ngear = V.rowmax()-V.rowmin()+1;
+dvector BaranovCatchEquation::getFishingMortality(
+  const dvector &ct,
+  const dvector &ma,
+  const dmatrix &V,
+  const dvector &na,
+  const dvector &wa){
 
-	dvector   ft(1,ngear);
-	dvector chat(1,ngear);
-	dvector ctmp(1,ngear);
-	dvector   fx(1,ngear);
-	dmatrix    J(1,ngear,1,ngear);
-	dmatrix invJ(1,ngear,1,ngear);
-	dvector   ba(na.indexmin(),na.indexmax());
-	dmatrix    F(1,ngear,V.colmin(),V.colmax());
-	
-	
-	
-	// Initial guess for fishing mortality rates;
-	ba        = elem_prod(na,wa);
-	double bt = elem_prod(na , exp(-0.5*ma)) * wa;
-	ft        = ct / bt;
-		
-	// Iterative soln for catch equation using Newton-Raphson
-	for(its=1; its<=MAXITS; its++)
-	{
-		for(i=1;i<=ngear;i++) F(i) =ft(i)*V(i);
-		
-		dvector za = ma + colsum(F);
-		dvector sa = exp(-za);
-		dvector oa = (1.-sa);
-		
-		for(i=1;i<=ngear;i++)
-		{
-			for(j=1;j<=ngear;j++)
-			{
-				if(i==j)
-				{
-					dvector k1   =  elem_prod(ba,elem_div(V(i),za));
-					dvector k2   =  elem_prod(k1,V(i));
-					dvector k3   =  elem_div(k2,za);
-					double dCdF  = -(k1*oa) - ft(i)*(k2*sa) + ft(i)*(k3*oa);
-					J(i)(j)      = dCdF;
-					chat(i)      = (ft(i)*k1) * oa;
-				}
-				else
-				{
-					dvector t1   = elem_div(elem_prod(ft(i)*ba,V(i)),za);
-					dvector t2   = elem_prod(t1,V(j));
-					dvector t3   = elem_div(t2,za);
-					double dCdF  = -(t2*sa) + (t3*oa);
-					J(j)(i)      = dCdF;
-				}
-			}	
-		}
-		fx   = ct - chat;
-		//The following couts were used to debug the transpose error in the Jacobian.
-		//LOG<<"fx = "<<fx<<'\n';
-		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
-		invJ = -inv(J);
-		ft  += fx*invJ;
-		
-		if( norm(fx) < TOL || max(ft) > MAXF ) break;
-	}
-	// | DO NOT DO THE FOLLOWING FOR DIFFERENTIABLE PROBLEMS.
-	for(i=1;i<=ngear;i++) if(ft(i)>MAXF) ft(i) = MAXF;
-	
-	return (ft);
+  int i, j, its;
+  int ngear = V.rowmax() - V.rowmin() + 1;
+  dvector ft(1, ngear);
+  dvector chat(1, ngear);
+  dvector ctmp(1, ngear);
+  dvector fx(1, ngear);
+  dmatrix J(1, ngear, 1, ngear);
+  dmatrix invJ(1, ngear, 1, ngear);
+  dvector ba(na.indexmin(), na.indexmax());
+  dmatrix F(1, ngear, V.colmin(), V.colmax());
+
+  // Initial guess for fishing mortality rates;
+  ba = elem_prod(na, wa);
+  double bt = elem_prod(na, exp(-0.5 * ma)) * wa;
+  ft = ct / bt;
+
+  // Iterative soln for catch equation using Newton-Raphson
+  for(its = 1; its <= MAXITS; its++){
+    for(i = 1; i <= ngear; i++)
+      F(i) = ft(i) * V(i);
+    dvector za = ma + colsum(F);
+    dvector sa = exp(-za);
+    dvector oa = (1.0 - sa);
+    for(i = 1; i <= ngear; i++){
+      for(j = 1; j <= ngear; j++){
+        if(i == j){
+          dvector k1 = elem_prod(ba, elem_div(V(i), za));
+          dvector k2 = elem_prod(k1, V(i));
+          dvector k3 = elem_div(k2, za);
+          double dCdF = -(k1 * oa) - ft(i) * (k2 * sa) + ft(i) * (k3 * oa);
+          J(i)(j) = dCdF;
+          chat(i) = (ft(i) * k1) * oa;
+        }else{
+          dvector t1 = elem_div(elem_prod(ft(i) * ba, V(i)), za);
+          dvector t2 = elem_prod(t1, V(j));
+          dvector t3 = elem_div(t2, za);
+          double dCdF = -(t2 * sa) + (t3 * oa);
+          J(j)(i) = dCdF;
+        }
+      }
+    }
+    fx = ct - chat;
+    //The following couts were used to debug the transpose error in the Jacobian.
+    //LOG<<"fx = "<<fx<<'\n';
+    //LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
+    invJ = -inv(J);
+    ft += fx * invJ;
+    if(norm(fx) < TOL || max(ft) > MAXF)
+      break;
+  }
+  // | DO NOT DO THE FOLLOWING FOR DIFFERENTIABLE PROBLEMS.
+  for(i = 1; i <= ngear; i++) if(ft(i) > MAXF)
+    ft(i) = MAXF;
+  return(ft);
 }
-
-
 
 /** \brief Instantaneous fishing mortality rate for a single fleet.
 	
@@ -383,8 +384,11 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dvect
 	\return description of return value
 	\sa
 **/
-double BaranovCatchEquation::get_ft(const double& ct, const double& m, const dvector& va, const dvector& ba)
-{
+double BaranovCatchEquation::get_ft(
+    const double& ct,
+    const double& m,
+    const dvector& va,
+    const dvector& ba){
 	double ft;
 	//initial guess for ft
 	ft=ct/(va*(ba*exp(-m/2.)));
@@ -416,8 +420,10 @@ double BaranovCatchEquation::get_ft(const double& ct, const double& m, const dve
 }
 
 
-double BaranovCatchEquation::get_ftdd(const double& ct, const double& m, const double& b)
-{
+double BaranovCatchEquation::get_ftdd(
+    const double& ct,
+    const double& m,
+    const double& b){
 	double ft;
 	//initial guess for ft
 	if(ct<b){
@@ -470,8 +476,11 @@ double BaranovCatchEquation::get_ftdd(const double& ct, const double& m, const d
 	\return description of return value
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatrix &ma, const d3_array *_V, const dmatrix &na)
-{
+dvector BaranovCatchEquation::getFishingMortality(
+    const dvector &ct,
+    const dmatrix &ma,
+    const d3_array *_V,
+    const dmatrix &na){
 
 	int h,i,j,k,its;
 	d3_array V;
@@ -578,8 +587,12 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 	\return description of return value
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatrix &ma, const d3_array *_V, const dmatrix &na, const dmatrix &wa)
-{
+dvector BaranovCatchEquation::getFishingMortality(
+    const dvector &ct,
+    const dmatrix &ma,
+    const d3_array *_V,
+    const dmatrix &na,
+    const dmatrix &wa){
 
 	int h,i,j,k,its;
 	d3_array V;
@@ -687,8 +700,12 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 	\return description of return value
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatrix &ma, const d3_array *p_V, const dmatrix &na, dmatrix &_hCt)
-{
+dvector BaranovCatchEquation::getFishingMortality(
+    const dvector &ct,
+    const dmatrix &ma,
+    const d3_array *p_V,
+    const dmatrix &na,
+    dmatrix &_hCt){
 	dvector ft = getFishingMortality(ct,ma,p_V,na);
 	_hCt = m_hCt;
 	return(ft);
@@ -712,8 +729,12 @@ dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatr
 	\return description of return value
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(const dvector &ct, const dmatrix &ma, const d3_array *p_V, const dmatrix &na, const dmatrix &wa, dmatrix &_hCt)
-{
+dvector BaranovCatchEquation::getFishingMortality(
+    const dvector &ct,
+    const dmatrix &ma,
+    const d3_array *p_V,
+    const dmatrix &na,
+    const dmatrix &wa, dmatrix &_hCt){
 	dvector ft = getFishingMortality(ct,ma,p_V,na,wa);
 	_hCt = m_hCt;
 	return(ft);

@@ -3805,16 +3805,16 @@ FUNCTION void projection_model(const double& tac);
 
 	static int runNo = 0;
 	runNo++;
-	int i, k;
+	int ig, i, k;
 	int pyr = nyr + 1;
 	BaranovCatchEquation cBaranov;
 
 	dvector p_sbt(syr, pyr + 1);
-	dvector p_ct(1, ngear);
-	dmatrix p_ft(nyr, pyr + 1, 1, ngear);
 	dvector p_rt(syr + sage, pyr);
-	dmatrix p_N(syr, pyr + 2, sage, nage);
-	dmatrix p_Z(syr, pyr + 1, sage, nage);
+	dmatrix p_ct(1, n_ags, 1, ngear);
+	d3_array p_ft(1, n_ags, nyr, pyr + 1, 1, ngear);
+	d3_array p_N(1, n_ags, syr, pyr + 2, sage, nage);
+	d3_array p_Z(1, n_ags, syr, pyr + 1, sage, nage);
 	p_N.initialize();
 	p_Z.initialize();
 	p_sbt.initialize();
@@ -3823,120 +3823,154 @@ FUNCTION void projection_model(const double& tac);
 	p_rt.initialize();
 
 	// Average weight and mature spawning biomass for reference years
-	// (copied from calcReferencePoints() but only implemented for ig = 1)
-	// Note that dWt_bar(1,n_ags,sage,nage)
-	dvector fa_bar(sage, nage);
-	dvector M_bar(sage, nage);
-	fa_bar = elem_prod(dWt_bar(1), ma(1));
-	// TODO M_bar should be both sexes
-	M_bar = colsum(value(M(1).sub(pf_cntrl(1), pf_cntrl(2))));
-	M_bar /= pf_cntrl(2) - pf_cntrl(1) + 1;
-	// derive stock re4cruitment parameters
-	// survivorship of spawning biomass
-	dvector lx(sage, nage);
-	double tau = value(sqrt(1. - rho) * varphi);
-	//double m_rho = d_iscamCntrl(13);
-	lx(sage) = 1.;
-	for(i = sage + 1; i <= nage; i++){
-	  lx(i) = lx(i - 1) * mfexp(-M_bar(i - 1));
-	  if(i == nage){
-	    lx(i) /= 1.0 - mfexp(-M_bar(i));
-	  }
-	}
+	// copied from calcReferencePoints()
+	dmatrix fa_bar(1,n_ags,sage, nage);
+	dmatrix M_bar(1,n_ags,sage, nage);
+	dmatrix lx(1,n_ags,sage, nage);
+	d3_array va_bar(1,n_ags,1,ngear,sage,nage);
+	double tau, phib, so, bo, beta, xx, rtt, et;
+	for(ig = 1; ig <= n_ags; ig++){
+	  fa_bar(ig) = elem_prod(dWt_bar(ig),ma(ig));
+	  M_bar(ig)  = colsum(value(M(ig).sub(pf_cntrl(1),pf_cntrl(2))));
+	  M_bar(ig) /= pf_cntrl(2) - pf_cntrl(1) + 1;
 
-	// average fecundity is calculated for all area/groups but projections
-	// are currently only implemented for n_ags = 1
-	double phib = lx * fa_bar;
-	double so = value(kappa(1) / phib);
-	double bo = value(ro(1) * phib);
-	double beta = 1;
-	switch(int(d_iscamCntrl(2))){
-	  case 1: // Beverton-Holt
-	    beta = value((kappa(1) - 1.) / bo);
-	    break;
-	  case 2: // Ricker
-	    beta = value(log(kappa(1) / bo));
-	    break;
-	}
-	// Fill arrays with historical values
-
-	// The main model already does a projection to nyr + 1
-	// but want to draw an average recruitment for projection rather than highly uncertain estimate
-	for(i = syr; i <= nyr; i++){
-	  p_N(i) = value(N(1)(i));
-	  p_sbt(i) = value(sbt(1)(i));
-	  p_Z(i) = value(Z(1)(i));
-	  if(i >= syr + sage){
-	    p_rt(i) = value(rt(1)(i));
-	  }
-	}
-
-	// Selectivity and dAllocation to gears
-	dmatrix va_bar(1,ngear,sage,nage);
-	for(k = 1; k <= ngear; k++){
-	  p_ct(k) = dAllocation(k) * tac;
-	  va_bar(k) = exp(value(log_sel(k)(1)(nyr)));
-	}
-
-	// Simulate population into the future under constant tac policy
-	for(i = nyr - 1; i <= pyr + 1; i++){
-	  //ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
-	  if(i > nyr){
-	    // get_ft is defined in the Baranov.cpp file
-	    // average weight is calculated for all area/groups but projections are currently only implemented for n_ags=1
-	    p_ft(i) = cBaranov.getFishingMortality(p_ct,M_bar, va_bar, p_N(i),dWt_bar(1));
-	    // calculate total mortality in future years
-	    p_Z(i) = M_bar;
-	    for(k = 1; k <= ngear; k++){
-	      p_Z(i) += p_ft(i,k) * va_bar(k);
+	  // derive stock recruitment parameters
+	  // survivorship of spawning biomass
+	  tau = value(sqrt(1. - rho) * varphi);
+	  lx(ig,sage) = 1.;
+	  for(i = sage + 1; i <= nage; i++){
+	    lx(ig,i) = lx(ig,i - 1) * mfexp(-M_bar(ig,i - 1));
+	    if(i == nage){
+	      lx(ig,i) /= 1.0 - mfexp(-M_bar(ig,i));
 	    }
 	  }
 
-	  // Overwrite sbt(nyr) so that it does not include estimated Rt(nyr), which is highly uncertain
-	  // This will only be different from sbt(nyr) in the main model if recruits contribute to the spawning population, which is rare
-	  // d_iscamCntrl(13) is defined as: fraction of total mortality that takes place prior to spawning
-	  if(i >= nyr){
-	    p_sbt(i) = elem_prod(p_N(i),exp(-p_Z(i) * d_iscamCntrl(13))) * fa_bar;
+	  // average fecundity is calculated for all area/groups but projections
+	  phib = lx(ig) * fa_bar(ig);
+	  so = value(kappa(1) / phib);
+	  bo = value(ro(1) * phib);
+	  beta = 1;
+	  switch(int(d_iscamCntrl(2))){
+	    case 1: // Beverton-Holt
+	      beta = value((kappa(1) - 1.) / bo);
+	      break;
+	    case 2: // Ricker
+	      beta = value(log(kappa(1) / bo));
+	      break;
 	  }
 
-	  // sage recruits with random deviate xx
-	  // note the random number seed is repeated for each tac level.
-	  // NOTE that this treatment of rec devs is different from historical model
-	  double xx = randn(nf + i) * tau;
-	  if(i >= syr + sage - 1){
-	    double rt = 1;
-	    // lagged spawning biomass  (+1 because we want recruits for year i + 1)
-	    double et = p_sbt(i-sage + 1);
-	    switch(int(d_iscamCntrl(2))){
-	      case 1: // Beverton-Holt
-	        rt = (so * et / (1. + beta * et));
-	        break;
-	      case 2: // Ricker
-	        rt = (so * et * exp(-beta * et));
-	        break;
+	  // Fill arrays with historical values
+	  // The main model already does a projection to nyr + 1
+	  // but want to draw an average recruitment for
+	  // projection rather than highly uncertain estimate
+	  for(i = syr; i <= nyr; i++){
+	    p_N(ig,i) = value(N(ig,i));
+	    // sbt and rt are not split by sex, so use the
+	    // first area/sex only.
+	    if(ig == 1){
+	      p_sbt(i) = value(sbt(1,i));
+	      if(i >= syr + sage){
+	        p_rt(i) = value(rt(1,i));
+	      }
 	    }
-	    if(i <= pyr){
-	      p_rt(i) = rt;
-	    }
-	    // Next year\'s recruits
-	    p_N(i + 1, sage) = rt * exp(xx - 0.5 * tau * tau);
+	    p_Z(ig,i) = value(Z(ig)(i));
 	  }
-	  // Update numbers at age in future years
-	  // Next year\'s numbers
-	  p_N(i + 1)(sage + 1, nage) = ++elem_prod(p_N(i)(sage, nage - 1),exp(-p_Z(i)(sage, nage - 1)));
-	  p_N(i + 1, nage) += p_N(i, nage) * exp(-p_Z(i, nage));
+	  //LOG<<"Historical p_rt\n"<<p_rt<<"\n";
+	  //LOG<<"Historical p_sbt\n"<<p_sbt<<"\n";
+	  // Selectivity and dAllocation to gears
+	  for(k = 1; k <= ngear; k++){
+	    p_ct(ig,k) = dAllocation(k) * tac;
+	    va_bar(ig,k) = exp(value(log_sel(k,ig,nyr)));
+	  }
 
-	  //  Predicted catch for checking calculations
-	  // if(i > nyr){
-	  //   LOG<<p_ft<<"\n";
-	  //   for(k = 1; k <= ngear; k++){
-	  //     dvector ba = elem_prod(p_N(i), dWt_bar(1));
-	  //     double ctest;
-	  //     ctest = sum(elem_div(elem_prod(elem_prod(ba, p_ft(i, k) * va_bar(k)), 1. - exp(-p_Z(i))), p_Z(i)));
-	  //     LOG<<"gear = "<<k<<", tac = "<<tac<<", ct = "<<ctest<<"\n";
-	  //   }
-	  // }
+	  // Simulate population into the future under constant tac policy
+	  /*
+	  LOG<<"M_bar("<<ig<<")\n"<<M_bar(ig)<<"\n";
+	  LOG<<"p_N("<<ig<<")\n"<<p_N(ig)<<"\n";
+	  LOG<<"p_Z("<<ig<<")\n"<<p_Z(ig)<<"\n";
+	  LOG<<"p_ft("<<ig<<")\n"<<p_ft(ig)<<"\n";
+	  LOG<<"p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
+	  LOG<<"p_rt\n"<<p_rt<<"\n\n\n";
+	  */
+	  for(i = nyr; i <= pyr + 1; i++){
+	    // ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
+	    if(i > nyr){
+	      // get_ft is defined in the Baranov.cpp file
+	      // average weight is calculated for all area/groups
+	      LOG<<"Calling cBaranov.getFishingMortality()\n";
+	      LOG<<"p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
+	      p_ft(ig,i) = cBaranov.getFishingMortality(
+	        p_ct(ig),
+	        M_bar(ig),
+	        va_bar(ig),
+	        p_N(ig,i),
+	        dWt_bar(1));
+	      LOG<<"After cBaranov.getFishingMortality()\n";
+	      LOG<<"p_ft("<<ig<<", "<<i<<")\n"<<p_ft(ig,i)<<"\n\n";
+	      // calculate total mortality in future years
+	      p_Z(ig,i) = M_bar(ig);
+	      for(k = 1; k <= ngear; k++){
+	        p_Z(ig,i) += p_ft(ig,i,k) * va_bar(ig,k);
+	      }
+	    }
+	  /*
+	  LOG<<"*****************************************************\n";
+	  LOG<<"*****************************************************\n";
+	  LOG<<"*****************************************************\n";
+	  LOG<<"M_bar("<<ig<<")\n"<<M_bar(ig)<<"\n";
+	  LOG<<"p_N("<<ig<<")\n"<<p_N(ig)<<"\n";
+	  LOG<<"p_Z("<<ig<<")\n"<<p_Z(ig)<<"\n";
+	  LOG<<"p_ft(1)\n"<<p_ft(1)<<"\n";
+	  LOG<<"p_ft(2)\n"<<p_ft(2)<<"\n";
+	  LOG<<"p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
+	  LOG<<"p_rt\n"<<p_rt<<"\n\n\n";
+	  */
+	    // Overwrite sbt(nyr) so that it does not include estimated Rt(nyr), which is highly uncertain
+	    // This will only be different from sbt(nyr) in the main model if recruits contribute to the spawning population, which is rare
+	    // d_iscamCntrl(13) is defined as: fraction of total mortality that takes place prior to spawning
+	    if(i >= nyr){
+	      p_sbt(i) += elem_prod(p_N(ig, i), exp(-p_Z(ig, i) * d_iscamCntrl(13))) * fa_bar(ig);
+	    }
+	    // sage recruits with random deviate xx
+	    // note the random number seed is repeated for each tac level.
+	    // NOTE that this treatment of rec devs is different from historical model
+	    xx = randn(nf + i) * tau;
+	    if(i >= syr + sage - 1){
+	      rtt = 1;
+	      // lagged spawning biomass  (+1 because we want recruits for year i + 1)
+	      et = p_sbt(i-sage + 1);
+	      switch(int(d_iscamCntrl(2))){
+	        case 1: // Beverton-Holt
+	          rtt = (so * et / (1. + beta * et));
+	          break;
+	        case 2: // Ricker
+	          rtt = (so * et * exp(-beta * et));
+	          break;
+	      }
+	      if(i <= pyr){
+	        p_rt(i) = rtt;
+	      }
+	      // Next year\'s recruits
+	      p_N(ig, i + 1, sage) = rtt * exp(xx - 0.5 * tau * tau);
+	    }
+	    // Update numbers at age in future years
+	    // Next year\'s numbers
+	    p_N(ig, i + 1)(sage + 1, nage) = ++elem_prod(p_N(ig, i)(sage, nage - 1), exp(-p_Z(ig, i)(sage, nage - 1)));
+	    p_N(ig, i + 1)(nage) += p_N(ig, i)(nage) * exp(-p_Z(ig, i, nage));
+	  }
+	    //if(tac > 5)exit(1);
+
+	  //LOG<<"New p_rt\n"<<p_rt<<"\n";
+	  //LOG<<"New p_sbt\n"<<p_sbt<<"\n";exit(1);
+	  /*
+	  LOG<<"p_N("<<ig<<")\n"<<p_N(ig)<<"\n";
+	  LOG<<"p_Z("<<ig<<")\n"<<p_Z(ig)<<"\n";
+	  LOG<<"p_ft("<<ig<<")\n"<<p_ft(ig)<<"\n";
+	  LOG<<"p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
+	  LOG<<"p_rt\n"<<p_rt<<"\n\n\n";
+	  */
 	}
+
 
 	// write_proj_headers() and write_proj_output() are in include/utilities.h
 	// and libs/utilities.cpp
@@ -3948,6 +3982,8 @@ FUNCTION void projection_model(const double& tac);
 	                       syr,
 	                       nyr,
 	                       nfleet,
+	                       n_ags,
+	                       ngroup,
 	                       !d_iscamCntrl(13),
 	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmcmc.flush();
@@ -3957,6 +3993,8 @@ FUNCTION void projection_model(const double& tac);
 	                    nyr,
 	                    nage,
 	                    nfleet,
+	                    n_ags,
+	                    ngroup,
 	                    tac,
 	                    pyr,
 	                    p_sbt,
@@ -3966,9 +4004,9 @@ FUNCTION void projection_model(const double& tac);
 	                    M,
 	                    ma,
 	                    dWt_bar,
-	                    ft(1),
+	                    ft,
 	                    value(sbo(1)),
-	                    fmsy(1),
+	                    fmsy,
 	                    bmsy,
 	                    !d_iscamCntrl(13),
 	                    d_iscamCntrl(13) && d_iscamCntrl(20));
@@ -3981,6 +4019,8 @@ FUNCTION void projection_model(const double& tac);
 	                       syr,
 	                       nyr,
 	                       nfleet,
+	                       n_ags,
+	                       ngroup,
 	                       !d_iscamCntrl(13),
 	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmpd.flush();
@@ -3994,6 +4034,8 @@ FUNCTION void projection_model(const double& tac);
 	                    nyr,
 	                    nage,
 	                    nfleet,
+	                    n_ags,
+	                    ngroup,
 	                    tac,
 	                    pyr,
 	                    p_sbt,
@@ -4003,9 +4045,9 @@ FUNCTION void projection_model(const double& tac);
 	                    M,
 	                    ma,
 	                    dWt_bar,
-	                    ft(1),
+	                    ft,
 	                    value(sbo(1)),
-	                    fmsy(1),
+	                    fmsy,
 	                    bmsy,
 	                    !d_iscamCntrl(13),
 	                    d_iscamCntrl(13) && d_iscamCntrl(20));

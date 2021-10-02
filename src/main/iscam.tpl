@@ -433,31 +433,39 @@ DATA_SECTION
 	init_ivector n_A_nage(1,nAgears);
 	init_vector inp_nscaler(1,nAgears);
 	init_ivector n_ageFlag(1,nAgears);
-	init_number dm_neff;
-	// The 5 in the next command is to remove the first 5 columns
+	init_number dm_num_samp; // Number of samples for all DM inputs. Use only if dm_use_single_num_samp is set
+	init_number dm_use_single_num_samp; // Use dm_num_samp for all samples, ignore individual sample data
+	// The 6 in the next command is to remove the first 6 columns
 	// from the age comp data because they are not the actual ages,
 	// but the header data.
-	init_3darray d3_A(1,nAgears,1,n_A_nobs,n_A_sage-5,n_A_nage);
+	init_3darray d3_A(1,nAgears,1,n_A_nobs,n_A_sage-6,n_A_nage);
 	3darray d3_A_obs(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage);
+	matrix samp_sizes(1,nAgears,1,n_A_nobs)
 	LOC_CALCS
 	  if(n_A_nobs(nAgears) > 0){
-	    if(verbose){
-	      LOG<<"| Age compositions ------  |\n";
-	      LOG<<"| -----------------------  |\n";
-	      LOG<<"| HEAD(d3_A) first 3 lines |"<<'\n';
-	      LOG<<"| -----------------------  |\n";
-	      LOG<<d3_A(1).sub(1,3)<<'\n';
-	      LOG<<"| -----------------------  |\n";
-	      LOG<<"| TAIL(d3_A) last line     |"<<'\n';
-	      LOG<<"| -----------------------  |\n";
-	      LOG<<d3_A(nAgears).sub(n_A_nobs(nAgears),n_A_nobs(nAgears))<<'\n';
-	      LOG<<"| ----------------------- |\n";
-	    }
-	  }else if(verbose){
+	    LOG<<"| Age compositions ------  |\n";
+	    LOG<<"| -----------------------  |\n";
+	    LOG<<"| HEAD(d3_A) first 3 lines |"<<'\n';
+	    LOG<<"| -----------------------  |\n";
+	    LOG<<d3_A(1).sub(1,3)<<'\n';
+	    LOG<<"| -----------------------  |\n";
+	    LOG<<"| TAIL(d3_A) last line     |"<<'\n';
+	    LOG<<"| -----------------------  |\n";
+	    LOG<<d3_A(nAgears).sub(n_A_nobs(nAgears),n_A_nobs(nAgears))<<'\n';
+	    LOG<<"| ----------------------- |\n";
+	  }else{
 	    LOG<<"| Age compositions ------ |\n";
 	    LOG<<"| ----------------------- |\n";
 	    LOG<<"| NO AGE OR LENGTH DATA   |\n";
 	    LOG<<"| ----------------------- |\n";
+	  }
+	  // Set up Dirichlet Multinomial sample sizes
+	  for(k = 1; k <= nAgears; k++){
+	    if(dm_use_single_num_samp){
+	      samp_sizes(k) = dm_num_samp;
+	    }else{
+	      samp_sizes(k) = column(d3_A(k), sage - 5);
+	    }
 	  }
 	END_CALCS
 	// |---------------------------------------------------------------------------------|
@@ -1199,7 +1207,7 @@ DATA_SECTION
 	  n_naa.initialize();
 	  for(k = 1; k <= nAgears; k++){
 	    for(i = 1; i <= n_A_nobs(k); i++){
-	      iyr = d3_A(k)(i)(n_A_sage(k)-5);	//index for year
+	      iyr = d3_A(k)(i)(n_A_sage(k) - 6);	//index for year
 	      if(iyr <= nyr)
 	        n_naa(k)++;
 	    }
@@ -1236,7 +1244,7 @@ DATA_SECTION
 	  n_saa = 1;
 	  for(int k = 1; k <= nAgears; k++){
 	    for(int i = 1; i <= n_A_nobs(k); i++){
-	      iyr = d3_A(k)(i)(n_A_sage(k)-5); //index for year
+	      iyr = d3_A(k)(i)(n_A_sage(k) - 6); //index for year
 	      if(iyr < syr){
 	        n_saa(k)++;
 	      }
@@ -2084,7 +2092,7 @@ FUNCTION calcComposition
 	A_hat.initialize();
 	for(kk = 1; kk <= nAgears; kk++){
 	  for(ii = 1; ii <= n_A_nobs(kk); ii++){
-	    i = d3_A(kk)(ii)(n_A_sage(kk) - 5);
+	    i = d3_A(kk)(ii)(n_A_sage(kk) - 6);
 	    k = d3_A(kk)(ii)(n_A_sage(kk) - 4);
 	    f = d3_A(kk)(ii)(n_A_sage(kk) - 3);
 	    g = d3_A(kk)(ii)(n_A_sage(kk) - 2);
@@ -2602,7 +2610,7 @@ FUNCTION calcObjectiveFunction
 	    nu.initialize();
 	    int ii = n_saa(k);
 	    for(i = 1; i <= n_A_nobs(k); i++){
-	      iyr = d3_A(k)(i)(n_A_sage(k)-5); //index for year
+	      iyr = d3_A(k)(i)(n_A_sage(k) - 6); //index for year
 	      if(iyr >= syr && iyr <= nyr){
 	        O(ii) = d3_A_obs(k)(i).sub(n_A_sage(k),n_A_nage(k));
 	        P(ii) = A_hat(k)(i).sub(n_A_sage(k),n_A_nage(k));
@@ -2674,8 +2682,9 @@ FUNCTION calcObjectiveFunction
 	        break;
 	      case 8: // Dirichlet Multinomial
 	        // Use Dirichlet Multinomial to estimate the predicted age matrices
+	        //LOG<<"Gear "<<k<<"\nSample sizes\n"<<samp_sizes(k)<<"\n";exit(1);
 	        for(int i = O.rowmin(); i <= O.rowmax(); i++){
-	          temp_n = dm_neff * O(i);
+	          temp_n = samp_sizes(k, i) * O(i);
 	          nlvec(3,k) -= ddirmultinom(temp_n, P(i), log_phi(k,i));
 	        }
 	        if(last_phase()){
@@ -2714,9 +2723,9 @@ FUNCTION calcObjectiveFunction
 	            }
 
 	            // Variance for DM: Thorsen et. al 2017, Equation 8
-		    // o1 is observed age comps data, p1 is estimated age comps
-	            dvar_vector dm_variance = (elem_prod(o1, (1.0 - o1)) / dm_neff) *
-	              ((dm_neff + exp(log_phi(k,i))) / (1.0 + exp(log_phi(k,i))));
+	            // o1 is observed age comps data, p1 is estimated age comps
+	            dvar_vector dm_variance = (elem_prod(o1, (1.0 - o1)) / samp_sizes(k,i)) *
+	              ((samp_sizes(k,i) + exp(log_phi(k,i))) / (1.0 + exp(log_phi(k,i))));
 
 	            dvar_vector pearson = elem_div(o1 - p1, sqrt(dm_variance));
 	            for(int j = 1; j <= n; j++){
@@ -2732,7 +2741,7 @@ FUNCTION calcObjectiveFunction
 	    }
 	    ii = n_saa(k);
 	    for(i = 1; i <= n_A_nobs(k); i++){
-	      iyr = d3_A(k)(i)(n_A_sage(k) - 5); //index for year
+	      iyr = d3_A(k)(i)(n_A_sage(k) - 6); //index for year
 	      if(iyr >= syr && iyr <= nyr){
 	        A_nu(k)(i)(n_A_sage(k),n_A_nage(k)) = nu(ii++);
 	        //LOG<<"iyr = "<<iyr<<", "<<d3_A(k)(i)<<"\n";
@@ -3181,6 +3190,10 @@ REPORT_SECTION
 	for(k = 1; k <= nAgears; k++){
 	  report<<log_phi(k)<<"\n";
 	}
+	report<<"dm_sample_sizes\n";
+	for(k = 1; k <= nAgears; k++){
+	  report<<samp_sizes(k)<<"\n";
+	}
 	REPORT(tau);
 	REPORT(sig);
 	REPORT(age_tau2);
@@ -3263,7 +3276,7 @@ REPORT_SECTION
 	      naa = 0;
 	      //retrospective counter
 	      for(i = 1; i <= n_A_nobs(k); i++){
-	        iyr = d3_A(k)(i)(n_A_sage(k)-5); //index for year
+	        iyr = d3_A(k)(i)(n_A_sage(k) - 6); //index for year
 	        if(iyr<=nyr)
 	          naa++;
 	        else

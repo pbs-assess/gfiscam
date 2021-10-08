@@ -775,12 +775,14 @@ DATA_SECTION
 	init_ivector nCompLikelihood(1,nAgears);
 	init_vector dMinP(1,nAgears);
 	init_vector dEps(1,nAgears);
-	init_ivector nPhz_dm(1,nAgears);
+	init_vector nPhz_dm_vec(1,nAgears);
 	init_ivector nPhz_age_tau2(1,nAgears);
 	init_ivector nPhz_phi1(1,nAgears);
 	init_ivector nPhz_phi2(1,nAgears);
 	init_ivector nPhz_df(1,nAgears);
+	number nPhz_dm;
 	LOC_CALCS
+	  nPhz_dm = nPhz_dm_vec(1);
 	  LOG<<"| ----------------------- |\n";
 	  LOG<<"| Gear indices            |"<<'\n';
 	  LOG<<"| ----------------------- |\n";
@@ -1284,18 +1286,8 @@ PARAMETER_SECTION
 	// | DIRICHLET MULTINOMIAL PARAMETERS
 	// |---------------------------------------------------------------------------------|
 	// Set up Dirichlet Multinomial parameters
-	init_bounded_vector_vector log_phi(1,nAgears,1,n_A_nobs,0,10,nPhz_dm);
-	init_bounded_matrix_vector dm_p(1,nAgears,1,n_A_nobs,n_A_sage,n_A_nage,-10,10,nPhz_dm)
+	init_bounded_vector log_phi(1,nAgears,0,10,nPhz_dm);
 	vector temp_n(1,nage)
-	LOC_CALCS
-	  for(k = 1; k <= nAgears; k++){
-	    for(i = 1; i <= n_A_nobs(k); i++){
-	      for(j = n_A_sage(k); j <= n_A_nage(k); j++){
-	        dm_p(k,i,j) = d3_A(k,i,j);
-	      }
-	    }
-	  }
-	END_CALCS
 
 	// |---------------------------------------------------------------------------------|
 	// | SELECTIVITY PARAMETERS
@@ -1809,7 +1801,11 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        break;
 	      case 4: // time-varying cubic spline every year
 	        for(i = syr; i <= nyr; i++){
-	          log_sel(kgear)(ig)(i) = cubic_spline(sel_par_f(k)(i-syr+1));
+		  if(ig == 1){
+	            log_sel(kgear)(ig)(i) = cubic_spline(sel_par_f(k)(i-syr+1));
+		  }else if(ig == 2){
+	            log_sel(kgear)(ig)(i) = cubic_spline(sel_par_m(k)(i-syr+1));
+		  }
 	        }
 	        break;
 	      case 5: // time-varying bicubic spline
@@ -2036,8 +2032,19 @@ FUNCTION calcNumbersAtAge
 	    tr(sage + 1, nage) = log_recinit(ih) + init_log_rec_devs(ih);
 	    tr(sage + 1, nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
 	  }
-	  N(ig)(syr)(sage, nage) = 1./nsex * mfexp(tr);
+	  if(ig == 1){
+	    N(ig)(syr)(sage, nage) = propfemale * mfexp(tr);
+	  }else if(ig == 2){
+	    N(ig)(syr)(sage, nage) = (1 - propfemale) * mfexp(tr);
+	  }
+	  LOG<<"tr\n"<<tr<<"\n";
+	  LOG<<"tr.indexmin() = "<<tr.indexmin()<<"\n";
+	  LOG<<"tr.indexmax() = "<<tr.indexmax()<<"\n";
 	  log_rt(ih)(syr - nage + sage, syr) = tr.shift(syr - nage + sage);
+	  LOG<<"After tr\n"<<tr<<"\n";
+	  LOG<<"tr.indexmin() = "<<tr.indexmin()<<"\n";
+	  LOG<<"tr.indexmax() = "<<tr.indexmax()<<"\n";
+	  //exit(1);
 	  for(i = syr; i <= nyr; i++){
 	    if(i > syr){
 	      log_rt(ih)(i) = (log_avgrec(ih) + log_rec_devs(ih)(i));
@@ -2685,7 +2692,7 @@ FUNCTION calcObjectiveFunction
 	        //LOG<<"Gear "<<k<<"\nSample sizes\n"<<samp_sizes(k)<<"\n";exit(1);
 	        for(int i = O.rowmin(); i <= O.rowmax(); i++){
 	          temp_n = samp_sizes(k, i) * O(i);
-	          nlvec(3,k) -= ddirmultinom(temp_n, P(i), log_phi(k,i));
+	          nlvec(3,k) -= ddirmultinom(temp_n, P(i), log_phi(k));
 	        }
 	        if(last_phase()){
 	          // Extract residuals.
@@ -2725,7 +2732,7 @@ FUNCTION calcObjectiveFunction
 	            // Variance for DM: Thorsen et. al 2017, Equation 8
 	            // o1 is observed age comps data, p1 is estimated age comps
 	            dvar_vector dm_variance = (elem_prod(o1, (1.0 - o1)) / samp_sizes(k,i)) *
-	              ((samp_sizes(k,i) + exp(log_phi(k,i))) / (1.0 + exp(log_phi(k,i))));
+	              ((samp_sizes(k,i) + exp(log_phi(k))) / (1.0 + exp(log_phi(k))));
 
 	            dvar_vector pearson = elem_div(o1 - p1, sqrt(dm_variance));
 	            for(int j = 1; j <= n; j++){
@@ -3247,7 +3254,7 @@ REPORT_SECTION
 	  for(k = 1; k <= nAgears; k++){
 	    report<<"A_hat_gear_"<<column(d3_A(k), -3)(1)<<"\n";
 	    for(int row = A_hat(k).rowmin(); row <= A_hat(k).rowmax(); row++){
-	      year = d3_A(k, row)(-4);
+	      year = d3_A(k, row)(-5);
 	      gear = d3_A(k, row)(-3);
 	      area = d3_A(k, row)(-2);
 	      group = d3_A(k, row)(-1);
@@ -3258,7 +3265,7 @@ REPORT_SECTION
 	  for(k = 1; k <= nAgears; k++){
 	    report<<"A_nu_gear_"<<column(d3_A(k), -3)(1)<<"\n";
 	    for(int row = A_nu(k).rowmin(); row <= A_nu(k).rowmax(); row++){
-	      year = d3_A(k, row)(-4);
+	      year = d3_A(k, row)(-5);
 	      gear = d3_A(k, row)(-3);
 	      area = d3_A(k, row)(-2);
 	      group = d3_A(k, row)(-1);

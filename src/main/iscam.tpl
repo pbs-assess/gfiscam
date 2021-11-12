@@ -1304,7 +1304,7 @@ PARAMETER_SECTION
 	LOC_CALCS
 	  //LOG<<"global_parfile = "<<global_parfile<<"\n\n";
 	  if(!global_parfile){
-	    for(int k=1; k<=ngear; k++){
+	    for(int k = 1; k <= ngear; k++){
 	      if(isel_type(k) == 1 ||
 	         isel_type(k) == 6 ||
 	        (isel_type(k) >= 7 &&
@@ -1321,7 +1321,7 @@ PARAMETER_SECTION
 	            sel_par_m(k,j,2) = log(ghat_agemax_m(k));
 	          }
 	        }
-	      }else if(isel_type(k) ==13){
+	      }else if(isel_type(k) == 13){
 	        for(int j = 1; j <= n_sel_blocks(k); j++){
 	          double dd = 1.e-8;
 	          double stp = 1.0 / (ghat_agemax_f(k) - ahat_agemin_f(k));
@@ -1830,30 +1830,30 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        //Alternative time-varying selectivity based on weight
 	        //deviations (d3_wt_dev) d3_wt_dev is a matrix(syr,nyr+1,sage,nage)
 	        //p3 is the coefficient that describes variation in log_sel.
-	        p1 = mfexp(sel_par_f(k,1,1));
-	        p2 = mfexp(sel_par_f(k,1,2));
-	        p3 = sel_par_f(k,1,3);
-	        for(i=syr; i<=nyr; i++){
+	        p1 = mfexp(sel_par_f(k, 1, 1));
+	        p2 = mfexp(sel_par_f(k, 1, 2));
+	        p3 = sel_par_f(k, 1, 3);
+	        for(i = syr; i <= nyr; i++){
 	          tmp2(i) = p3 * d3_wt_dev(ig)(i);
-	          //log_sel(kgear)(ig)(i) = log( plogis<dvar_vector>(age,p1,p2)+tiny ) + tmp2(i);
-	          log_sel(kgear)(ig)(i) = log(plogis(age,p1,p2)+tiny) + tmp2(i);
+	          //log_sel(kgear)(ig)(i) = log(plogis<dvar_vector>(age, p1, p2) + tiny ) + tmp2(i);
+	          log_sel(kgear)(ig)(i) = log(plogis(age, p1, p2) + tiny) + tmp2(i);
 	        }
 	        break;
 	      case 11: // logistic selectivity based on mean length-at-age
-	        for(i=syr; i<=nyr; i++){
+	        for(i = syr; i <= nyr; i++){
 	          if(i == sel_blocks(k,byr)){
 	            bpar ++;
 	            if(byr < n_sel_blocks(k))
 	              byr++;
 	          }
-	          p1 = mfexp(sel_par_f(k,bpar,1));
-	          p2 = mfexp(sel_par_f(k,bpar,2));
+	          p1 = mfexp(sel_par_f(k, bpar, 1));
+	          p2 = mfexp(sel_par_f(k, bpar, 2));
 	          dvector len = pow(d3_wt_avg(ig)(i) / d_a(ig), 1. / d_b(ig));
-	          log_sel(kgear)(ig)(i) = log(plogis(len,p1,p2));
+	          log_sel(kgear)(ig)(i) = log(plogis(len, p1, p2));
 	        }
 	        break;
 	      case 12: // cubic spline length-based coefficients.
-	        for(i=syr; i<=nyr; i++){
+	        for(i = syr; i <= nyr; i++){
 	          if(i == sel_blocks(k,byr)){
 	            bpar ++;
 	            if(byr < n_sel_blocks(k))
@@ -1864,7 +1864,7 @@ FUNCTION void calcSelectivities(const ivector& isel_type)
 	        }
 	        break;
 	      case 13: // truncated age-specific selectivity coefficients
-	        for(i=syr; i<=nyr; i++){
+	        for(i = syr; i <= nyr; i++){
 	          if(i == sel_blocks(k,byr)){
 	            bpar ++;
 	            if(byr < n_sel_blocks(k))

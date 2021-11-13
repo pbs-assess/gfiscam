@@ -7,13 +7,17 @@
 FROM rocker/tidyverse:latest
 LABEL maintainer = "chris.grandin@gmail.com"
 
-RUN apt-get update -qq && apt-get -y --no-install-recommends install flex
+RUN apt-get update -qq && \
+    apt-get -y --no-install-recommends install flex && \
+    apt-get install bash-completion && \
+    apt-get install htop
 
 ENV INST=/usr/bin
 ENV ADMB_HOME=$INST/admb/build/admb
 ENV ADMB_AD2CSV=$INST/admb/contrib/ad2csv
-ENV ISCAM_HOME=$INST/gfiscam/build/dist/bin
-ENV PATH=$ISCAM_HOME:$ADMB_AD2CSV:$ADMB_HOME/bin:$HOME:$PATH
+ENV ISCAM_BASE=$INST/gfiscam
+ENV ISCAM_HOME=$ISCAM_BASE/build/dist/bin
+ENV PATH=$ISCAM_BASE:$ISCAM_HOME:$ADMB_AD2CSV:$ADMB_HOME/bin:$HOME:$PATH
 
 COPY install_admb.sh $INST/install_admb.sh
 COPY install_iscam.sh $INST/install_iscam.sh
@@ -22,6 +26,10 @@ RUN chmod +x $INST/install_admb.sh && \
     chmod +x $INST/install_iscam.sh && \
     cd $INST && ./install_admb.sh -d && \
     cd $INST && ./install_iscam.sh
+
+COPY bash_rc.sh /root/.bashrc
+COPY i $ISCAM_BASE/i
+COPY clean_admb $ISCAM_BASE/clean_admb
 
 ENV USER=rstudio PASSWORD=qwerty
 

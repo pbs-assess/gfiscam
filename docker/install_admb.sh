@@ -29,14 +29,17 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
+install_dir=/usr/bin
+admb_dir=$install_dir/admb
+
+cd $install_dir
+
 if [[ -n "${DOWNLOAD}" ]]; then
   rm -rf admb
   echo "Removed /home/rstudio/admb directory and all its contents."
   git clone https://github.com/admb-project/admb
 fi
 
-install_dir=/usr/bin
-admb_dir=$install_dir/admb
 cd $admb_dir
 
 # Add semicolons to the end of all lines in all sedflex files,
@@ -61,7 +64,7 @@ make -j $num_cpus_minus1
 
 # This link is required for the examples to build
 ln -s build/admb/bin/admb admb || true
-ll
+
 # Contrib libraries need to be renamed, use symbolic links instead
 cd $admb_dir/build/admb/lib
 

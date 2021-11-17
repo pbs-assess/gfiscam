@@ -1,12 +1,10 @@
-# Docker script for ADMB containers
+# Dockerfile for building an image containing admb, ad2csv, and iscam executables with
+# all linkages
 
-FROM rocker/tidyverse:latest
+FROM cgrandin/ubuntu-essentials:latest
 LABEL maintainer = "chris.grandin@gmail.com"
 
 SHELL ["/bin/bash", "-c"]
-
-RUN apt-get update -qq && \
-    apt-get -y --no-install-recommends install flex
 
 ENV INST=/usr/bin
 ENV ADMB_HOME=$INST/admb/build/admb
@@ -27,13 +25,4 @@ COPY bash_rc.sh /root/.bashrc
 COPY i \
      clean_admb $ISCAM_BASE
 
-ENV USER=rstudio PASSWORD=qwerty
-
-WORKDIR /home/rstudio
-
-# To run the container, go into the directory your document is in/will be in and run
-# this (set project_name in --name=project_name to unique for each project):
-#
-# docker run -d -p 8787:8787 --name=ADMB --mount type=bind,source="$(pwd)",target=/home/rstudio cgrandin/admb
-#
-# If prompted for the username and password, they are rstudio and qwerty
+WORKDIR /home/container

@@ -36,7 +36,7 @@ cd $install_dir
 
 if [[ -n "${DOWNLOAD}" ]]; then
   rm -rf admb
-  echo "Removed /home/rstudio/admb directory and all its contents."
+  echo "Removed ${admb_dir} directory and all its contents."
   git clone https://github.com/admb-project/admb
 fi
 

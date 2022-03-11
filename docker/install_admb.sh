@@ -41,6 +41,7 @@ if [[ -n "${DOWNLOAD}" ]]; then
 fi
 
 cd $admb_dir
+git checkout 1376cb55 # commit message is "Update azure-pipelines.yml for Azure Pipelines"
 
 # Add semicolons to the end of all lines in all sedflex files,
 # and then remove ^M's which were added by the adding of semicolons step

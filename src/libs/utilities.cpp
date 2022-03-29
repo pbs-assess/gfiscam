@@ -49,9 +49,10 @@ void write_proj_headers(ofstream &ofsP,
                         int nfleet,
                         int n_ags,
                         int ngroup,
+			int pyr, // End year for projections
                         bool include_msy,
                         bool include_sbo){
-  int i, ig;
+  int i, ig, yr;
   // Write the decision table headers for projection years
   ofsP<<"TAC"<<",";
   ofsP<<"B"<<nyr + 1<<",";
@@ -73,35 +74,39 @@ void write_proj_headers(ofstream &ofsP,
   ofsP<<"B"<<nyr + 2<<"_B"<<syr<<",";
   for(ig = 1; ig <= n_ags; ig++){
     for(i = 1; i <= nfleet; i++){
-      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_F"<<nyr<<",";
-      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_F"<<nyr + 1<<",";
-      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_U"<<nyr<<",";
-      ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_U"<<nyr + 1<<",";
+      for(yr = nyr + 1; yr<= pyr; yr++){
+	ofsP<<"F"<<yr<<"_flt"<<i<<"_sex"<<ig<<",";
+	ofsP<<"U"<<yr<<"_flt"<<i<<"_sex"<<ig;
+	//if(!(ig == n_ags && i == nfleet && yr == pyr)){
+	  ofsP<<",";
+	//}
+      }
     }
   }
   ofsP<<"UT"<<",";
   for(ig = 1; ig <= n_ags; ig++){
-    // u20
     ofsP<<"U20_sex_"<<ig;
-    if(ig < n_ags){
-	ofsP<<",";
-    }
+    //if(!(ig == n_ags)){
+    ofsP<<",";
+    //}
   }
   if(include_msy){
     //MSY based ref points
-    ofsP<<","<<"BMSY"<<",";
+    ofsP<<"BMSY"<<",";
     ofsP<<"B"<<nyr + 2<<"_BMSY"<<",";
     ofsP<<"B"<<nyr + 2<<"_08BMSY"<<",";
     ofsP<<"B"<<nyr + 2<<"_04BMSY"<<",";
     for(i = 1; i <= nfleet; i++){
-      ofsP<<"fleet_"<<i<<"_FMSY"<<",";
-      ofsP<<"fleet_"<<i<<"_UMSY"<<",";
+      ofsP<<"FMSY_flt"<<i<<",";
+      ofsP<<"UMSY_flt"<<i<<",";
       for(ig = 1; ig <= n_ags; ig++){
-        ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_F"<<nyr + 1<<"_FMSY"<<",";
-        ofsP<<"fleet_"<<i<<"_sex_"<<ig<<"_U"<<nyr + 1<<"_UMSY";
-        if(!(ig == n_ags && i == nfleet)){
-          ofsP<<",";
-        }
+        for(yr = nyr + 1; yr<= pyr; yr++){
+	  ofsP<<"FMSY"<<yr<<"_flt"<<i<<"_sex"<<ig<<",";
+	  ofsP<<"UMSY"<<yr<<"_flt"<<i<<"_sex"<<ig;
+	  if(!(ig == n_ags && i == nfleet && yr == pyr)){
+	      ofsP<<",";
+          }
+	}
       }
     }
   }
@@ -131,7 +136,7 @@ void write_proj_output(ofstream &ofsP,
                        bool include_msy,
                        bool include_sbo){
 
-  int i, ig;
+  int i, ig, yr;
   double ut = tac / (tac + p_sbt(pyr));
 
   // Write the projection output to the file
@@ -152,38 +157,53 @@ void write_proj_output(ofstream &ofsP,
     ofsP<<p_sbt(nyr + 2) / (0.4 * sbo)<<",";
     ofsP<<p_sbt(nyr + 2) / (0.2 * sbo)<<",";
   }
-  ofsP<<p_sbt(nyr + 2) / p_sbt(syr);
+
+  LOG<<"Projection pf_t:\n"<<p_ft<<"\n\n";
+
+  ofsP<<p_sbt(nyr + 2) / p_sbt(syr)<<",";
   for(ig = 1; ig <= n_ags; ig++){
+    LOG<<"ags "<<ig<<", value:\n"<<p_ft(ig)<<"\n";
     for(i = 1; i <= nfleet; i++){
-      ofsP<<",";
-      ofsP<<p_ft(ig,nyr,i)<<",";
-      ofsP<<p_ft(ig,nyr + 1,i)<<",";
-      ofsP<<1.0 - mfexp(-p_ft(ig,nyr,i))<<",";
-      ofsP<<1.0 - mfexp(-p_ft(ig,nyr + 1,i))<<",";
+      for(yr = nyr + 1; yr<= pyr; yr++){
+        LOG<<"fleet "<<i<<", sex "<<ig<<", year "<<yr<<", F value:\n"<<p_ft(ig,yr,i)<<"\n";
+        LOG<<"fleet "<<i<<", sex "<<ig<<", year "<<yr<<", U value:\n"<<1.0 - mfexp(-p_ft(ig,yr,i))<<"\n\n";
+        ofsP<<p_ft(ig,yr,i)<<",";
+        ofsP<<1.0 - mfexp(-p_ft(ig,yr,i));
+	//if(!(ig == n_ags && i == nfleet && yr == pyr)){
+	  ofsP<<",";
+	//}
+      }
     }
   }
+  LOG<<"\n\n";
   ofsP<<ut<<",";
   for(ig = 1; ig <= n_ags; ig++){
-    // u20
-    ofsP<<tac / ((p_N(ig,pyr)(3,nage) * exp(-value(M(1)(nyr,3)))) * dWt_bar(1)(3,nage))<<",";
+    ofsP<<tac / ((p_N(ig,pyr)(3,nage) * exp(-value(M(1)(nyr,3)))) * dWt_bar(1)(3,nage));
+    if(ig != n_ags || include_msy){
+      ofsP<<",";
+    }
   }
   if(include_msy){
+    LOG<<"fmsy in projection:\n"<<fmsy<<"\n\n";
+    LOG<<"bmsy in projection:\n"<<bmsy(1)<<"\n\n";
     //MSY based ref points
-    ofsP<<","<<bmsy<<",";
-    ofsP<<p_sbt(nyr + 2) / bmsy<<",";
-    ofsP<<p_sbt(nyr + 2) / (0.8 * bmsy)<<",";
-    ofsP<<p_sbt(nyr + 2) / (0.4 * bmsy);
+    ofsP<<bmsy(1)<<",";
+    ofsP<<p_sbt(nyr + 2) / bmsy(1)<<",";
+    ofsP<<p_sbt(nyr + 2) / (0.8 * bmsy(1))<<",";
+    ofsP<<p_sbt(nyr + 2) / (0.4 * bmsy(1))<<",";
     // The following loop assumed only one group,
     // Which is the '1' in the fmsy(1,i) indexing
     for(i = 1; i <= nfleet; i++){
-      ofsP<<",";
       ofsP<<fmsy(1, i)<<",";
-      ofsP<<1. - mfexp(-fmsy(1, i));
+      ofsP<<1.0 - mfexp(-fmsy(1, i))<<",";
       for(ig = 1; ig <= n_ags; ig++){
-        ofsP<<",";
-        ofsP<<p_ft(ig, nyr + 1,i) / fmsy(1,i)<<",";
-        ofsP<<(1.0 - mfexp(-p_ft(ig, nyr + 1,i))) /
-              (1.0 - mfexp(-fmsy(1, i)));
+        for(yr = nyr + 1; yr<= pyr; yr++){
+          ofsP<<p_ft(ig,yr,i) / fmsy(1,i)<<",";
+          ofsP<<(1.0 - mfexp(-p_ft(ig,yr,i))) / (1.0 - mfexp(-fmsy(1,i)));
+	  if(!(ig == n_ags && i == nfleet && yr == pyr)){
+	      ofsP<<",";
+          }
+	}
       }
     }
   }

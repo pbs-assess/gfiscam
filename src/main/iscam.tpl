@@ -1122,7 +1122,7 @@ DATA_SECTION
 	// |      output for MCMCs. This control only matters if control 13
 	// |      is greater than 0.
 
-	init_vector d_iscamCntrl(1,20);
+	init_vector d_iscamCntrl(1,21);
 	int verbose;
 	init_int eofc;
 	LOC_CALCS
@@ -3821,7 +3821,7 @@ FUNCTION mcmc_output
 	      - file control options "years for average fecundity/weight-at-age in projections"
 	*/
 FUNCTION void projection_model(const double& tac);
-	//LOG<<"Running projection model...\n";
+	LOG<<"Running projection model...\n";
 
 	static int runNo = 0;
 	runNo++;
@@ -3933,7 +3933,7 @@ FUNCTION void projection_model(const double& tac);
 	        p_Z(ig,i) += p_ft(ig,i,k) * va_bar(ig,k);
 	      }
 	    }
-	  /*
+	 /*
 	  LOG<<"*****************************************************\n";
 	  LOG<<"*****************************************************\n";
 	  LOG<<"*****************************************************\n";
@@ -4004,7 +4004,8 @@ FUNCTION void projection_model(const double& tac);
 	                       nfleet,
 	                       n_ags,
 	                       ngroup,
-	                       !d_iscamCntrl(13),
+			       pyr + 1,
+	                       d_iscamCntrl(21),
 	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmcmc.flush();
 	  }
@@ -4016,7 +4017,7 @@ FUNCTION void projection_model(const double& tac);
 	                    n_ags,
 	                    ngroup,
 	                    tac,
-	                    pyr,
+	                    pyr + 1,
 	                    p_sbt,
 	                    p_rt,
 	                    p_ft,
@@ -4028,7 +4029,7 @@ FUNCTION void projection_model(const double& tac);
 	                    value(sbo(1)),
 	                    fmsy,
 	                    bmsy,
-	                    !d_iscamCntrl(13),
+	                    d_iscamCntrl(21),
 	                    d_iscamCntrl(13) && d_iscamCntrl(20));
 	  ofsmcmc.flush();
 	}else{
@@ -4041,6 +4042,7 @@ FUNCTION void projection_model(const double& tac);
 	                       nfleet,
 	                       n_ags,
 	                       ngroup,
+			       pyr + 1,
 	                       !d_iscamCntrl(13),
 	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmpd.flush();
@@ -4057,7 +4059,7 @@ FUNCTION void projection_model(const double& tac);
 	                    n_ags,
 	                    ngroup,
 	                    tac,
-	                    pyr,
+	                    pyr + 1,
 	                    p_sbt,
 	                    p_rt,
 	                    p_ft,
@@ -4105,7 +4107,7 @@ GLOBALS_SECTION
 	#include <string.h>
 	#include <unistd.h>
 	#include <fcntl.h>
-	#include "/home/cgrandin/admb/contrib/statslib/statsLib.h"
+	#include "/usr/bin/admb/contrib/statslib/statsLib.h"
 	#include "../../include/baranov.h"
 	#include "../../include/ddirmultinom.h"
 	#include "../../include/LogisticNormal.h"

@@ -14,6 +14,7 @@ void write_proj_headers(ofstream &ofsP,
                         int nfleet,
                         int n_ags,
                         int ngroup,
+			int pyr,
                         bool include_msy,
                         bool include_sbo);
 

@@ -3633,6 +3633,19 @@ FUNCTION mcmc_output
 	      }
 	    }
 	    of7<<'\n';
+	    ofstream of8("iscam_index_fits_mcmc.csv");
+	    iter = 1;
+	    for(int kk = 1; kk <= nItNobs; kk++){
+	      for(int yr = 1; yr <= n_it_nobs(kk); yr++){
+	        if(iter == 1){
+	          of8<<"gear"<<kk<<"_yr"<<yr;
+	        }else{
+	          of8<<",gear"<<kk<<"_yr"<<yr;
+	        }
+		iter++;
+	      }
+	    }
+	    of8<<'\n';
 	  }
 	}
 	// ---------------------------------------------------------------------
@@ -3710,7 +3723,7 @@ FUNCTION mcmc_output
 	// output fishing mortality
 	ofstream of3("iscam_ft_mcmc.csv", ios::app);
 	iter = 1;
-	for(int fleet = 1; fleet < nfleet; fleet++){
+	for(int fleet = 1; fleet <= nfleet; fleet++){
 	  for(int yr = syr; yr <= nyr; yr++){
 	    if(iter == 1){
 	      of3<<ft(1)(fleet)(yr);
@@ -3778,6 +3791,19 @@ FUNCTION mcmc_output
 	  }
 	}
 	of7<<'\n';
+	ofstream of8("iscam_index_fits_mcmc.csv", ios::app);
+	iter = 1;
+	for(int kk = 1; kk <= nItNobs; kk++){
+	  for(int yr = 1; yr <= n_it_nobs(kk); yr++){
+	    if(iter == 1){
+	      of8<<it_hat(kk,yr);
+	    }else{
+	      of8<<","<<it_hat(kk,yr);
+	    }
+	    iter++;
+	  }
+	}
+	of8<<'\n';
 	ofs.flush();
 	of1.flush();
 	of2.flush();
@@ -3786,8 +3812,8 @@ FUNCTION mcmc_output
 	of5.flush();
 	of6.flush();
 	of7.flush();
-	int ii;
-	for(ii = 1; ii <= n_tac; ii++){
+	of8.flush();
+	for(int ii = 1; ii <= n_tac; ii++){
 	  LOG<<ii<<" "<<tac(ii)<<'\n';
 	  projection_model(tac(ii));
 	}

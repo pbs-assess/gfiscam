@@ -3646,6 +3646,19 @@ FUNCTION mcmc_output
 	      }
 	    }
 	    of8<<'\n';
+	    ofstream of9("iscam_index_residuals_mcmc.csv");
+	    iter = 1;
+	    for(int kk = 1; kk <= nItNobs; kk++){
+	      for(int yr = 1; yr <= n_it_nobs(kk); yr++){
+	        if(iter == 1){
+	          of9<<"gear"<<kk<<"_yr"<<yr;
+	        }else{
+	          of9<<",gear"<<kk<<"_yr"<<yr;
+	        }
+		iter++;
+	      }
+	    }
+	    of9<<'\n';
 	  }
 	}
 	// ---------------------------------------------------------------------
@@ -3804,6 +3817,19 @@ FUNCTION mcmc_output
 	  }
 	}
 	of8<<'\n';
+	ofstream of9("iscam_index_residuals_mcmc.csv", ios::app);
+	iter = 1;
+	for(int kk = 1; kk <= nItNobs; kk++){
+	  for(int yr = 1; yr <= n_it_nobs(kk); yr++){
+	    if(iter == 1){
+	      of9<<epsilon(kk,yr);
+	    }else{
+	      of9<<","<<epsilon(kk,yr);
+	    }
+	    iter++;
+	  }
+	}
+	of9<<'\n';
 	ofs.flush();
 	of1.flush();
 	of2.flush();
@@ -3813,6 +3839,7 @@ FUNCTION mcmc_output
 	of6.flush();
 	of7.flush();
 	of8.flush();
+	of9.flush();
 	for(int ii = 1; ii <= n_tac; ii++){
 	  LOG<<ii<<" "<<tac(ii)<<'\n';
 	  projection_model(tac(ii));

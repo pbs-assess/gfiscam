@@ -3512,6 +3512,9 @@ FUNCTION decision_table
 
 FUNCTION mcmc_output
 	int iter;
+	static int post_num = 0;
+	post_num++;
+
 	if(nf == 1){
 	  LOG<<"In mcmc_output()\n";
 
@@ -3659,6 +3662,14 @@ FUNCTION mcmc_output
 	      }
 	    }
 	    of9<<'\n';
+	    ofstream of10("iscam_age_fits_mcmc.csv");
+	    of10<<'\n';
+	    ofstream of11("iscam_age_residuals_mcmc.csv");
+	    of11<<'\n';
+	    ofstream of12("iscam_selectivity_female_mcmc.csv");
+	    of12<<'\n';
+	    ofstream of13("iscam_selectivity_male_mcmc.csv");
+	    of13<<'\n';
 	  }
 	}
 	// ---------------------------------------------------------------------
@@ -3830,6 +3841,48 @@ FUNCTION mcmc_output
 	  }
 	}
 	of9<<'\n';
+	ofstream of10("iscam_age_fits_mcmc.csv", ios::app);
+        int year, sex;
+	for(k = 1; k <= nAgears; k++){
+	  of10<<"posterior"<<post_num<<"_gear"<<column(d3_A(k), -3)(1)<<"\n";
+	  for(int row = A_hat(k).rowmin(); row <= A_hat(k).rowmax(); row++){
+	    year = d3_A(k, row)(-5);
+	    //gear = d3_A(k, row)(-3);
+	    //area = d3_A(k, row)(-2);
+	    //group = d3_A(k, row)(-1);
+	    sex = d3_A(k, row)(0);
+	    of10<<year<<" "<<sex<<" "<<A_hat(k, row)<<"\n";
+	  }
+	}
+	of10<<'\n';
+	ofstream of11("iscam_age_residuals_mcmc.csv", ios::app);
+	for(k = 1; k <= nAgears; k++){
+	  of11<<"posterior"<<post_num<<"_gear"<<column(d3_A(k), -3)(1)<<"\n";
+	  for(int row = A_nu(k).rowmin(); row <= A_nu(k).rowmax(); row++){
+	    year = d3_A(k, row)(-5);
+	    //gear = d3_A(k, row)(-3);
+	    //area = d3_A(k, row)(-2);
+	    //group = d3_A(k, row)(-1);
+	    sex = d3_A(k, row)(0);
+	    of11<<year<<" "<<sex<<" "<<A_nu(k, row)<<"\n";
+	  }
+	}
+	of11<<'\n';
+        ofstream of12("iscam_selectivity_female_mcmc.csv", ios::app);
+	for(k = 1; k <= ngear; k++){
+	  of12<<"posterior"<<post_num<<"_gear"<<k<<"\n";
+	  for(j = 1; j <= jsel_npar(k); j++){
+	    of12<<k<<" "<<j<<" "<<exp(sel_par_f(k)(j))<<"\n";
+	  }
+	}
+        ofstream of13("iscam_selectivity_male_mcmc.csv", ios::app);
+	for(k = 1; k <= ngear; k++){
+	  of13<<"posterior"<<post_num<<"_gear"<<k<<"\n";
+	  for(j = 1; j <= jsel_npar(k); j++){
+	    of13<<k<<" "<<j<<" "<<exp(sel_par_m(k)(j))<<"\n";
+	  }
+	}
+
 	ofs.flush();
 	of1.flush();
 	of2.flush();
@@ -3840,6 +3893,9 @@ FUNCTION mcmc_output
 	of7.flush();
 	of8.flush();
 	of9.flush();
+	of10.flush();
+	of11.flush();
+	of12.flush();
 	for(int ii = 1; ii <= n_tac; ii++){
 	  LOG<<ii<<" "<<tac(ii)<<'\n';
 	  projection_model(tac(ii));

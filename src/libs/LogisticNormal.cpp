@@ -38,13 +38,12 @@ logistic_normal::logistic_normal(const dmatrix& _O,const dvar_matrix& _E,
 
 	// 1). Aggregate and compress arrays, add small constant if eps > 0
 	if(eps)
-	{	
+	{
 		add_constant_normalize(m_O,eps);
 		add_constant_normalize(m_E,eps);
 	}
 	aggregate_and_compress_arrays();
 
-	
 	// Now that we now the dimensions of each array, allocate
 	// memory for the covariance matrixes.
 	m_V.allocate(m_y1,m_y2,m_nb1,m_nb2-1,m_nb1,m_nb2-1);
@@ -54,13 +53,13 @@ logistic_normal::logistic_normal(const dmatrix& _O,const dvar_matrix& _E,
 	// Total number of bins minus 1.
 	double Y = m_y2-m_y1+1.0;
 	m_bm1 = (size_count(m_Op) - Y);
-	
+
 	// Relative weights to assign to each year.
 	m_Wy = compute_relative_weights(m_O);
-	
+
 	// Residuals for use in likelihood calculations
 	compute_likelihood_residuals();
-	
+
 }
 
 void logistic_normal::compute_likelihood_residuals()
@@ -328,11 +327,18 @@ void logistic_normal::aggregate_and_compress_arrays()
 	int i,j;
 	m_nb1.allocate(m_y1,m_y2);
 	m_nb2.allocate(m_y1,m_y2);
+	//LOG<<"In aggregate_and_compress_arrays()\n";
 	for( i = m_y1; i <= m_y2; i++ )
 	{
 		m_nb1(i) = m_O(i).indexmin();
 		int n = m_nb1(i)-1;
 		double sumO = sum(m_O(i));
+		//LOG<<"i = "<<i<<", m_nb1(i) = "<<m_nb1(i)<<"\n";
+		//LOG<<"i = "<<i<<", m_nb2(i) = "<<m_nb2(i)<<"\n";
+		//LOG<<"m_O(i).indexmax() = "<<m_O(i).indexmax()<<"\n";
+		//LOG<<"sumO = "<<sumO<<"\n\n";
+		//LOG<<"m_O = \n"<<m_O<<"\n\n";
+		//LOG<<"i = "<<i<<", sumO = "<<sumO<<"\n";
 		for( j = m_nb1(i); j <= m_O(i).indexmax(); j++ )
 		{
 			double p = m_O(i,j) / sumO;
@@ -340,7 +346,8 @@ void logistic_normal::aggregate_and_compress_arrays()
 		}
 		m_nb2(i) = n;
 	}
-
+	//LOG<<"m_nb1 = "<<m_nb1<<"\n";
+	//LOG<<"m_nb2 = "<<m_nb2<<"\n\n";
 	// Now allocate arrays
 	m_Op.allocate(m_y1,m_y2,m_nb1,m_nb2);
 	m_Ep.allocate(m_y1,m_y2,m_nb1,m_nb2);

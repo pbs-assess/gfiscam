@@ -1466,6 +1466,7 @@ PARAMETER_SECTION
 	matrix log_rt(1,n_ag,syr-nage+sage,nyr);
 	matrix nlvec(1,8,1,ilvec);
 	matrix epsilon(1,nItNobs,1,n_it_nobs);
+	matrix std_epsilon(1,nItNobs,1,n_it_nobs);
 	matrix it_hat(1,nItNobs,1,n_it_nobs);
 	matrix qt(1,nItNobs,1,n_it_nobs);
 	matrix sbt(1,ngroup,syr,nyr+1);
@@ -1557,6 +1558,7 @@ PROCEDURE_SECTION
 	calcAnnualMeanWeight();
 	//LOG<<"After calcAnnualMeanWeight()\n";
 	calcObjectiveFunction();
+	//LOG<<"After calcObjectiveFunction()\n";
 	if(sd_phase()){
 	  calcSdreportVariables();
 	}
@@ -2037,13 +2039,13 @@ FUNCTION calcNumbersAtAge
 	  }else if(ig == 2){
 	    N(ig)(syr)(sage, nage) = (1 - propfemale) * mfexp(tr);
 	  }
-	  LOG<<"tr\n"<<tr<<"\n";
-	  LOG<<"tr.indexmin() = "<<tr.indexmin()<<"\n";
-	  LOG<<"tr.indexmax() = "<<tr.indexmax()<<"\n";
+	  //LOG<<"tr\n"<<tr<<"\n";
+	  //LOG<<"tr.indexmin() = "<<tr.indexmin()<<"\n";
+	  //LOG<<"tr.indexmax() = "<<tr.indexmax()<<"\n";
 	  log_rt(ih)(syr - nage + sage, syr) = tr.shift(syr - nage + sage);
-	  LOG<<"After tr\n"<<tr<<"\n";
-	  LOG<<"tr.indexmin() = "<<tr.indexmin()<<"\n";
-	  LOG<<"tr.indexmax() = "<<tr.indexmax()<<"\n";
+	  //LOG<<"After tr\n"<<tr<<"\n";
+	  //LOG<<"tr.indexmin() = "<<tr.indexmin()<<"\n";
+	  //LOG<<"tr.indexmax() = "<<tr.indexmax()<<"\n";
 	  //exit(1);
 	  for(i = syr; i <= nyr; i++){
 	    if(i > syr){
@@ -2303,6 +2305,7 @@ FUNCTION calcSurveyObservations
 	dvar_vector va(sage,nage);
 	dvar_vector sa(sage,nage);
 	epsilon.initialize();
+	std_epsilon.initialize();
 	it_hat.initialize();
 	for(kk = 1; kk <= nItNobs; kk++){
 	  // Vulnerable number-at-age to survey.
@@ -2354,6 +2357,8 @@ FUNCTION calcSurveyObservations
 	  q(kk) = mfexp(zbar);
 	  // Survey residuals
 	  epsilon(kk).sub(iz,nz) = zt - zbar;
+	  std_epsilon(kk).sub(iz,nz) = (epsilon(kk).sub(iz,nz) - mean(epsilon(kk).sub(iz,nz))) /
+	                               std_dev(epsilon(kk).sub(iz,nz));
 	  it_hat(kk).sub(iz,nz) = q(kk) * t1(iz,nz);
 	  // SPECIAL CASE: penalized random walk in q.
 	  if(q_prior(kk) == 2){
@@ -2361,6 +2366,8 @@ FUNCTION calcSurveyObservations
 	    dvar_vector fd_zt = first_difference(zt);
 	    dvariable zw_bar = sum(elem_prod(fd_zt,wt(iz,nz-1)));
 	    epsilon(kk).sub(iz,nz-1) = fd_zt - zw_bar;
+	    std_epsilon(kk).sub(iz,nz-1) = (epsilon(kk).sub(iz,nz-1) - mean(epsilon(kk).sub(iz,nz-1))) /
+	                                   std_dev(epsilon(kk).sub(iz,nz-1));
 	    qt(kk)(iz) = exp(zt(iz));
 	    for(ii = iz + 1; ii <= nz; ii++){
 	      qt(kk)(ii) = qt(kk)(ii-1) * exp(fd_zt(ii-1));
@@ -3662,14 +3669,25 @@ FUNCTION mcmc_output
 	      }
 	    }
 	    of9<<'\n';
+	    ofstream of99("iscam_index_standardized_residuals_mcmc.csv");
+	    iter = 1;
+	    for(int kk = 1; kk <= nItNobs; kk++){
+	      for(int yr = 1; yr <= n_it_nobs(kk); yr++){
+	        if(iter == 1){
+	          of99<<"gear"<<kk<<"_yr"<<yr;
+	        }else{
+	          of99<<",gear"<<kk<<"_yr"<<yr;
+	        }
+		iter++;
+	      }
+	    }
+	    of99<<'\n';
 	    ofstream of10("iscam_age_fits_mcmc.csv");
-	    of10<<'\n';
+	    of10<<"year sex age_proportions("<<sage<<"-"<<nage<<")\n";
 	    ofstream of11("iscam_age_residuals_mcmc.csv");
-	    of11<<'\n';
-	    ofstream of12("iscam_selectivity_female_mcmc.csv");
-	    of12<<'\n';
-	    ofstream of13("iscam_selectivity_male_mcmc.csv");
-	    of13<<'\n';
+	    of11<<"year sex age_proportions("<<sage<<"-"<<nage<<")\n";
+	    ofstream of12("iscam_selectivity_mcmc.csv");
+	    of12<<"year sex parameter1 parameter2\n";
 	  }
 	}
 	// ---------------------------------------------------------------------
@@ -3841,6 +3859,19 @@ FUNCTION mcmc_output
 	  }
 	}
 	of9<<'\n';
+	ofstream of99("iscam_index_standardized_residuals_mcmc.csv", ios::app);
+	iter = 1;
+	for(int kk = 1; kk <= nItNobs; kk++){
+	  for(int yr = 1; yr <= n_it_nobs(kk); yr++){
+	    if(iter == 1){
+	      of99<<std_epsilon(kk,yr);
+	    }else{
+	      of99<<","<<std_epsilon(kk,yr);
+	    }
+	    iter++;
+	  }
+	}
+	of99<<'\n';
 	ofstream of10("iscam_age_fits_mcmc.csv", ios::app);
         int year, sex;
 	for(k = 1; k <= nAgears; k++){
@@ -3868,18 +3899,12 @@ FUNCTION mcmc_output
 	  }
 	}
 	of11<<'\n';
-        ofstream of12("iscam_selectivity_female_mcmc.csv", ios::app);
+        ofstream of12("iscam_selectivity_mcmc.csv", ios::app);
 	for(k = 1; k <= ngear; k++){
 	  of12<<"posterior"<<post_num<<"_gear"<<k<<"\n";
 	  for(j = 1; j <= jsel_npar(k); j++){
-	    of12<<k<<" "<<j<<" "<<exp(sel_par_f(k)(j))<<"\n";
-	  }
-	}
-        ofstream of13("iscam_selectivity_male_mcmc.csv", ios::app);
-	for(k = 1; k <= ngear; k++){
-	  of13<<"posterior"<<post_num<<"_gear"<<k<<"\n";
-	  for(j = 1; j <= jsel_npar(k); j++){
-	    of13<<k<<" "<<j<<" "<<exp(sel_par_m(k)(j))<<"\n";
+	    of12<<sel_blocks(k, j)<<" 1"<<exp(sel_par_m(k, j))<<"\n";
+	    of12<<sel_blocks(k, j)<<" 2"<<exp(sel_par_f(k, j))<<"\n";
 	  }
 	}
 
@@ -3896,6 +3921,7 @@ FUNCTION mcmc_output
 	of10.flush();
 	of11.flush();
 	of12.flush();
+
 	for(int ii = 1; ii <= n_tac; ii++){
 	  LOG<<ii<<" "<<tac(ii)<<'\n';
 	  projection_model(tac(ii));

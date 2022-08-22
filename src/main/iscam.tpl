@@ -2349,7 +2349,7 @@ FUNCTION calcSurveyObservations
 	    }
 	  }
 	  dvector it = trans(d3_survey_data(kk))(2)(iz,nz);
-	  dvector wt = trans(d3_survey_data(kk))(7)(iz,nz);
+	  dvector wt = log(trans(d3_survey_data(kk))(7)(iz,nz));
 	  wt = wt / sum(wt);
 	  dvar_vector t1 = rowsum(V);
 	  dvar_vector zt = log(it) - log(t1(iz,nz));
@@ -2358,7 +2358,7 @@ FUNCTION calcSurveyObservations
 	  // Survey residuals
 	  epsilon(kk).sub(iz,nz) = zt - zbar;
 	  std_epsilon(kk).sub(iz,nz) = (epsilon(kk).sub(iz,nz) - mean(epsilon(kk).sub(iz,nz))) /
-	                               std_dev(epsilon(kk).sub(iz,nz));
+	                                std_dev(epsilon(kk).sub(iz,nz));
 	  it_hat(kk).sub(iz,nz) = q(kk) * t1(iz,nz);
 	  // SPECIAL CASE: penalized random walk in q.
 	  if(q_prior(kk) == 2){
@@ -2367,7 +2367,7 @@ FUNCTION calcSurveyObservations
 	    dvariable zw_bar = sum(elem_prod(fd_zt,wt(iz,nz-1)));
 	    epsilon(kk).sub(iz,nz-1) = fd_zt - zw_bar;
 	    std_epsilon(kk).sub(iz,nz-1) = (epsilon(kk).sub(iz,nz-1) - mean(epsilon(kk).sub(iz,nz-1))) /
-	                                   std_dev(epsilon(kk).sub(iz,nz-1));
+	                                    std_dev(epsilon(kk).sub(iz,nz-1));
 	    qt(kk)(iz) = exp(zt(iz));
 	    for(ii = iz + 1; ii <= nz; ii++){
 	      qt(kk)(ii) = qt(kk)(ii-1) * exp(fd_zt(ii-1));

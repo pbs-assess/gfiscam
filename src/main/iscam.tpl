@@ -3652,7 +3652,7 @@ FUNCTION mcmc_output
 	        }else{
 	          of8<<",gear"<<kk<<"_yr"<<yr;
 	        }
-		iter++;
+	        iter++;
 	      }
 	    }
 	    of8<<'\n';
@@ -3665,7 +3665,7 @@ FUNCTION mcmc_output
 	        }else{
 	          of9<<",gear"<<kk<<"_yr"<<yr;
 	        }
-		iter++;
+	        iter++;
 	      }
 	    }
 	    of9<<'\n';
@@ -3678,24 +3678,24 @@ FUNCTION mcmc_output
 	        }else{
 	          of99<<",gear"<<kk<<"_yr"<<yr;
 	        }
-		iter++;
+	        iter++;
 	      }
 	    }
 	    of99<<'\n';
 	    ofstream of10("iscam_age_fits_mcmc.csv");
 	    of10<<"gear,posterior,year,sex,";
-   	    for(int a = sage; a < nage; a++){
+	    for(int a = sage; a < nage; a++){
 	      of10<<a<<",";
 	    }
 	    of10<<nage<<"\n";
 	    ofstream of11("iscam_age_residuals_mcmc.csv");
 	    of11<<"gear,posterior,year,sex,";
-   	    for(int a = sage; a < nage; a++){
+	    for(int a = sage; a < nage; a++){
 	      of11<<a<<",";
 	    }
 	    of11<<nage<<"\n";
 	    ofstream of12("iscam_selectivity_mcmc.csv");
-	    of12<<"gear,posterior,year,sex,a_hat,g_hat\n";
+	    of12<<"gear,posterior,block,start_year,end_year,sex,a_hat,g_hat\n";
 	  }
 	}
 	// ---------------------------------------------------------------------
@@ -3915,12 +3915,37 @@ FUNCTION mcmc_output
 	    of11<<A_nu(k, row, age(nage))<<"\n";
 	  }
 	}
-        ofstream of12("iscam_selectivity_mcmc.csv", ios::app);
+	ofstream of12("iscam_selectivity_mcmc.csv", ios::app);
+	int block;
+	int last_block;
 	for(k = 1; k <= ngear; k++){
-	  //of12<<"posterior"<<post_num<<"_gear"<<k<<"\n";
-	  for(j = 1; j <= jsel_npar(k); j++){
-	    of12<<k<<","<<post_num<<","<<sel_blocks(k, j)<<",1,"<<exp(sel_par_m(k, j, 1))<<","<<exp(sel_par_m(k, j, 2))<<"\n";
-	    of12<<k<<","<<post_num<<","<<sel_blocks(k, j)<<",2,"<<exp(sel_par_f(k, j, 1))<<","<<exp(sel_par_f(k, j, 2))<<"\n";
+	  last_block = jsel_npar(k);
+	  for(block = 1; block <= last_block; block++){
+	    if(block == 1){
+	      if(block == last_block){
+	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
+	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
+	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	      }else{
+	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
+	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
+	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	      }
+	    }else{
+	      if(block == last_block){
+	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
+	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
+	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	      }else{
+	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
+	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
+	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	      }
+	    }
 	  }
 	}
 

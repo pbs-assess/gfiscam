@@ -3683,11 +3683,19 @@ FUNCTION mcmc_output
 	    }
 	    of99<<'\n';
 	    ofstream of10("iscam_age_fits_mcmc.csv");
-	    of10<<"year sex age_proportions("<<sage<<"-"<<nage<<")\n";
+	    of10<<"gear,posterior,year,sex,";
+   	    for(int a = sage; a < nage; a++){
+	      of10<<a<<",";
+	    }
+	    of10<<nage<<"\n";
 	    ofstream of11("iscam_age_residuals_mcmc.csv");
-	    of11<<"year sex age_proportions("<<sage<<"-"<<nage<<")\n";
+	    of11<<"gear,posterior,year,sex,";
+   	    for(int a = sage; a < nage; a++){
+	      of11<<a<<",";
+	    }
+	    of11<<nage<<"\n";
 	    ofstream of12("iscam_selectivity_mcmc.csv");
-	    of12<<"year sex parameter1 parameter2\n";
+	    of12<<"gear,posterior,year,sex,a_hat,g_hat\n";
 	  }
 	}
 	// ---------------------------------------------------------------------
@@ -3873,38 +3881,46 @@ FUNCTION mcmc_output
 	}
 	of99<<'\n';
 	ofstream of10("iscam_age_fits_mcmc.csv", ios::app);
-        int year, sex;
+        int gear, year, sex, a, row;
 	for(k = 1; k <= nAgears; k++){
-	  of10<<"posterior"<<post_num<<"_gear"<<column(d3_A(k), -3)(1)<<"\n";
-	  for(int row = A_hat(k).rowmin(); row <= A_hat(k).rowmax(); row++){
+	  //of10<<"posterior"<<post_num<<"_gear"<<column(d3_A(k), -3)(1)<<"\n";
+	  for(row = A_hat(k).rowmin(); row <= A_hat(k).rowmax(); row++){
+	    gear = column(d3_A(k), -3)(1);
 	    year = d3_A(k, row)(-5);
 	    //gear = d3_A(k, row)(-3);
 	    //area = d3_A(k, row)(-2);
 	    //group = d3_A(k, row)(-1);
 	    sex = d3_A(k, row)(0);
-	    of10<<year<<" "<<sex<<" "<<A_hat(k, row)<<"\n";
+	    of10<<gear<<","<<post_num<<","<<year<<","<<sex<<",";
+	    for(a = sage; a < nage; a++){
+	      of10<<A_hat(k, row, age(a))<<",";
+	    }
+	    of10<<A_hat(k, row, age(nage))<<"\n";
 	  }
 	}
-	of10<<'\n';
 	ofstream of11("iscam_age_residuals_mcmc.csv", ios::app);
 	for(k = 1; k <= nAgears; k++){
-	  of11<<"posterior"<<post_num<<"_gear"<<column(d3_A(k), -3)(1)<<"\n";
+	  //of11<<"posterior"<<post_num<<"_gear"<<column(d3_A(k), -3)(1)<<"\n";
 	  for(int row = A_nu(k).rowmin(); row <= A_nu(k).rowmax(); row++){
+	    gear = column(d3_A(k), -3)(1);
 	    year = d3_A(k, row)(-5);
 	    //gear = d3_A(k, row)(-3);
 	    //area = d3_A(k, row)(-2);
 	    //group = d3_A(k, row)(-1);
 	    sex = d3_A(k, row)(0);
-	    of11<<year<<" "<<sex<<" "<<A_nu(k, row)<<"\n";
+	    of11<<gear<<","<<post_num<<","<<year<<","<<sex<<",";
+	    for(a = sage; a < nage; a++){
+	      of11<<A_nu(k, row, age(a))<<",";
+	    }
+	    of11<<A_nu(k, row, age(nage))<<"\n";
 	  }
 	}
-	of11<<'\n';
         ofstream of12("iscam_selectivity_mcmc.csv", ios::app);
 	for(k = 1; k <= ngear; k++){
-	  of12<<"posterior"<<post_num<<"_gear"<<k<<"\n";
+	  //of12<<"posterior"<<post_num<<"_gear"<<k<<"\n";
 	  for(j = 1; j <= jsel_npar(k); j++){
-	    of12<<sel_blocks(k, j)<<" 1"<<exp(sel_par_m(k, j))<<"\n";
-	    of12<<sel_blocks(k, j)<<" 2"<<exp(sel_par_f(k, j))<<"\n";
+	    of12<<k<<","<<post_num<<","<<sel_blocks(k, j)<<",1,"<<exp(sel_par_m(k, j, 1))<<","<<exp(sel_par_m(k, j, 2))<<"\n";
+	    of12<<k<<","<<post_num<<","<<sel_blocks(k, j)<<",2,"<<exp(sel_par_f(k, j, 1))<<","<<exp(sel_par_f(k, j, 2))<<"\n";
 	  }
 	}
 

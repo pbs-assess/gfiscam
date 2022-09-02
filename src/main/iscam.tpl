@@ -3923,27 +3923,47 @@ FUNCTION mcmc_output
 	  for(block = 1; block <= last_block; block++){
 	    if(block == 1){
 	      if(block == last_block){
-	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
-	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
-	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
-	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	        if(nsex == 2){
+	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
+	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
+	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}else{
+	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
+	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}
 	      }else{
-	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
-	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
-	        of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
-	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	        if(nsex == 2){
+	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
+	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
+	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}else{
+	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
+	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}
 	      }
 	    }else{
 	      if(block == last_block){
-	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
-	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
-	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
-	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	        if(nsex == 2){
+	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
+	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
+	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}else{
+	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
+	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}
 	      }else{
-	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
-	          ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
-	        of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
-	          ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	        if(nsex == 2){
+	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
+	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
+	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}else{
+	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
+	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+		}
 	      }
 	    }
 	  }

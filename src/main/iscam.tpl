@@ -3554,10 +3554,12 @@ FUNCTION mcmc_output
 	    }
 	    ofs<<","<<"SSB";
 	    for(k = 1; k <= ngear; k++){
-	      ofs<<","<<"sel_age50_female_gear"<<k;
-	      ofs<<","<<"sel_sd50_female_gear"<<k;
-	      ofs<<","<<"sel_age50_male_gear"<<k;
-	      ofs<<","<<"sel_sd50_male_gear"<<k;
+	      for(int sel_blk = 1; sel_blk <= n_sel_blocks(k); sel_blk++){
+	        ofs<<","<<"sel_age50_female_gear"<<k<<"_block"<<sel_blk;
+	        ofs<<","<<"sel_sd50_female_gear"<<k<<"_block"<<sel_blk;
+	        ofs<<","<<"sel_age50_male_gear"<<k<<"_block"<<sel_blk;
+	        ofs<<","<<"sel_sd50_male_gear"<<k<<"_block"<<sel_blk;
+	      }
 	    }
 	    ofs<<","<<"f";
 	    ofs<<'\n';
@@ -3720,8 +3722,9 @@ FUNCTION mcmc_output
 	ofstream ofs("iscam_mcmc.csv",ios::app);
 	ofs<<exp(theta(1)(1));
 	ofs<<","<<theta(2)(1);
-	for(int sex = 1 ; sex <= n_gs; sex++){
-	  ofs<<","<<exp(theta(3)(sex));
+	ofs<<","<<exp(theta(3)(1));
+	if(nsex == 2){
+	  ofs<<","<<exp(theta(4)(1));
 	}
 	ofs<<","<<exp(log_avgrec(1));
 	ofs<<","<<exp(theta(5 + nsex - 1)(1));
@@ -3742,10 +3745,12 @@ FUNCTION mcmc_output
 	}
 	ofs<<","<<sbt(1)(nyr);
 	for(k = 1; k <= ngear; k++){
-	  ofs<<","<<exp(sel_par_f(k)(1)(1));
-	  ofs<<","<<exp(sel_par_f(k)(1)(2));
-	  ofs<<","<<exp(sel_par_m(k)(1)(1));
-	  ofs<<","<<exp(sel_par_m(k)(1)(2));
+	  for(int sel_blk = 1; sel_blk <= n_sel_blocks(k); sel_blk++){
+	    ofs<<","<<exp(sel_par_f(k)(sel_blk)(1));
+	    ofs<<","<<exp(sel_par_f(k)(sel_blk)(2));
+	    ofs<<","<<exp(sel_par_m(k)(sel_blk)(1));
+	    ofs<<","<<exp(sel_par_m(k)(sel_blk)(2));
+	  }
 	}
 	ofs<<","<<objfun;
 	ofs<<'\n';

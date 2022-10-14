@@ -326,7 +326,17 @@ DATA_SECTION
 	        //LOG<<"ig = area,group,sex = "<<ig<<"\n";
 	        //LOG<<"Data row = dCatchData(ii) =  "<<dCatchData(ii)<<"\n";
 	      }
-	      d3_Ct(ig)(i)(k) = dCatchData(ii)(7);
+	      if(ig == 1){
+	        if(verbose){
+	          //LOG<<"Multiplying catch by proportion female ("<<propfemale<<")\n";
+	        }
+	        d3_Ct(ig)(i)(k) = propfemale * dCatchData(ii)(7);
+	      }else{
+	        if(verbose){
+	          //LOG<<"Multiplying catch by proportion male ("<<(1.0 - propfemale)<<")\n";
+	        }
+	        d3_Ct(ig)(i)(k) = (1.0 - propfemale) * dCatchData(ii)(7);
+	      }
 	      if(verbose){
 	        //LOG<<"Catch value = d3_Ct(ig)(i)(k) = "<<d3_Ct(ig)(i)(k)<<"\n";
 	      }
@@ -2049,11 +2059,7 @@ FUNCTION calcNumbersAtAge
 	                                       mfexp(log_sel(kgear)(ig)(i))));
 	    }
 	  }
-	  if(ig == 1){
-	    N(ig)(nyr + 1, sage) = propfemale * mfexp(log_avgrec(ih));
-	  }else{
-	    N(ig)(nyr + 1, sage) = (1 - propfemale) * mfexp(log_avgrec(ih));
-	  }
+	  N(ig)(nyr + 1, sage) = 1.0 / nsex * mfexp(log_avgrec(ih));
 	  bt(g)(nyr + 1) = sum(elem_prod(N(ig)(nyr+1),
 	                               d3_wt_avg(ig)(nyr+1)));
 	  // Vulnerable biomass to all gears

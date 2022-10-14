@@ -3061,13 +3061,9 @@ FUNCTION void calcReferencePoints()
 	      //LOG<<"g = "<<g<<"\n";
 	      //LOG<<"Weight-at-age - dWt_bar(g)\n"<<dWt_bar(g)<<"\n";
 	      //LOG<<"Fecundity-at-age - fa_bar(g)\n"<<fa_bar(g)<<"\n";
-	      //LOG<<"One sex or Male Natural mortality - M(1)\n"<<M(1)<<"\n";
+	      //LOG<<"One sex or Female Mean Natural mortality - M_bar(1)\n"<<M_bar(1)<<"\n";
 	      if(nsex == 2){
-	        //LOG<<"Female Natural mortality - M(2)\n"<<M(2)<<"\n";
-	      }
-	      //LOG<<"One sex or Male Mean Natural mortality - M_bar(1)\n"<<M_bar(1)<<"\n";
-	      if(nsex == 2){
-	        //LOG<<"Female Mean Natural mortality - M_bar(2)\n"<<M_bar(2)<<"\n";
+	        //LOG<<"Male Natural mortality - M(2)\n"<<M(2)<<"\n";
 	      }
 	      //LOG<<"nfleet = "<<nfleet<<"\n";
 	      //LOG<<"mean(M_bar) = "<<mean(M_bar)<<"\n";
@@ -3917,9 +3913,9 @@ FUNCTION mcmc_output
 	      if(block == last_block){
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
-	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
+	            ",1,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
-	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
+	            ",2,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
 	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
@@ -3927,9 +3923,9 @@ FUNCTION mcmc_output
 	      }else{
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
-	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
+	            ",1,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
-	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
+	            ",2,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
 	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
@@ -3939,9 +3935,9 @@ FUNCTION mcmc_output
 	      if(block == last_block){
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
-	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
+	            ",1,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
-	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
+	            ",2,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
 	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
@@ -3949,9 +3945,9 @@ FUNCTION mcmc_output
 	      }else{
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
-	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
+	            ",1,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
-	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
+	            ",2,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
 	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";

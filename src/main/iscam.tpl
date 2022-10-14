@@ -338,17 +338,7 @@ DATA_SECTION
 	          //LOG<<"ig = area,group,sex = "<<ig<<"\n";
 	          //LOG<<"Data row = dCatchData(ii) = "<<dCatchData(ii)<<"\n";
 	        }
-	        if(ig == 1){
-	          if(verbose){
-	            //LOG<<"Multiplying catch by proportion female ("<<propfemale<<")\n";
-	          }
-	          d3_Ct(ig)(i)(k) = propfemale * dCatchData(ii)(7);
-	        }else{
-	          if(verbose){
-	            //LOG<<"Multiplying catch by proportion male ("<<(1.0 - propfemale)<<")\n";
-	          }
-	          d3_Ct(ig)(i)(k) = (1.0 - propfemale) * dCatchData(ii)(7);
-	        }
+	        d3_Ct(ig)(i)(k) = 1.0 / nsex * dCatchData(ii)(7);
 	        if(verbose){
 	          //LOG<<"Catch value = d3_Ct("<<ig<<")("<<i<<")("<<k<<") = "<<d3_Ct(ig)(i)(k)<<"\n";
 	        }
@@ -2034,11 +2024,7 @@ FUNCTION calcNumbersAtAge
 	    tr(sage + 1, nage) = log_recinit(ih) + init_log_rec_devs(ih);
 	    tr(sage + 1, nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
 	  }
-	  if(ig == 1){
-	    N(ig)(syr)(sage, nage) = propfemale * mfexp(tr);
-	  }else if(ig == 2){
-	    N(ig)(syr)(sage, nage) = (1 - propfemale) * mfexp(tr);
-	  }
+	  N(ig)(syr)(sage, nage) = 1.0 / nsex * mfexp(tr);
 	  //LOG<<"tr\n"<<tr<<"\n";
 	  //LOG<<"tr.indexmin() = "<<tr.indexmin()<<"\n";
 	  //LOG<<"tr.indexmax() = "<<tr.indexmax()<<"\n";
@@ -2050,7 +2036,7 @@ FUNCTION calcNumbersAtAge
 	  for(i = syr; i <= nyr; i++){
 	    if(i > syr){
 	      log_rt(ih)(i) = (log_avgrec(ih) + log_rec_devs(ih)(i));
-	      N(ig)(i, sage) = 1./nsex * mfexp(log_rt(ih)(i));
+ 	      N(ig)(i, sage) = 1.0 / nsex * mfexp(log_rt(ih)(i));
 	    }
 	    N(ig)(i + 1)(sage + 1, nage) = ++elem_prod(N(ig)(i)(sage, nage - 1),
 	                                               S(ig)(i)(sage, nage - 1));
@@ -2063,7 +2049,11 @@ FUNCTION calcNumbersAtAge
 	                                       mfexp(log_sel(kgear)(ig)(i))));
 	    }
 	  }
-	  N(ig)(nyr + 1, sage) = 1. / nsex * mfexp(log_avgrec(ih));
+	  if(ig == 1){
+	    N(ig)(nyr + 1, sage) = propfemale * mfexp(log_avgrec(ih));
+	  }else{
+	    N(ig)(nyr + 1, sage) = (1 - propfemale) * mfexp(log_avgrec(ih));
+	  }
 	  bt(g)(nyr + 1) = sum(elem_prod(N(ig)(nyr+1),
 	                               d3_wt_avg(ig)(nyr+1)));
 	  // Vulnerable biomass to all gears
@@ -2439,17 +2429,8 @@ FUNCTION void calcStockRecruitment()
 	      lx(nage) /= 1.0 - mfexp(-ma(nage));
 	      lw(nage) /= 1.0 - mfexp(-ma(nage));
 	      // Step 3. calculate average spawing biomass per recruit.
-	      if(nsex == 1){
-	        phib += 1. / narea * lw * fa;
-	      }else if(nsex == 2){
-	        if(h == 1){
-	          phib += propfemale / narea * lw * fa;
-	        }else{
-	          phib += (1.0 - propfemale) / narea * lw * fa;
-	        }
-	      }else{
-	        ad_exit(1);
-	      }
+	      phib += 1.0 / (narea * nsex) * lw * fa;
+
 	      // Step 4. compute spawning biomass at time of spawning.
 	      for(i = syr; i <= nyr; i++){
 	        stmp = mfexp(-Z(ig)(i) * d_iscamCntrl(13));
@@ -3924,50 +3905,50 @@ FUNCTION mcmc_output
 	int block;
 	int last_block;
 	for(k = 1; k <= ngear; k++){
-	  last_block = jsel_npar(k);
+	  last_block = n_sel_blocks(k);
 	  for(block = 1; block <= last_block; block++){
 	    if(block == 1){
 	      if(block == last_block){
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
-	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
-	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<nyr<<
-	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}
 	      }else{
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
-	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
-	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<syr<<","<<sel_blocks(k, block+1)-1<<
-	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}
 	      }
 	    }else{
 	      if(block == last_block){
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
-	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
-	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<nyr<<
-	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}
 	      }else{
 	        if(nsex == 2){
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
-	            ",1,"<<exp(sel_par_m(k, block, 1))<<","<<exp(sel_par_m(k, block, 2))<<"\n";
+	            ",1,"<<exp(sel_par_m(k)(block)(1))<<","<<exp(sel_par_m(k)(block)(2))<<"\n";
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
-	            ",2,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",2,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}else{
 	          of12<<k<<","<<post_num<<","<<block<<","<<sel_blocks(k, block)<<","<<sel_blocks(k, block+1)-1<<
-	            ",0,"<<exp(sel_par_f(k, block, 1))<<","<<exp(sel_par_f(k, block, 2))<<"\n";
+	            ",0,"<<exp(sel_par_f(k)(block)(1))<<","<<exp(sel_par_f(k)(block)(2))<<"\n";
 		}
 	      }
 	    }

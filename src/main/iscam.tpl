@@ -3591,7 +3591,7 @@ FUNCTION mcmc_output
 	    ofstream of5("iscam_vbt_mcmc.csv");
 	    iter = 1;
 	    for(int fleet = 1; fleet <= nfleet; fleet++){
-	      for(int yr = syr; yr <= nyr + 1; yr++){
+	      for(int yr = syr; yr <= nyr; yr++){
 	        if(iter == 1){
 	          of5<<"vbt_fleet"<<fleet<<"_"<<yr;
 	        }else{

@@ -2055,8 +2055,13 @@ FUNCTION calcNumbersAtAge
 	    bt(g)(i) = sum(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)));
 	    // Vulnerable biomass to all gears
 	    for(kgear = 1; kgear <= ngear; kgear++){
-	      vbt(g)(kgear)(i) = sum(elem_prod(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)),
-	                                       mfexp(log_sel(kgear)(ig)(i))));
+	      if(ig == 1){
+	        vbt(g)(kgear)(i) = sum(elem_prod(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)),
+	                                     mfexp(log_sel(kgear)(ig)(i))));
+	      }else{
+	        vbt(g)(kgear)(i) += sum(elem_prod(elem_prod(N(ig)(i), d3_wt_avg(ig)(i)),
+	                                     mfexp(log_sel(kgear)(ig)(i))));
+	      }
 	    }
 	  }
 	  N(ig)(nyr + 1, sage) = 1.0 / nsex * mfexp(log_avgrec(ih));
@@ -2064,9 +2069,15 @@ FUNCTION calcNumbersAtAge
 	                               d3_wt_avg(ig)(nyr+1)));
 	  // Vulnerable biomass to all gears
 	  for(kgear = 1; kgear <= ngear; kgear++){
-	    vbt(g)(kgear)(nyr + 1) = sum(elem_prod(elem_prod(N(ig)(nyr + 1),
-	                                                     d3_wt_avg(ig)(nyr + 1)),
-	                                           mfexp(log_sel(kgear)(ig)(nyr))));
+	    if(ig == 1){
+	      vbt(g)(kgear)(nyr + 1) = sum(elem_prod(elem_prod(N(ig)(nyr + 1),
+	                                                       d3_wt_avg(ig)(nyr + 1)),
+	                                             mfexp(log_sel(kgear)(ig)(nyr))));
+	    }else{
+	      vbt(g)(kgear)(nyr + 1) += sum(elem_prod(elem_prod(N(ig)(nyr + 1),
+	                                                       d3_wt_avg(ig)(nyr + 1)),
+	                                             mfexp(log_sel(kgear)(ig)(nyr))));
+	    }
 	  }
 	}
 	/*

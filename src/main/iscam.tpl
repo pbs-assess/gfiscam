@@ -34,7 +34,8 @@ DATA_SECTION
 	// | 6)   end year for recruitment period (not implemented yet)
 	// |
 	!! ad_comm::change_datafile_name(ProjectFileControl);
-	init_int n_tac; // Number of catch options to explore in the decision table
+	init_int n_projyr; // Number of years to project the stock
+	init_int n_tac;    // Number of catch options to explore in the decision table
 	init_vector tac(1,n_tac);
 	init_int n_pfcntrl;
 	init_vector pf_cntrl(1,n_pfcntrl);
@@ -3018,7 +3019,7 @@ FUNCTION calcObjectiveFunction
 	*/
 FUNCTION void calcReferencePoints()
 	if(d_iscamCntrl(13) || d_iscamCntrl(17)){
-	  run_FRP(); //RF code for testing reference point calcs.
+	  run_FRP(); // Code for testing reference point calcs
 	}
 	if(!d_iscamCntrl(13)){
 	  int kk, ig;
@@ -3202,6 +3203,16 @@ REPORT_SECTION
 	for(k = 1; k <= nAgears; k++){
 	  report<<samp_sizes(k)<<"\n";
 	}
+	report<<"Index SD's (sig_it}\n";
+	for(k = 1; k <= nItNobs; k++){
+	  ivector ig = it_grp(k);
+	  //dvar_vector sig_it(1,n_it_nobs(k));
+	  report<<"Gear "<<k<<":\n";
+	  for(i = 1; i <= n_it_nobs(k); i++){
+	    report<<sig(ig(i)) / it_wt(k,i)<<"\n";
+	  }
+	}
+
 	REPORT(tau);
 	REPORT(sig);
 	REPORT(age_tau2);
@@ -3983,7 +3994,7 @@ FUNCTION mcmc_output
 	of12.flush();
 
 	for(int ii = 1; ii <= n_tac; ii++){
-	  LOG<<ii<<" "<<tac(ii)<<'\n';
+	  LOG<<"TAC for projection #"<<ii<<": "<<tac(ii)<<"\n";
 	  projection_model(tac(ii));
 	}
 
@@ -4021,7 +4032,7 @@ FUNCTION void projection_model(const double& tac);
 	static int runNo = 0;
 	runNo++;
 	int ig, i, k;
-	int pyr = nyr + 1;
+	int pyr = nyr + n_projyr; // n_projyr comes from the PFC file
 	BaranovCatchEquation cBaranov;
 
 	dvector p_sbt(syr, pyr + 1);
@@ -4099,12 +4110,13 @@ FUNCTION void projection_model(const double& tac);
 	  }
 
 	  // Simulate population into the future under constant tac policy
+	  LOG<<" In projection_model, p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
+	  LOG<<" In projection_model, dAllocation\n"<<dAllocation<<"\n";
 	  /*
 	  LOG<<"M_bar("<<ig<<")\n"<<M_bar(ig)<<"\n";
 	  LOG<<"p_N("<<ig<<")\n"<<p_N(ig)<<"\n";
 	  LOG<<"p_Z("<<ig<<")\n"<<p_Z(ig)<<"\n";
 	  LOG<<"p_ft("<<ig<<")\n"<<p_ft(ig)<<"\n";
-	  LOG<<"p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
 	  LOG<<"p_rt\n"<<p_rt<<"\n\n\n";
 	  */
 	  for(i = nyr; i <= pyr + 1; i++){
@@ -4119,7 +4131,7 @@ FUNCTION void projection_model(const double& tac);
 	        M_bar(ig),
 	        va_bar(ig),
 	        p_N(ig,i),
-	        dWt_bar(1));
+	        dWt_bar(ig));
 	      LOG<<"After cBaranov.getFishingMortality()\n";
 	      LOG<<"p_ft("<<ig<<", "<<i<<")\n"<<p_ft(ig,i)<<"\n\n";
 	      // calculate total mortality in future years
@@ -4128,28 +4140,28 @@ FUNCTION void projection_model(const double& tac);
 	        p_Z(ig,i) += p_ft(ig,i,k) * va_bar(ig,k);
 	      }
 	    }
-	 /*
-	  LOG<<"*****************************************************\n";
-	  LOG<<"*****************************************************\n";
-	  LOG<<"*****************************************************\n";
-	  LOG<<"M_bar("<<ig<<")\n"<<M_bar(ig)<<"\n";
-	  LOG<<"p_N("<<ig<<")\n"<<p_N(ig)<<"\n";
-	  LOG<<"p_Z("<<ig<<")\n"<<p_Z(ig)<<"\n";
-	  LOG<<"p_ft(1)\n"<<p_ft(1)<<"\n";
-	  LOG<<"p_ft(2)\n"<<p_ft(2)<<"\n";
-	  LOG<<"p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
-	  LOG<<"p_rt\n"<<p_rt<<"\n\n\n";
-	  */
+	    /*
+	    LOG<<"*****************************************************\n";
+	    LOG<<"M_bar("<<ig<<")\n"<<M_bar(ig)<<"\n";
+	    LOG<<"p_N("<<ig<<")\n"<<p_N(ig)<<"\n";
+	    LOG<<"p_Z("<<ig<<")\n"<<p_Z(ig)<<"\n";
+	    LOG<<"p_ft(1)\n"<<p_ft(1)<<"\n";
+	    LOG<<"p_ft(2)\n"<<p_ft(2)<<"\n";
+	    LOG<<"p_ct("<<ig<<")\n"<<p_ct(ig)<<"\n";
+	    LOG<<"p_rt\n"<<p_rt<<"\n\n\n";
+	    */
 	    // Overwrite sbt(nyr) so that it does not include estimated Rt(nyr), which is highly uncertain
 	    // This will only be different from sbt(nyr) in the main model if recruits contribute to the spawning population, which is rare
 	    // d_iscamCntrl(13) is defined as: fraction of total mortality that takes place prior to spawning
 	    if(i >= nyr){
 	      p_sbt(i) += elem_prod(p_N(ig, i), exp(-p_Z(ig, i) * d_iscamCntrl(13))) * fa_bar(ig);
 	    }
-	    // sage recruits with random deviate xx
+	    // sage (age-1 typically) recruits with random deviate xx
 	    // note the random number seed is repeated for each tac level.
 	    // NOTE that this treatment of rec devs is different from historical model
-	    xx = randn(nf + i) * tau;
+	    // xx = -0.62757550;
+	    xx = randn(nf + i) * 0.01 - 0.62757550;
+	    // xx = randn(nf + i) * tau;
 	    if(i >= syr + sage - 1){
 	      rtt = 1;
 	      // lagged spawning biomass  (+1 because we want recruits for year i + 1)
@@ -4199,9 +4211,9 @@ FUNCTION void projection_model(const double& tac);
 	                       nfleet,
 	                       n_ags,
 	                       ngroup,
-			       pyr + 1,
+			       pyr,
 	                       d_iscamCntrl(21),
-	                       d_iscamCntrl(13) && d_iscamCntrl(20));
+			       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmcmc.flush();
 	  }
 	  write_proj_output(ofsmcmc,
@@ -4212,7 +4224,7 @@ FUNCTION void projection_model(const double& tac);
 	                    n_ags,
 	                    ngroup,
 	                    tac,
-	                    pyr + 1,
+	                    pyr,
 	                    p_sbt,
 	                    p_rt,
 	                    p_ft,
@@ -4226,7 +4238,7 @@ FUNCTION void projection_model(const double& tac);
 	                    bmsy,
 	                    d_iscamCntrl(21),
 	                    d_iscamCntrl(13) && d_iscamCntrl(20));
-	  ofsmcmc.flush();
+	  ofsmcmc.close();
 	}else{
 	  ofstream ofsmpd("iscam_mpd_proj.csv", ios::app);
 	  //LOG<<"Running MPD projections, runNo = "<<runNo<<"\n";
@@ -4237,7 +4249,7 @@ FUNCTION void projection_model(const double& tac);
 	                       nfleet,
 	                       n_ags,
 	                       ngroup,
-			       pyr + 1,
+			       pyr,
 	                       !d_iscamCntrl(13),
 	                       d_iscamCntrl(13) && d_iscamCntrl(20));
 	    ofsmpd.flush();
@@ -4254,7 +4266,7 @@ FUNCTION void projection_model(const double& tac);
 	                    n_ags,
 	                    ngroup,
 	                    tac,
-	                    pyr + 1,
+	                    pyr,
 	                    p_sbt,
 	                    p_rt,
 	                    p_ft,

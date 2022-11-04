@@ -366,8 +366,12 @@ dvector BaranovCatchEquation::getFishingMortality(
       break;
   }
   // | DO NOT DO THE FOLLOWING FOR DIFFERENTIABLE PROBLEMS.
-  for(i = 1; i <= ngear; i++) if(ft(i) > MAXF)
-    ft(i) = MAXF;
+  for(i = 1; i <= ngear; i++){
+    if(ft(i) > MAXF){
+      ft(i) = MAXF;
+    }
+  }
+
   return(ft);
 }
 

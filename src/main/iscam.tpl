@@ -2032,7 +2032,7 @@ FUNCTION calcNumbersAtAge
 	  }else{
 	    tr(sage) = log_avgrec(ih) + log_rec_devs(ih)(syr);
 	    tr(sage + 1, nage) = log_recinit(ih) + init_log_rec_devs(ih);
-	    tr(sage + 1, nage) = tr(sage + 1, nage) + log(lx(sage + 1, nage));
+	    tr(sage + 1, nage) += log(lx(sage + 1, nage));
 	  }
 	  N(ig)(syr)(sage, nage) = 1.0 / nsex * mfexp(tr);
 	  //LOG<<"tr\n"<<tr<<"\n";

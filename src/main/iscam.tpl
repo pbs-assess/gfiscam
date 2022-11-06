@@ -3180,6 +3180,8 @@ REPORT_SECTION
 	report<<ControlFile<<'\n';
 	report<<ProjectFileControl<<'\n';
 	REPORT(objfun);
+	report<<"init_log_rec_devs\n"<<init_log_rec_devs<<"\n";
+	report<<"log_rec_devs\n"<<log_rec_devs<<"\n";;
 	report<<"like_catch\n"<<nlvec(1)<<"\n";
 	report<<"like_survey_index\n"<<nlvec(2)<<"\n";
 	report<<"like_age_comps\n"<<nlvec(3)<<"\n";

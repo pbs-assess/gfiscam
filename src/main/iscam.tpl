@@ -2961,6 +2961,9 @@ FUNCTION calcObjectiveFunction
 	  pvec(1) = dnorm(log_fbar, log(d_iscamCntrl(7)), d_iscamCntrl(9));
 	  // | Penalty for log_rec_devs (large variance here)
 	  for(g = 1; g <= n_ag; g++){
+	    // http://api.admb-project.org/dnorm_8cpp_source.html
+	    // Line 285 -> dvariable dnorm( const dvar_vector& residual, const double& std )
+	    // LaTeX equation: n_{logrecdevs}(\frac{1}{2}log(2\pi) + log(\sigma)) +\frac{1}{2}\frac{\sum_{i=1}^{n_{logrecdevs}} logrecdevs[i]^2}{\sigma^2}
 	    pvec(4) += dnorm(log_rec_devs(g), 2.0);
 	    pvec(5) += dnorm(init_log_rec_devs(g), 2.0);
 	    dvariable s = 0;
@@ -2973,6 +2976,12 @@ FUNCTION calcObjectiveFunction
 	  pvec(1) = dnorm(log_fbar, log(d_iscamCntrl(7)), d_iscamCntrl(8));
 	  //Penalty for log_rec_devs (CV ~ 0.0707) in early phases
 	  for(g = 1; g <= n_ag; g++){
+	    // http://api.admb-project.org/dvect3_8cpp_source.html
+	    // Line 87 -> double norm2(const dvector& t1)
+	    // Inside norm2() the multiplication operator '*' is overloaded for two dvectors:
+	    // http://api.admb-project.org/dvector_8cpp_source.html
+	    // Line 512 -> double operator*(const dvector& t1, const dvector& t2)
+	    // LaTeX equation: 100\frac{\sum_{i=1}^{n_{logrecdevs}} logrecdevs[i]^2}
 	    pvec(4) += 100.* norm2(log_rec_devs(g));
 	    pvec(5) += 100.* norm2(init_log_rec_devs(g));
 	    dvariable s = 0;

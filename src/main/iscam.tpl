@@ -1360,7 +1360,10 @@ PARAMETER_SECTION
 
 	!! int init_dev_phz = 2;
 	!! if(d_iscamCntrl(5)) init_dev_phz = -1;
+	// init_log_rec_devs is small omega in the model documentation
 	init_bounded_matrix init_log_rec_devs(1,n_ag,sage+1,nage,-15.,15.,init_dev_phz);
+
+	// log_rec_devs is small phi in the model documentation
 	init_bounded_matrix log_rec_devs(1,n_ag,syr,nyr,-15.,15.,2);
 
 	// |---------------------------------------------------------------------------------|
@@ -2444,7 +2447,8 @@ FUNCTION void calcStockRecruitment()
 	      lx(nage) /= 1.0 - mfexp(-ma(nage));
 	      lw(nage) /= 1.0 - mfexp(-ma(nage));
 	      // Step 3. calculate average spawing biomass per recruit.
-	      phib += 1.0 / (narea * nsex) * lw * fa;
+	      phib += (1.0 / nsex) * lw * fa;
+	      LOG<<"FIT: sex = "<<h<<", phib:\n"<<phib<<"\n";
 
 	      // Step 4. compute spawning biomass at time of spawning.
 	      for(i = syr; i <= nyr; i++){
@@ -3211,7 +3215,7 @@ REPORT_SECTION
 	for(k = 1; k <= nAgears; k++){
 	  report<<samp_sizes(k)<<"\n";
 	}
-	report<<"Index SD's (sig_it}\n";
+	report<<"Index SDs (sig_it)\n";
 	for(k = 1; k <= nItNobs; k++){
 	  ivector ig = it_grp(k);
 	  //dvar_vector sig_it(1,n_it_nobs(k));
@@ -4088,147 +4092,148 @@ FUNCTION void projection_model(const double& tac);
 	int pyr = nyr + n_projyr;
 	int i, j, k, sex;
 	double tau, phib, so, bo, beta, xx, rtt, et;
-	dvector p_sbt(syr, pyr + 1);
-	dvector p_rt(syr + sage, pyr);
-	dvector fa_bar(sage, nage);
-	dvector m_bar(sage, nage);
-	dvector lx(sage, nage);
-	dvector lw(sage, nage);
-	dmatrix p_ct(1, nsex, 1, ngear);
-	dmatrix va_bar(1, ngear, sage, nage);
-	d3_array p_ft(1, nsex, nyr, pyr + 1, 1, ngear);
-	d3_array p_N(1, nsex, syr, pyr + 2, sage, nage);
-	d3_array p_Z(1, nsex, syr, pyr + 1, sage, nage);
 	BaranovCatchEquation cBaranov;
 
-	phib = 0;
-	// n_ags is the number of combos of area/group/sex
-	for(sex = 1; sex <= n_ags; sex++){
-	  fa_bar = elem_prod(dWt_bar(sex), ma(sex));
-	  // pf_cntrl(1) and pf_cntrl(2) are the start and end years to use
-	  // for the M mean values in the pfc file
-	  m_bar = colsum(value(M(sex).sub(pf_cntrl(1), pf_cntrl(2))));
-	  m_bar /= pf_cntrl(2) - pf_cntrl(1) + 1;
+	dvector p_sbt(syr, pyr + 1);
+	dvector p_rt(syr + sage, pyr);
+	dmatrix lx(1, nsex, sage, nage);
+	dmatrix lw(1, nsex, sage, nage);
+	dmatrix m_bar(1, nsex, sage, nage);
+	dmatrix fa_bar(1, nsex, sage, nage);
+	dmatrix p_ct(1, nsex, 1, ngear);
+	d3_array va_bar(1, nsex, 1, ngear, sage, nage);
+	d3_array p_ft(1, nsex, nyr + 1, pyr + 1, 1, ngear);
+	d3_array p_N(1, nsex, syr, pyr + 2, sage, nage);
+	d3_array p_Z(1, nsex, syr, pyr + 1, sage, nage);
 
-	  // Derive stock recruitment parameters
-	  // lx is survivorship of spawning biomass
-	  tau = value(sqrt(1. - rho) * varphi);
-	  lx(sage) = 1.0;
-	  lw(sage) = 1.0;
-	  for(j = sage; j <= nage; j++){
-	    if(j > sage){
-	      lx(j) = lx(j - 1) * mfexp(-m_bar(j - 1));
-	    }
-	    lw(j) = lx(j) * mfexp(-m_bar(j) * d_iscamCntrl(13));
-	  }
-	  lx(nage) /= 1.0 - mfexp(-m_bar(nage));
-	  lw(nage) /= 1.0 - mfexp(-m_bar(nage));
+	p_sbt.initialize();
+	p_rt.initialize();
+	lx.initialize();
+	lw.initialize();
+	m_bar.initialize();
+	fa_bar.initialize();
+	p_ct.initialize();
+	va_bar.initialize();
+	p_ft.initialize();
+	p_N.initialize();
+	p_Z.initialize();
 
-	  // fa_bar is average fecundity by sex
-	  phib += 1.0 / (narea * nsex) * lw * fa_bar;
-	  so = value(kappa(1) / phib);
-	  bo = value(ro(1) * phib);
-	  beta = 1;
-	  switch(int(d_iscamCntrl(2))){
-	    case 1: // Beverton-Holt
-	      beta = value((kappa(1) - 1.) / bo);
-	      break;
-	    case 2: // Ricker
-	      beta = value(log(kappa(1) / bo));
-	      break;
-	  }
-
-	  // Fill arrays with historical values
-	  // Start year to end year (syr -> nyr)
-	  for(i = syr; i <= nyr; i++){
-	    p_N(sex,i) = value(N(sex,i));
-	    // sbt and rt are not split by sex, so use the
-	    // first area/sex only.
+	// Fill arrays with historical values, no projections yet
+	for(i = syr; i <= nyr; i++){
+	  for(sex = 1; sex <= nsex; sex++){
+	    p_N(sex, i) = value(N(sex, i));
+	    // There is only one group, so sbt and rt have
+	    // a hardwired 1 here
 	    if(sex == 1){
-	      p_sbt(i) = value(sbt(1,i));
+	      p_sbt(i) = value(sbt(1, i));
 	      if(i >= syr + sage){
-	        p_rt(i) = value(rt(1,i));
+	        p_rt(i) = value(rt(1, i));
 	      }
 	    }
-	    p_Z(sex,i) = value(Z(sex)(i));
+	    p_Z(sex, i) = value(Z(sex)(i));
 	  }
-	  // Selectivity and dAllocation to gears
-	  for(k = 1; k <= ngear; k++){
-	    p_ct(sex,k) = dAllocation(k) * tac;
-	    va_bar(k) = exp(value(log_sel(k, sex, nyr)));
-	  }
+	}
 
-	  // Simulate population into the future under constant tac policy
-	  for(i = nyr; i <= pyr + 1; i++){
-	    // ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr) from the main model for nyr
-	    if(i > nyr){
-	      // get_ft is defined in the Baranov.cpp file
-	      // average weight is calculated for all area/groups
+	// Selectivity and gear allocation values
+	for(k = 1; k <= ngear; k++){
+	  for(sex = 1; sex <= nsex; sex++){
+	    p_ct(sex, k) = dAllocation(k) * tac;
+	    va_bar(sex, k) = exp(value(log_sel(k, sex, nyr)));
+	  }
+	}
+
+ 	tau = value(sqrt(1.0 - rho) * varphi);
+	phib = 0;
+	for(sex = 1; sex <= nsex; sex++){
+	  // fa_bar is average fecundity by sex
+	  fa_bar(sex) = elem_prod(dWt_bar(sex), ma(sex));
+	  // ma_bar is average natural mortality by sex for years
+	  // pf_cntrl(1) and pf_cntrl(2) which are in the .pfc file
+	  m_bar(sex) = colsum(value(M(sex).sub(pf_cntrl(1), pf_cntrl(2))));
+	  m_bar(sex) /= pf_cntrl(2) - pf_cntrl(1) + 1;
+
+	  // Derive stock recruitment parameters
+	  // lx is survivorship of spawning biomass by age
+	  lx(sex, sage) = 1.0;
+	  lw(sex, sage) = 1.0;
+	  for(j = sage; j <= nage; j++){
+	    if(j > sage){
+	      lx(sex, j) = lx(sex, j - 1) * mfexp(-m_bar(sex, j - 1));
+	    }
+	    lw(sex, j) = lx(sex, j) * mfexp(-m_bar(sex, j) * d_iscamCntrl(13));
+	  }
+	  lw(sex, nage) /= 1.0 - mfexp(-m_bar(sex, nage));
+
+	  phib += lw(sex) * fa_bar(sex);
+	}
+	so = value(kappa(1) / phib);
+	bo = value(ro(1) * phib);
+	beta = 1;
+	switch(int(d_iscamCntrl(2))){
+	  case 1: // Beverton-Holt
+	    beta = value((kappa(1) - 1.) / bo);
+	    break;
+	  case 2: // Ricker
+	    beta = value(log(kappa(1) / bo));
+	    break;
+	}
+
+	// Simulate population into the future under constant tac policy
+	for(i = nyr; i <= pyr + 1; i++){
+	  for(sex = 1; sex <= nsex; sex++){
+	    // ft(nyr) is a function of ct(nyr) not the tac so use ft(nyr)
+	    // from the main model for nyr
+	    if(i > nyr && i <= pyr + 1){
 	      p_ft(sex, i) = cBaranov.getFishingMortality(
 	        p_ct(sex),
-	        m_bar,
-	        va_bar,
+	        m_bar(sex),
+	        va_bar(sex),
 	        p_N(sex, i),
 	        dWt_bar(sex));
 	      // Calculate total mortality in future years
-	      p_Z(sex,i) = m_bar;
+	      p_Z(sex, i) = m_bar(sex);
 	      for(k = 1; k <= ngear; k++){
-	        p_Z(sex,i) += p_ft(sex, i, k) * va_bar(k);
+	        p_Z(sex, i) += p_ft(sex, i, k) * va_bar(sex, k);
 	      }
 	    }
-	    /*
-	    LOG<<"m_bar\n"<<m_bar<<"\n";
-	    LOG<<"va_bar\n"<<va_bar<<"\n";
-	    LOG<<"p_N("<<sex<<")\n"<<p_N(sex)<<"\n";
-	    LOG<<"p_Z("<<sex<<")\n"<<p_Z(sex)<<"\n";
-	    LOG<<"p_ft(1)\n"<<p_ft(1)<<"\n";
-	    LOG<<"p_ft(2)\n"<<p_ft(2)<<"\n";
-	    LOG<<"p_ct("<<sex<<")\n"<<p_ct(sex)<<"\n";
-	    LOG<<"p_rt\n"<<p_rt<<"\n\n\n";
-	    */
 	    // Overwrite sbt(nyr) so that it does not include estimated Rt(nyr),
 	    // which is highly uncertain. This will only be different from
 	    // sbt(nyr) in the main model if recruits contribute to the spawning
 	    // population, which is rare.
 	    // d_iscamCntrl(13) is defined as: fraction of total mortality that
 	    // takes place prior to spawning.
-	    if(i >= nyr){
-	      // Female projected spawning biomass only
-	      //if(sex == 1){
-	      //  p_sbt(i) = elem_prod(p_N(sex, i), mfexp(-p_Z(sex, i) * d_iscamCntrl(13))) * fa_bar;
-	      //}
-	      // Both sexes projected spawning biomass
-	      if(i == nyr && sex == 1){
-	        // Overwrite the sbt that was estimated for the last year
-		// so the += below doesn\'t add on to the estimated value
-	        p_sbt(i) = 0;
-	      }
-	      p_sbt(i) +=
-	        elem_prod(p_N(sex, i), mfexp(-p_Z(sex, i) * d_iscamCntrl(13))) * fa_bar;
+	    if(sex == 1){
+	      // Overwrite the sbt the first time through the loop so the +=
+	      // below doesn\'t add on to the estimated value
+	      p_sbt(i) = 0;
 	    }
-	    // sage (age-1 typically) recruits with random deviate xx
-	    // Note the random number seed is repeated for each tac level
-	    // Note that this treatment of rec devs is different from
-	    // historical model
-	    xx = randn(nf + i) * tau;
-	    if(i > nyr){
-	      rtt = 1;
-	      // Lagged spawning biomass
-	      // (+1 because we want recruits for year i + 1)
-	      et = p_sbt(i-sage + 1);
-	      switch(int(d_iscamCntrl(2))){
-	        case 1: // Beverton-Holt
-	          rtt = (so * et / (1. + beta * et));
-	          break;
-	        case 2: // Ricker
-	          rtt = (so * et * exp(-beta * et));
-	          break;
+	    p_sbt(i) +=
+	      elem_prod(p_N(sex, i), mfexp(-p_Z(sex, i) * d_iscamCntrl(13))) * fa_bar(sex);
+	    if(sex == 1){
+	      // sage (age-1 typically) recruits with random deviate xx
+	      // Note the random number seed is repeated for each tac level
+	      // Note that this treatment of rec devs is different from
+	      // historical model
+	      xx = randn(nf + i) * tau;
+	      if(i > nyr){
+	        rtt = 1;
+	        // Lagged spawning biomass
+	        // (+1 because we want recruits for year i + 1)
+	        et = p_sbt(i - sage + 1);
+	        switch(int(d_iscamCntrl(2))){
+	          case 1: // Beverton-Holt
+	            rtt = (so * et / (1. + beta * et));
+	            break;
+ 	          case 2: // Ricker
+	            rtt = (so * et * exp(-beta * et));
+	            break;
+	        }
+	        if(i <= pyr){
+	          p_rt(i) = rtt;
+	        }
+	        // Next year\'s recruits
+	        p_N(sex, i + 1, sage) = rtt * exp(xx - 0.5 * tau * tau);
 	      }
-	      if(i <= pyr){
-	        p_rt(i) = rtt;
-	      }
-	      // Next year\'s recruits
-	      p_N(sex, i + 1, sage) = rtt * exp(xx - 0.5 * tau * tau);
 	    }
 	    // Update numbers at age in future years
 	    // Next year\'s numbers

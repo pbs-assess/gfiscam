@@ -3259,7 +3259,7 @@ REPORT_SECTION
 	int iter = 1;
         for(int fleet = 1; fleet <= nfleet; fleet++){
 	  for(int yr = syr; yr <= nyr; yr++){
-	    if(fleet == 2 && yr == syr){
+	    if(fleet != 1 && yr == syr){
 	      report<<"\n";
 	    }else if(iter > 1){
 	      report<<" ";

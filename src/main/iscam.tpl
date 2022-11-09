@@ -3255,7 +3255,21 @@ REPORT_SECTION
 	// | Age composition data
 	// | Empirical weight-at-age data
 	REPORT(dCatchData);
-	REPORT(ct);
+	report<<"ct"<<'\n';
+	int iter = 1;
+        for(int fleet = 1; fleet <= nfleet; fleet++){
+	  for(int yr = syr; yr <= nyr; yr++){
+	    if(fleet == 2 && yr == syr){
+	      report<<"\n";
+	    }else if(iter > 1){
+	      report<<" ";
+	    }
+	    report<<ct(iter);
+	    iter++;
+	  }
+	}
+		report<<"\n";
+
 	REPORT(eta);
 	REPORT(q);
 	REPORT(qt);
@@ -3587,6 +3601,19 @@ FUNCTION mcmc_output
 	      }
 	    }
 	    of1<<'\n';
+	    LOG<<""<<"\n";
+	    ofstream of_ct("iscam_ct_mcmc.csv");
+	    iter = 1;
+	    for(int fleet = 1; fleet <= nfleet; fleet++){
+	      for(int yr = syr; yr <= nyr; yr++){
+	        if(iter > 1){
+	          of_ct<<",";
+	        }
+	        of_ct<<"ct_fleet"<<fleet<<"_"<<yr;
+		iter++;
+	      }
+	    }
+	    of_ct<<"\n";
 	    ofstream of2("iscam_rt_mcmc.csv");
 	    for(int yr = syr + sage; yr <= nyr; yr++){
 	      if(yr == syr + sage){
@@ -3780,6 +3807,21 @@ FUNCTION mcmc_output
 	  }
 	}
 	of1<<'\n';
+
+	// output spawning stock biomass
+	ofstream of_ct("iscam_ct_mcmc.csv", ios::app);
+	iter = 1;
+        for(int fleet = 1; fleet <= nfleet; fleet++){
+	  for(int yr = syr; yr <= nyr; yr++){
+	    if(iter > 1){
+	      of_ct<<",";
+	    }
+	    of_ct<<ct(iter);
+	    iter++;
+	  }
+	}
+	of_ct<<"\n";
+
 	// output age-1 recruits
 	ofstream of2("iscam_rt_mcmc.csv", ios::app);
 	for(int yr = syr + sage; yr <= nyr; yr++){
@@ -4153,7 +4195,14 @@ FUNCTION void projection_model(const double& tac);
 	    // d_iscamCntrl(13) is defined as: fraction of total mortality that
 	    // takes place prior to spawning.
 	    if(i >= nyr){
+	      // Female projected spawning biomass only
+	      //if(sex == 1){
+	      //  p_sbt(i) = elem_prod(p_N(sex, i), mfexp(-p_Z(sex, i) * d_iscamCntrl(13))) * fa_bar;
+	      //}
+	      // Both sexes projected spawning biomass
 	      if(i == nyr && sex == 1){
+	        // Overwrite the sbt that was estimated for the last year
+		// so the += below doesn\'t add on to the estimated value
 	        p_sbt(i) = 0;
 	      }
 	      p_sbt(i) +=
@@ -4163,8 +4212,6 @@ FUNCTION void projection_model(const double& tac);
 	    // Note the random number seed is repeated for each tac level
 	    // Note that this treatment of rec devs is different from
 	    // historical model
-	    // xx = -0.62757550;
-	    // xx = randn(nf + i) * 0.01 - 0.62757550;
 	    xx = randn(nf + i) * tau;
 	    if(i > nyr){
 	      rtt = 1;

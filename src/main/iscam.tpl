@@ -2417,7 +2417,7 @@ FUNCTION void calcStockRecruitment()
 	rt.initialize();
 	sbt.initialize();
 	delta.initialize();
-	dvariable phib;//,so,beta;
+	dvariable phib;
 	dvector fa(sage,nage); //fecundity here
 	dvar_vector stmp(sage,nage);
 	dvar_vector ma(sage,nage);
@@ -2425,8 +2425,6 @@ FUNCTION void calcStockRecruitment()
 	dvar_vector lx(sage,nage);
 	dvar_vector lw(sage,nage);
 	for(g = 1; g <= ngroup; g++){
-	  lx.initialize();
-	  lw.initialize();
 	  lx(sage) = 1.0;
 	  lw(sage) = 1.0;
 	  phib = 0;
@@ -2476,7 +2474,7 @@ FUNCTION void calcStockRecruitment()
 	  switch(int(d_iscamCntrl(2))){
 	    case 1: // Beverton Holt model
 	      beta(g) = (kappa(g)-1.) / sbo(g);
-	      tmp_rt = elem_div(so(g) * tmp_st,1.+beta(g) * tmp_st);
+	      tmp_rt = elem_div(so(g) * tmp_st, 1. + beta(g) * tmp_st);
 	      break;
 	    case 2: // Ricker model
 	      beta(g) = log(kappa(g))/sbo(g);

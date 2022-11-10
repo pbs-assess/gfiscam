@@ -4122,23 +4122,25 @@ FUNCTION void projection_model(const double& tac);
 	for(i = syr; i <= nyr; i++){
 	  for(sex = 1; sex <= nsex; sex++){
 	    p_N(sex, i) = value(N(sex, i));
-	    // There is only one group, so sbt and rt have
-	    // a hardwired 1 here
-	    if(sex == 1){
-	      p_sbt(i) = value(sbt(1, i));
-	      if(i >= syr + sage){
-	        p_rt(i) = value(rt(1, i));
-	      }
-	    }
-	    p_Z(sex, i) = value(Z(sex)(i));
+	    p_Z(sex, i) = value(Z(sex, i));
+	  }
+	  // There is only one group, so sbt and rt have
+	  // a hardwired 1 here
+	  p_sbt(i) = value(sbt(1, i));
+	  if(i >= syr + sage){
+	    p_rt(i) = value(rt(1, i));
 	  }
 	}
 
-	// Selectivity and gear allocation values
+	// Projected selectivity and catch setup
 	for(k = 1; k <= ngear; k++){
 	  for(sex = 1; sex <= nsex; sex++){
-	    p_ct(sex, k) = dAllocation(k) * tac;
 	    va_bar(sex, k) = exp(value(log_sel(k, sex, nyr)));
+	    if(sex == 1){
+	      p_ct(sex, k) = propfemale * dAllocation(k) * tac;
+	    }else{
+	      p_ct(sex, k) = (1.0 - propfemale) * dAllocation(k) * tac;
+	    }
 	  }
 	}
 
@@ -4164,7 +4166,7 @@ FUNCTION void projection_model(const double& tac);
 	  }
 	  lw(sex, nage) /= 1.0 - mfexp(-m_bar(sex, nage));
 
-	  phib += lw(sex) * fa_bar(sex);
+	  phib += (1.0 / nsex) * lw(sex) * fa_bar(sex);
 	}
 	so = value(kappa(1) / phib);
 	bo = value(ro(1) * phib);
@@ -4209,38 +4211,44 @@ FUNCTION void projection_model(const double& tac);
 	    }
 	    p_sbt(i) +=
 	      elem_prod(p_N(sex, i), mfexp(-p_Z(sex, i) * d_iscamCntrl(13))) * fa_bar(sex);
-	    if(sex == 1){
-	      // sage (age-1 typically) recruits with random deviate xx
-	      // Note the random number seed is repeated for each tac level
-	      // Note that this treatment of rec devs is different from
-	      // historical model
-	      xx = randn(nf + i) * tau;
-	      if(i > nyr){
-	        rtt = 1;
-	        // Lagged spawning biomass
-	        // (+1 because we want recruits for year i + 1)
-	        et = p_sbt(i - sage + 1);
-	        switch(int(d_iscamCntrl(2))){
-	          case 1: // Beverton-Holt
-	            rtt = (so * et / (1. + beta * et));
-	            break;
- 	          case 2: // Ricker
-	            rtt = (so * et * exp(-beta * et));
-	            break;
-	        }
-	        if(i <= pyr){
-	          p_rt(i) = rtt;
-	        }
-	        // Next year\'s recruits
-	        p_N(sex, i + 1, sage) = rtt * exp(xx - 0.5 * tau * tau);
+
+	    // sage (age-1 typically) recruits with random deviate xx
+	    // Note the random number seed is repeated for each tac level
+	    // Note that this treatment of rec devs is different from
+	    // historical model
+	    xx = randn(nf + i) * tau;
+	    if(i > nyr){
+	      rtt = 1;
+	      // Lagged spawning biomass
+	      // (+1 because we want recruits for year i + 1)
+	      et = p_sbt(i - sage + 1);
+	      switch(int(d_iscamCntrl(2))){
+	        case 1: // Beverton-Holt
+	          rtt = (so * et / (1. + beta * et));
+	          break;
+ 	        case 2: // Ricker
+	          rtt = (so * et * exp(-beta * et));
+	          break;
+	      }
+	      if(i <= pyr){
+	        p_rt(i) = rtt;
 	      }
 	    }
+	    // Next year\'s recruits
+	    p_N(sex, i + 1, sage) = (1.0 / nsex) * rtt * exp(xx - 0.5 * tau * tau);
+
 	    // Update numbers at age in future years
 	    // Next year\'s numbers
+	    if(i == 2029){
+	      LOG<<"PROJ: Na for sex = "<<sex<<" and year "<<i<<":\n"<<p_N(sex)<<"\n\n";
+	    }
 	    p_N(sex, i + 1)(sage + 1, nage) =
 	      ++elem_prod(p_N(sex, i)(sage, nage - 1), exp(-p_Z(sex, i)(sage, nage - 1)));
 	    p_N(sex, i + 1)(nage) +=
 	      p_N(sex, i)(nage) * exp(-p_Z(sex, i, nage));
+	    if(i == 2029){
+	      LOG<<"PROJ: After Na for sex = "<<sex<<" and year "<<i<<":\n"<<p_N(sex)<<"\n\n";
+	    }
 	  }
 	}
 

@@ -1408,7 +1408,10 @@ PARAMETER_SECTION
 	// | POPULATION VARIABLES
 	// |---------------------------------------------------------------------------------|
 	// | m_bar : Average natural mortality rate from syr to nyr.
+	// | phie  : Small phi-e as explained in the model equations. Fished biomass per
+	// |         recruit used for stock-recruitment calculation (external)
 	number m_bar;
+	number phie;
 
 	// |---------------------------------------------------------------------------------|
 	// | POPULATION VECTORS
@@ -2464,6 +2467,7 @@ FUNCTION void calcStockRecruitment()
 	    rt(g) += mfexp(log_rt(ih)(syr+sage,nyr));
 	  }
 	  // Step 6. calculate stock recruitment parameters (so, beta, sbo);
+	  phie = value(phib);
 	  so(g) = kappa(g) / phib;
 	  sbo(g) = ro(g) * phib;
 	  // Step 7. calculate predicted recruitment.
@@ -3406,6 +3410,7 @@ REPORT_SECTION
 	REPORT(rectype);
 	REPORT(so);
 	REPORT(beta);
+	REPORT(phie);
 	REPORT(sbt);
 	REPORT(bt);
 	REPORT(rt);
@@ -3573,6 +3578,9 @@ FUNCTION mcmc_output
 	  ofs<<","<<"vartheta";
 	  ofs<<","<<"bo";
 	  ofs<<","<<"sbo";
+	  ofs<<","<<"so";
+	  ofs<<","<<"beta";
+	  ofs<<","<<"phie";
 	  if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
 	    ofs<<","<<"bmsy";
 	    for(int fleet = 1; fleet <= nfleet; fleet++){
@@ -3776,6 +3784,9 @@ FUNCTION mcmc_output
 	ofs<<","<<theta(7 + nsex - 1)(1);
 	ofs<<","<<bo;
 	ofs<<","<<sbo;
+	ofs<<","<<so;
+	ofs<<","<<beta;
+	ofs<<","<<phie;
 	if(!d_iscamCntrl(13) || (d_iscamCntrl(13) && !d_iscamCntrl(20))){
 	  ofs<<","<<bmsy;
 	  for(int fleet = 1; fleet <= nfleet; fleet++){
@@ -3979,6 +3990,7 @@ FUNCTION mcmc_output
 	    of11<<A_nu(k, row, age(nage))<<"\n";
 	  }
 	}
+
 	ofstream of12("iscam_selectivity_mcmc.csv", ios::app);
 	int block;
 	int last_block;
@@ -4211,29 +4223,35 @@ FUNCTION void projection_model(const double& tac);
 	    }
 	    p_sbt(i) +=
 	      elem_prod(p_N(sex, i), mfexp(-p_Z(sex, i) * d_iscamCntrl(13))) * fa_bar(sex);
+	  }
+	  // sage (age-1 typically) recruits with random deviate xx
+	  // Note the random number seed is repeated for each tac level
+	  // Note that this treatment of rec devs is different from
+	  // historical model
+	  xx = randn(nf + i) * tau;
+	  // sample() delta from last 10 years
+	  // so we can compare projecting 50 years F40 search with
+	  // same projection with random recruitment
 
-	    // sage (age-1 typically) recruits with random deviate xx
-	    // Note the random number seed is repeated for each tac level
-	    // Note that this treatment of rec devs is different from
-	    // historical model
-	    xx = randn(nf + i) * tau;
-	    if(i > nyr){
-	      rtt = 1;
-	      // Lagged spawning biomass
-	      // (+1 because we want recruits for year i + 1)
-	      et = p_sbt(i - sage + 1);
-	      switch(int(d_iscamCntrl(2))){
-	        case 1: // Beverton-Holt
-	          rtt = (so * et / (1. + beta * et));
-	          break;
- 	        case 2: // Ricker
-	          rtt = (so * et * exp(-beta * et));
-	          break;
-	      }
-	      if(i <= pyr){
-	        p_rt(i) = rtt;
-	      }
+	  if(i > nyr){
+	    rtt = 1;
+	    // Lagged spawning biomass
+	    // (+1 because we want recruits for year i + 1)
+	    et = p_sbt(i - sage + 1);
+	    switch(int(d_iscamCntrl(2))){
+	      case 1: // Beverton-Holt
+	        rtt = (so * et / (1. + beta * et));
+	        break;
+ 	      case 2: // Ricker
+	        rtt = (so * et * exp(-beta * et));
+	        break;
 	    }
+	    if(i <= pyr){
+	      p_rt(i) = rtt;
+	    }
+	  }
+
+    	  for(sex = 1; sex <= nsex; sex++){
 	    // Next year\'s recruits
 	    p_N(sex, i + 1, sage) = (1.0 / nsex) * rtt * exp(xx - 0.5 * tau * tau);
 
@@ -4251,6 +4269,7 @@ FUNCTION void projection_model(const double& tac);
 	    }
 	  }
 	}
+
 
 	// write_proj_headers() and write_proj_output() are in include/utilities.h
 	// and libs/utilities.cpp

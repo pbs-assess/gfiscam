@@ -10,6 +10,91 @@ BaranovCatchEquation::~BaranovCatchEquation()
 	// Destructor
 }
 
+// Vector of fishing mortality rate for catch based on weight with age-dependent M.
+/** \brief Get instantaneous fishing mortality rates based on Baranov catch equation.
+
+		The following function solves the Baranov catch equation for multiple fleets using
+		a Newton-Raphson alogrithm to find a vector of fishing mortlity rates (ft) that 
+		predicts the total catch for each fleet.  The Jacobian matrix is computed and 
+		subsequently inverted to compute the Newton step for each fishing rate.
+	
+	\author Martell IPHC
+	\date 2012-08-05
+	\param  ct a vector of observed catches based on weight, 1 element for each gear.
+	\param  ma age-dependent instananeous natural mortality rate.
+	\param  V a matrix of selectivities (row for each gear, col for each age)
+	\param  na a vector of numbers-at-age at the start of each year
+	\param  wa a vector of mean weight-at-age.
+	\return Returns a vector of instantaneous fishing mortality rates.
+	\sa
+**/
+dvector BaranovCatchEquation::getFishingMortality(
+  const dvector &ct,
+  const dvector &ma,
+  const dmatrix &V,
+  const dvector &na,
+  const dvector &wa){
+
+  int i, j, its;
+  int ngear = V.rowmax() - V.rowmin() + 1;
+  dvector ft(1, ngear);
+  dvector chat(1, ngear);
+  dvector ctmp(1, ngear);
+  dvector fx(1, ngear);
+  dmatrix J(1, ngear, 1, ngear);
+  dmatrix invJ(1, ngear, 1, ngear);
+  dvector ba(na.indexmin(), na.indexmax());
+  dmatrix F(1, ngear, V.colmin(), V.colmax());
+
+  // Initial guess for fishing mortality rates;
+  ba = elem_prod(na, wa);
+  double bt = elem_prod(na, exp(-0.5 * ma)) * wa;
+  ft = ct / bt;
+
+  // Iterative soln for catch equation using Newton-Raphson
+  for(its = 1; its <= MAXITS; its++){
+    for(i = 1; i <= ngear; i++)
+      F(i) = ft(i) * V(i);
+    dvector za = ma + colsum(F);
+    dvector sa = exp(-za);
+    dvector oa = (1.0 - sa);
+    for(i = 1; i <= ngear; i++){
+      for(j = 1; j <= ngear; j++){
+        if(i == j){
+          dvector k1 = elem_prod(ba, elem_div(V(i), za));
+          dvector k2 = elem_prod(k1, V(i));
+          dvector k3 = elem_div(k2, za);
+          double dCdF = -(k1 * oa) - ft(i) * (k2 * sa) + ft(i) * (k3 * oa);
+          J(i)(j) = dCdF;
+          chat(i) = (ft(i) * k1) * oa;
+        }else{
+          dvector t1 = elem_div(elem_prod(ft(i) * ba, V(i)), za);
+          dvector t2 = elem_prod(t1, V(j));
+          dvector t3 = elem_div(t2, za);
+          double dCdF = -(t2 * sa) + (t3 * oa);
+          J(j)(i) = dCdF;
+        }
+      }
+    }
+    fx = ct - chat;
+    //The following couts were used to debug the transpose error in the Jacobian.
+    //LOG<<"fx = "<<fx<<'\n';
+    //LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
+    invJ = -inv(J);
+    ft += fx * invJ;
+    if(norm(fx) < TOL || max(ft) > MAXF)
+      break;
+  }
+  // DO NOT DO THE FOLLOWING FOR DIFFERENTIABLE PROBLEMS.
+  for(i = 1; i <= ngear; i++){
+    if(ft(i) > MAXF){
+      ft(i) = MAXF;
+    }
+  }
+
+  return(ft);
+}
+
 /** \brief Baranov catch equation solution for 1 or more fleets.
 	
 		The following function solves the Baranov catch equation for multiple fleets using
@@ -103,16 +188,14 @@ dvector BaranovCatchEquation::getFishingMortality(
 	return (ft);
 }
 
-
-
 /** \brief Get instantaneous fishing mortality rates based on Baranov catch equation.
-	
+
 		The following function solves the Baranov catch equation for multiple fleets using
-		a Newton-Raphson alogrithm to find a vector of fishing mortlity rates (ft) that 
-		predicts the total catch for each fleet.  The Jacobian matrix is computed and 
+		a Newton-Raphson alogrithm to find a vector of fishing mortlity rates (ft) that
+		predicts the total catch for each fleet.  The Jacobian matrix is computed and
 		subsequently inverted to compute the Newton step for each fishing rate.
-	
-	\author Martell IPHC
+
+	\author Martell
 	\date 2012-08-05
 	\param  ct a vector of observed catches based on weight, 1 element for each gear.
 	\param  m age-independent instananeous natural mortality rate.
@@ -122,78 +205,68 @@ dvector BaranovCatchEquation::getFishingMortality(
 	\return Returns a vector of instantaneous fishing mortality rates.
 	\sa
 **/
-dvector BaranovCatchEquation::getFishingMortality(
+dvector BaranovCatchEquation:: getFishingMortality(
     const dvector &ct,
     const double &m,
     const dmatrix &V,
     const dvector &na,
-    const dvector &wa)
-{
-	
-	int i,j,its;
-	int ngear = V.rowmax()-V.rowmin()+1;
+    const dvector &wa){
 
-	dvector   ft(1,ngear);
-	dvector chat(1,ngear);
-	dvector ctmp(1,ngear);
-	dvector   fx(1,ngear);
-	dmatrix    J(1,ngear,1,ngear);
-	dmatrix invJ(1,ngear,1,ngear);
-	dvector   ba(na.indexmin(),na.indexmax());
-	dmatrix    F(1,ngear,V.colmin(),V.colmax());
-	
-	
-	
-	// Initial guess for fishing mortality rates;
-	ba        = elem_prod(na,wa);
-	double bt = (na * exp(-0.5*m)) * wa;
-	ft        = ct / bt;
-		
-	// Iterative soln for catch equation using Newton-Raphson
-	for(its=1; its<=MAXITS; its++)
-	{
-		for(i=1;i<=ngear;i++) F(i) =ft(i)*V(i);
-		
-		dvector za = m + colsum(F);
-		dvector sa = exp(-za);
-		dvector oa = (1.-sa);
-		
-		for(i=1;i<=ngear;i++)
-		{
-			for(j=1;j<=ngear;j++)
-			{
-				if(i==j)
-				{
-					dvector k1   =  elem_prod(ba,elem_div(V(i),za));
-					dvector k2   =  elem_prod(k1,V(i));
-					dvector k3   =  elem_div(k2,za);
-					double dCdF  = -(k1*oa) - ft(i)*(k2*sa) + ft(i)*(k3*oa);
-					J(i)(j)      = dCdF;
-					chat(i)      = (ft(i)*k1) * oa;
-				}
-				else
-				{
-					dvector t1   = elem_div(elem_prod(ft(i)*ba,V(i)),za);
-					dvector t2   = elem_prod(t1,V(j));
-					dvector t3   = elem_div(t2,za);
-					double dCdF  = -(t2*sa) + (t3*oa);
-					J(j)(i)      = dCdF;
-				}
-			}	
-		}
-		fx   = ct - chat;
-		//The following couts were used to debug the transpose error in the Jacobian.
-		//LOG<<"fx = "<<fx<<'\n';
-		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
-		invJ = -inv(J);
-		ft  += fx*invJ;
-		
-		if( norm(fx) < TOL || max(ft) > MAXF ) break;
+  int i, j, its;
+  int ngear = V.rowmax() - V.rowmin() + 1;
+
+  dvector ft(1, ngear);
+  dvector chat(1, ngear);
+  dvector ctmp(1, ngear);
+  dvector fx(1, ngear);
+  dmatrix J(1, ngear, 1, ngear);
+  dmatrix invJ(1, ngear, 1, ngear);
+  dvector ba(na.indexmin(), na.indexmax());
+  dmatrix F(1, ngear, V.colmin(), V.colmax());
+
+  // Initial guess for fishing mortality rates;
+  ba = elem_prod(na, wa);
+  double bt = (na * exp(-0.5 * m)) * wa;
+  ft = ct / bt;
+
+  // Iterative soln for catch equation using Newton-Raphson
+  for(its = 1; its <= MAXITS; its++){
+    for(i = 1; i <= ngear; i++)
+      F(i) = ft(i) * V(i);
+    dvector za = m + colsum(F);
+    dvector sa = exp(-za);
+    dvector oa = (1.-sa);
+    for(i = 1; i <= ngear; i++){
+      for(j = 1; j <= ngear; j++){
+        if(i == j){
+          dvector k1 =  elem_prod(ba,elem_div(V(i),za));
+	  dvector k2 =  elem_prod(k1,V(i));
+	  dvector k3 =  elem_div(k2,za);
+	  double dCdF = -(k1 * oa) - ft(i) * (k2 * sa) + ft(i) * (k3 * oa);
+	  J(i)(j) = dCdF;
+	  chat(i) = (ft(i) * k1) * oa;
+        }else{
+	  dvector t1 = elem_div(elem_prod(ft(i)*ba,V(i)),za);
+	  dvector t2 = elem_prod(t1, V(j));
+	  dvector t3 = elem_div(t2, za);
+	  double dCdF = -(t2 * sa) + (t3 * oa);
+	  J(j)(i) = dCdF;
 	}
-	
-	for(i=1;i<=ngear;i++) if(ft(i)>MAXF) ft(i) = MAXF;
-	
-	return (ft);
+      }
+    }
+    fx = ct - chat;
+    // The following couts were used to debug the transpose error in the Jacobian.
+    // LOG<<"fx = "<<fx<<'\n';
+    // LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
+    invJ = -inv(J);
+    ft += fx * invJ;
+    if( norm(fx) < TOL || max(ft) > MAXF )
+      break;
+  }
+  for(i = 1; i <= ngear; i++)
+    if(ft(i) > MAXF)
+      ft(i) = MAXF;
+  return (ft);
 }
 
 
@@ -221,158 +294,71 @@ dvector BaranovCatchEquation::getFishingMortality(
     const dvector &ma,
     const dmatrix &V,
     const dvector &na){
-	
-	int i,j,its;
-	int ngear = V.rowmax()-V.rowmin()+1;
-
-	dvector   ft(1,ngear);
-	dvector chat(1,ngear);
-	dvector ctmp(1,ngear);
-	dvector   fx(1,ngear);
-	dmatrix    J(1,ngear,1,ngear);
-	dmatrix invJ(1,ngear,1,ngear);
-	dvector   ba(na.indexmin(),na.indexmax());
-	dmatrix    F(1,ngear,V.colmin(),V.colmax());
-	
-	
-	
-	// Initial guess for fishing mortality rates;
-	ba        = na; //elem_prod(na,wa);
-	double bt = sum(elem_prod(na , exp(-0.5*ma)));
-	ft        = ct / bt;
-		
-	// Iterative soln for catch equation using Newton-Raphson
-	for(its=1; its<=MAXITS; its++)
-	{
-		for(i=1;i<=ngear;i++) F(i) =ft(i)*V(i);
-		
-		dvector za = ma + colsum(F);
-		dvector sa = exp(-za);
-		dvector oa = (1.-sa);
-		
-		for(i=1;i<=ngear;i++)
-		{
-			for(j=1;j<=ngear;j++)
-			{
-				if(i==j)
-				{
-					dvector k1   =  elem_prod(ba,elem_div(V(i),za));
-					dvector k2   =  elem_prod(k1,V(i));
-					dvector k3   =  elem_div(k2,za);
-					double dCdF  = -(k1*oa) - ft(i)*(k2*sa) + ft(i)*(k3*oa);
-					J(i)(j)      = dCdF;
-					chat(i)      = (ft(i)*k1) * oa;
-				}
-				else
-				{
-					dvector t1   = elem_div(elem_prod(ft(i)*ba,V(i)),za);
-					dvector t2   = elem_prod(t1,V(j));
-					dvector t3   = elem_div(t2,za);
-					double dCdF  = -(t2*sa) + (t3*oa);
-					J(j)(i)      = dCdF;
-				}
-			}	
-		}
-		fx   = ct - chat;
-		//The following couts were used to debug the transpose error in the Jacobian.
-		//LOG<<"fx = "<<fx<<'\n';
-		//LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
-		invJ = -inv(J);
-		ft  += fx*invJ;
-		
-		if( norm(fx) < TOL || max(ft) > MAXF ) break;
-	}
-	
-	for(i=1;i<=ngear;i++) if(ft(i)>MAXF) ft(i) = MAXF;
-	
-	return (ft);
-}
-
-
-
-// Vector of fishing mortality rate for catch based on weight with age-dependent M.
-/** \brief Get instantaneous fishing mortality rates based on Baranov catch equation.
-	
-		The following function solves the Baranov catch equation for multiple fleets using
-		a Newton-Raphson alogrithm to find a vector of fishing mortlity rates (ft) that 
-		predicts the total catch for each fleet.  The Jacobian matrix is computed and 
-		subsequently inverted to compute the Newton step for each fishing rate.
-	
-	\author Martell IPHC
-	\date 2012-08-05
-	\param  ct a vector of observed catches based on weight, 1 element for each gear.
-	\param  ma age-dependent instananeous natural mortality rate.
-	\param  V a matrix of selectivities (row for each gear, col for each age)
-	\param  na a vector of numbers-at-age at the start of each year
-	\param  wa a vector of mean weight-at-age.
-	\return Returns a vector of instantaneous fishing mortality rates.
-	\sa
-**/
-dvector BaranovCatchEquation::getFishingMortality(
-  const dvector &ct,
-  const dvector &ma,
-  const dmatrix &V,
-  const dvector &na,
-  const dvector &wa){
 
   int i, j, its;
-  int ngear = V.rowmax() - V.rowmin() + 1;
-  dvector ft(1, ngear);
-  dvector chat(1, ngear);
-  dvector ctmp(1, ngear);
-  dvector fx(1, ngear);
-  dmatrix J(1, ngear, 1, ngear);
-  dmatrix invJ(1, ngear, 1, ngear);
-  dvector ba(na.indexmin(), na.indexmax());
-  dmatrix F(1, ngear, V.colmin(), V.colmax());
+  int ngear = V.rowmax()-V.rowmin()+1;
 
+  dvector   ft(1,ngear);
+  dvector chat(1,ngear);
+  dvector ctmp(1,ngear);
+  dvector   fx(1,ngear);
+  dmatrix    J(1,ngear,1,ngear);
+  dmatrix invJ(1,ngear,1,ngear);
+  dvector   ba(na.indexmin(),na.indexmax());
+  dmatrix    F(1,ngear,V.colmin(),V.colmax());
+  
+  
+  
   // Initial guess for fishing mortality rates;
-  ba = elem_prod(na, wa);
-  double bt = elem_prod(na, exp(-0.5 * ma)) * wa;
-  ft = ct / bt;
-
+  ba        = na; //elem_prod(na,wa);
+  double bt = sum(elem_prod(na , exp(-0.5*ma)));
+  ft        = ct / bt;
+    
   // Iterative soln for catch equation using Newton-Raphson
-  for(its = 1; its <= MAXITS; its++){
-    for(i = 1; i <= ngear; i++)
-      F(i) = ft(i) * V(i);
+  for(its=1; its<=MAXITS; its++)
+  {
+    for(i=1;i<=ngear;i++) F(i) =ft(i)*V(i);
+    
     dvector za = ma + colsum(F);
     dvector sa = exp(-za);
-    dvector oa = (1.0 - sa);
-    for(i = 1; i <= ngear; i++){
-      for(j = 1; j <= ngear; j++){
-        if(i == j){
-          dvector k1 = elem_prod(ba, elem_div(V(i), za));
-          dvector k2 = elem_prod(k1, V(i));
-          dvector k3 = elem_div(k2, za);
-          double dCdF = -(k1 * oa) - ft(i) * (k2 * sa) + ft(i) * (k3 * oa);
-          J(i)(j) = dCdF;
-          chat(i) = (ft(i) * k1) * oa;
-        }else{
-          dvector t1 = elem_div(elem_prod(ft(i) * ba, V(i)), za);
-          dvector t2 = elem_prod(t1, V(j));
-          dvector t3 = elem_div(t2, za);
-          double dCdF = -(t2 * sa) + (t3 * oa);
-          J(j)(i) = dCdF;
+    dvector oa = (1.-sa);
+    
+    for(i=1;i<=ngear;i++)
+    {
+      for(j=1;j<=ngear;j++)
+      {
+        if(i==j)
+        {
+          dvector k1   =  elem_prod(ba,elem_div(V(i),za));
+          dvector k2   =  elem_prod(k1,V(i));
+          dvector k3   =  elem_div(k2,za);
+          double dCdF  = -(k1*oa) - ft(i)*(k2*sa) + ft(i)*(k3*oa);
+          J(i)(j)      = dCdF;
+          chat(i)      = (ft(i)*k1) * oa;
         }
-      }
+        else
+        {
+          dvector t1   = elem_div(elem_prod(ft(i)*ba,V(i)),za);
+          dvector t2   = elem_prod(t1,V(j));
+          dvector t3   = elem_div(t2,za);
+          double dCdF  = -(t2*sa) + (t3*oa);
+          J(j)(i)      = dCdF;
+        }
+      }  
     }
-    fx = ct - chat;
+    fx   = ct - chat;
     //The following couts were used to debug the transpose error in the Jacobian.
     //LOG<<"fx = "<<fx<<'\n';
     //LOG<<"Jacobian\t"<<"its = "<<its<<'\n'<<J<<'\n';
     invJ = -inv(J);
-    ft += fx * invJ;
-    if(norm(fx) < TOL || max(ft) > MAXF)
-      break;
+    ft  += fx*invJ;
+    
+    if( norm(fx) < TOL || max(ft) > MAXF ) break;
   }
-  // | DO NOT DO THE FOLLOWING FOR DIFFERENTIABLE PROBLEMS.
-  for(i = 1; i <= ngear; i++){
-    if(ft(i) > MAXF){
-      ft(i) = MAXF;
-    }
-  }
-
-  return(ft);
+  
+  for(i=1;i<=ngear;i++) if(ft(i)>MAXF) ft(i) = MAXF;
+  
+  return (ft);
 }
 
 /** \brief Instantaneous fishing mortality rate for a single fleet.

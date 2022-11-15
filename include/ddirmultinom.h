@@ -21,6 +21,8 @@ Descrition:
 dvariable ddirmultinom(const dvar_vector& obs,
 		       const dvar_vector& p,
 		       const dvariable& log_phi,
-		       const dvariable& samp_size);
+		       const dvariable& samp_size,
+		       bool linear);
+
 
 #endif

@@ -434,8 +434,11 @@ DATA_SECTION
 	init_ivector n_A_nage(1,nAgears);
 	init_vector inp_nscaler(1,nAgears);
 	init_ivector n_ageFlag(1,nAgears);
+
 	init_number dm_num_samp; // Number of samples for all DM inputs. Use only if dm_use_single_num_samp is set
 	init_number dm_use_single_num_samp; // Use dm_num_samp for all samples, ignore individual sample data
+	init_number dm_method_type; // 0 for saturating method, 1 for linear method
+
 	// The 6 in the next command is to remove the first 6 columns
 	// from the age comp data because they are not the actual ages,
 	// but the header data.
@@ -1288,7 +1291,6 @@ PARAMETER_SECTION
 	// |---------------------------------------------------------------------------------|
 	// Set up Dirichlet Multinomial parameters
 	init_bounded_vector log_phi(1,nAgears,0,10,nPhz_dm);
-	vector temp_n(1,nage)
 
 	// |---------------------------------------------------------------------------------|
 	// | SELECTIVITY PARAMETERS
@@ -2700,9 +2702,7 @@ FUNCTION calcObjectiveFunction
 	      case 8: // Dirichlet Multinomial
 	        // Use Dirichlet Multinomial to estimate the predicted age matrices
 	        for(int i = O.rowmin(); i <= O.rowmax(); i++){
-	          // temp_n = samp_sizes(k, i) * O(i);
-	          nlvec(3,k) -= ddirmultinom(O(i), P(i), log_phi(k), samp_sizes(k, i));
-	          // nlvec(3,k) -= ddirmultinom(temp_n, P(i), log_phi(k));
+	          nlvec(3,k) -= ddirmultinom(O(i), P(i), log_phi(k), samp_sizes(k, i), (bool)dm_method_type);
 	        }
 	        if(last_phase()){
 	          // Extract residuals.

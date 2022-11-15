@@ -4,12 +4,25 @@
 dvariable ddirmultinom(const dvar_vector& obs,
 		       const dvar_vector& p,
 		       const dvariable& log_phi,
-                       const dvariable& samp_size){
+                       const dvariable& samp_size,
+                       bool linear){
+
+ static int ntimes = 1;
+  if(linear){
+    if(ntimes == 1)
+      LOG<<"ddirmultinom: linear DM method"<<"\n";
+  }else{
+    if(ntimes == 1)
+      LOG<<"ddirmultinom: saturating DM method"<<"\n";
+  }
+  ntimes++;
 
   // See equation 4 in Thorsen et. al. 2017
   // Model-based estimates of effective sample
   //  size in stock assessment models using the
   //  Dirichlet-multinomial distribution
+  // If linear is true, use the linear method of DM
+  // If linear is false, use the saturating method of DM
   RETURN_ARRAYS_INCREMENT();
   dvector obs_nums = value(obs) * value(samp_size);
   dvariable N = sum(obs_nums);

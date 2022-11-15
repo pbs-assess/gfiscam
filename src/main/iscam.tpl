@@ -2451,7 +2451,6 @@ FUNCTION void calcStockRecruitment()
 	      lw(nage) /= 1.0 - mfexp(-ma(nage));
 	      // Step 3. calculate average spawing biomass per recruit.
 	      phib += (1.0 / nsex) * lw * fa;
-	      LOG<<"FIT: sex = "<<h<<", phib:\n"<<phib<<"\n";
 
 	      // Step 4. compute spawning biomass at time of spawning.
 	      for(i = syr; i <= nyr; i++){
@@ -2700,10 +2699,10 @@ FUNCTION calcObjectiveFunction
 	        break;
 	      case 8: // Dirichlet Multinomial
 	        // Use Dirichlet Multinomial to estimate the predicted age matrices
-	        //LOG<<"Gear "<<k<<"\nSample sizes\n"<<samp_sizes(k)<<"\n";exit(1);
 	        for(int i = O.rowmin(); i <= O.rowmax(); i++){
-	          temp_n = samp_sizes(k, i) * O(i);
-	          nlvec(3,k) -= ddirmultinom(temp_n, P(i), log_phi(k));
+	          // temp_n = samp_sizes(k, i) * O(i);
+	          nlvec(3,k) -= ddirmultinom(O(i), P(i), log_phi(k), samp_sizes(k, i));
+	          // nlvec(3,k) -= ddirmultinom(temp_n, P(i), log_phi(k));
 	        }
 	        if(last_phase()){
 	          // Extract residuals.
@@ -3548,10 +3547,8 @@ REPORT_SECTION
 FUNCTION decision_table
 	int i;
 	for(i = 1; i <= n_tac; i++){
-	  LOG<<i<<" "<<tac<<'\n';
 	  projection_model(tac(i));
 	}
-	LOG<<"Ok to here"<<'\n';
 
 FUNCTION mcmc_output
 	int iter;
@@ -4060,7 +4057,6 @@ FUNCTION mcmc_output
 	of12.flush();
 
 	for(int ii = 1; ii <= n_tac; ii++){
-	  LOG<<"TAC for projection #"<<ii<<": "<<tac(ii)<<"\n";
 	  projection_model(tac(ii));
 	}
 
@@ -4258,14 +4254,14 @@ FUNCTION void projection_model(const double& tac);
 	    // Update numbers at age in future years
 	    // Next year\'s numbers
 	    if(i == 2029){
-	      LOG<<"PROJ: Na for sex = "<<sex<<" and year "<<i<<":\n"<<p_N(sex)<<"\n\n";
+	      //LOG<<"PROJ: Na for sex = "<<sex<<" and year "<<i<<":\n"<<p_N(sex)<<"\n\n";
 	    }
 	    p_N(sex, i + 1)(sage + 1, nage) =
 	      ++elem_prod(p_N(sex, i)(sage, nage - 1), exp(-p_Z(sex, i)(sage, nage - 1)));
 	    p_N(sex, i + 1)(nage) +=
 	      p_N(sex, i)(nage) * exp(-p_Z(sex, i, nage));
 	    if(i == 2029){
-	      LOG<<"PROJ: After Na for sex = "<<sex<<" and year "<<i<<":\n"<<p_N(sex)<<"\n\n";
+	      //LOG<<"PROJ: After Na for sex = "<<sex<<" and year "<<i<<":\n"<<p_N(sex)<<"\n\n";
 	    }
 	  }
 	}

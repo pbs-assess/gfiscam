@@ -1,17 +1,27 @@
 #include "../../include/ddirmultinom.h"
 #include "../../include/Logger.h"
 
-dvariable ddirmultinom(const dvar_vector& obs, const dvar_vector& p, const dvariable& log_phi){
+dvariable ddirmultinom(const dvar_vector& obs,
+		       const dvar_vector& p,
+		       const dvariable& log_phi,
+                       const dvariable& samp_size){
+
+  // See equation 4 in Thorsen et. al. 2017
+  // Model-based estimates of effective sample
+  //  size in stock assessment models using the
+  //  Dirichlet-multinomial distribution
   RETURN_ARRAYS_INCREMENT();
   dvariable phi = exp(log_phi);
-  dvariable N = sum(obs);
-  dvariable ll = gammln(N + 1.0) +                       // top of first term (eq. 4/10 Thorson et al. 2017)
-                 gammln(phi) -                           // top of second term
-                 gammln(N + phi);                        // bottom of second term
-  for(int a = obs.indexmin(); a <= obs.indexmax(); a++){
-    ll += -gammln(N * obs(a) + 1.0) +                    // bottom of first term
-           gammln(N * obs(a) + phi * (p(a))) -           // top of third term
-           gammln(phi * (p(a)));                         // bottom of third term
+  dvector obs_nums;
+  obs_nums = value(obs) * value(samp_size);
+  dvariable N = sum(obs_nums);
+  dvariable ll = gammln(N + 1.0) + // top of first term - Equation 4 or 10
+                 gammln(phi) -     // top of second term
+                 gammln(N + phi);  // bottom of second term
+  for(int a = obs_nums.indexmin(); a <= obs_nums.indexmax(); a++){
+    ll += -gammln(N * obs_nums(a) + 1.0) + // bottom of first term
+           gammln(N * obs_nums(a) + phi * (p(a) + 1.0e-15)) - // top of third term
+           gammln(phi * (p(a) + 1.0e-15));  // bottom of third term
   }
   RETURN_ARRAYS_DECREMENT();
   return(ll);

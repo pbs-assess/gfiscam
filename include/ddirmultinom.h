@@ -12,12 +12,14 @@ Date  : Sept 10, 2021
 
 Descrition:
 **/
-
-#ifndef __DIRICHLET_MULTINOMIAL_H
+MULTINOMIAL_H
 #define __DIRICHLET_MULTINOMIAL_H
 
 #include <admodel.h>
 
-dvariable ddirmultinom(const dvar_vector& obs, const dvar_vector& p, const dvariable& log_phi);
+dvariable ddirmultinom(const dvar_vector& obs,
+		       const dvar_vector& p,
+		       const dvariable& log_phi,
+		       const dvariable& samp_size);
 
 #endif

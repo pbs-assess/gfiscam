@@ -11,9 +11,9 @@ dvariable ddirmultinom(const dvar_vector& obs,
   //  size in stock assessment models using the
   //  Dirichlet-multinomial distribution
   RETURN_ARRAYS_INCREMENT();
-  dvariable phi = exp(log_phi);
   dvector obs_nums = value(obs) * value(samp_size);
   dvariable N = sum(obs_nums);
+  dvariable phi = N * exp(log_phi);
   dvariable ll = gammln(N + 1.0) + // top of first term - Equation 4 or 10
                  gammln(phi) -     // top of second term
                  gammln(N + phi);  // bottom of second term

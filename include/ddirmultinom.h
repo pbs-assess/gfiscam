@@ -12,7 +12,8 @@ Date  : Sept 10, 2021
 
 Descrition:
 **/
-MULTINOMIAL_H
+
+#ifndef __DIRICHLET_MULTINOMIAL_H
 #define __DIRICHLET_MULTINOMIAL_H
 
 #include <admodel.h>

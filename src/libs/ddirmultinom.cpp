@@ -12,15 +12,14 @@ dvariable ddirmultinom(const dvar_vector& obs,
   //  Dirichlet-multinomial distribution
   RETURN_ARRAYS_INCREMENT();
   dvariable phi = exp(log_phi);
-  dvector obs_nums;
-  obs_nums = value(obs) * value(samp_size);
+  dvector obs_nums = value(obs) * value(samp_size);
   dvariable N = sum(obs_nums);
   dvariable ll = gammln(N + 1.0) + // top of first term - Equation 4 or 10
                  gammln(phi) -     // top of second term
                  gammln(N + phi);  // bottom of second term
   for(int a = obs_nums.indexmin(); a <= obs_nums.indexmax(); a++){
-    ll += -gammln(N * obs_nums(a) + 1.0) + // bottom of first term
-           gammln(N * obs_nums(a) + phi * (p(a) + 1.0e-15)) - // top of third term
+    ll += -gammln(obs_nums(a) + 1.0) + // bottom of first term
+           gammln(obs_nums(a) + phi * (p(a) + 1.0e-15)) - // top of third term
            gammln(phi * (p(a) + 1.0e-15));  // bottom of third term
   }
   RETURN_ARRAYS_DECREMENT();

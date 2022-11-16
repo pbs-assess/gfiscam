@@ -1125,8 +1125,14 @@ DATA_SECTION
 	// |      routine was run. MSY-based reference points will not be
 	// |      output for MCMCs. This control only matters if control 13
 	// |      is greater than 0.
+	// | 21-> Include MSY values in MCMC projection output
+        // | 22-> Number of years in the past to draw a random recruitment dev
+        // |      from to apply to future projections. This dev will be used for
+	// |      all projection years. If 0, a random recruitment
+	// |      dev will be draw from a normal distribution for each year
+	// |      (each year will be different)
 
-	init_vector d_iscamCntrl(1,21);
+	init_vector d_iscamCntrl(1,22);
 	int verbose;
 	init_int eofc;
 	LOC_CALCS
@@ -4098,7 +4104,7 @@ FUNCTION void projection_model(const double& tac);
 
 	// n_projyr is defined in the .pfc file
 	int pyr = nyr + n_projyr;
-	int i, j, k, sex;
+	int i, j, k, sex, rnd_yr;
 	double tau, phib, so, bo, beta, xx, rtt, et;
 	BaranovCatchEquation cBaranov;
 
@@ -4224,10 +4230,15 @@ FUNCTION void projection_model(const double& tac);
 	  // Note the random number seed is repeated for each tac level
 	  // Note that this treatment of rec devs is different from
 	  // historical model
-	  xx = randn(nf + i) * tau;
-	  // sample() delta from last 10 years
-	  // so we can compare projecting 50 years F40 search with
-	  // same projection with random recruitment
+
+	  if(d_iscamCntrl(22) == 0){
+	    // Recdev drawn from a lognormal distribution
+	    xx = randn(nf + i) * tau;
+	  }else{
+	    // Recdev drawn from the last 10 years deviates
+	    rnd_yr = log_rec_devs(1).sub(nyr - 10 + 1, nyr).indexmin() + int(d_iscamCntrl(22) * randu(nf + i));
+	    xx = value(log_rec_devs(1, rnd_yr));
+	  }
 
 	  if(i > nyr){
 	    rtt = 1;
@@ -4367,10 +4378,6 @@ TOP_OF_MAIN_SECTION
 	gradient_structure::set_NUM_DEPENDENT_VARIABLES(5000);
 
 GLOBALS_SECTION
-	/*
-	  \def REPORT(object)
-	  Prints name and value of \a object on ADMB report %ofstream file.
-	*/
 	#undef REPORT
 	#define REPORT(object) report << #object "\n" << object << "\n";
 	#undef TINY
@@ -4392,6 +4399,7 @@ GLOBALS_SECTION
 	#include "../../include/multinomial.h"
 	#include "../../include/utilities.h"
 	#include "../../include/Logger.h"
+
 	time_t start,finish;
 	long hour,minute,second;
 	double elapsed_time;

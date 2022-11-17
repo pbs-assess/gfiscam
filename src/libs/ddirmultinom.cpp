@@ -26,7 +26,9 @@ dvariable ddirmultinom(const dvar_vector& obs,
   RETURN_ARRAYS_INCREMENT();
   dvector obs_nums = value(obs) * value(samp_size);
   dvariable N = sum(obs_nums);
-  dvariable phi = N * exp(log_phi);
+  dvariable phi = linear ? N * exp(log_phi) : exp(log_phi);
+  if(ntimes == 1)
+    LOG<<"DM: N = "<<N<<", exp(log_phi) = "<<exp(log_phi)<<", phi = "<<phi<<"\n\n";
   dvariable ll = gammln(N + 1.0) + // top of first term - Equation 4 or 10
                  gammln(phi) -     // top of second term
                  gammln(N + phi);  // bottom of second term
